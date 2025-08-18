@@ -52,7 +52,7 @@
 #' unlink(temp_dir, recursive = TRUE)
 #' }
 generate_reports <- function(params_df,
-                             template_name,
+                             template_name = "simple_report",
                              template_package = "mariner",
                              output_dir = ".") {
   # --- 1. Find the template file path ---

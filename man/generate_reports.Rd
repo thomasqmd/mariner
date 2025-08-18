@@ -6,7 +6,7 @@
 \usage{
 generate_reports(
   params_df,
-  template_name,
+  template_name = "simple_report",
   template_package = "mariner",
   output_dir = "."
 )
