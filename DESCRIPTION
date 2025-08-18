@@ -1,6 +1,6 @@
 Package: mariner
 Type: Package
-Title: Quicken workflow for Dr. Seaman's classes
+Title: Streamline R Markdown Report Generation and Bundling for Dr. Seaman's Classes
 Version: 0.1.0
 Authors@R: c(
     person(
@@ -9,16 +9,23 @@ Authors@R: c(
       role = c("aut", "cre")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description: Provides a set of functions to simplify and automate the
+    process of rendering and packaging R Markdown documents. The package
+    allows users to generate multiple reports from a single parameterized
+    template and to bundle R Markdown files along with their outputs, such
+    as PDFs, TeX files, and purled R scripts, into a single, easily
+    shareable zip archive.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
+Imports: 
+    fs,
+    knitr,
+    purrr,
+    rmarkdown,
+    utils,
+    withr
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Imports: 
-    knitr,
-    rmarkdown,
-    utils

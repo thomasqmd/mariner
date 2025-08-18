@@ -4,7 +4,12 @@
 \alias{generate_reports}
 \title{Generate Reports from a Package Template}
 \usage{
-generate_reports(params_df, template_name, package, output_dir = ".")
+generate_reports(
+  params_df,
+  template_name,
+  template_package = "mariner",
+  output_dir = "."
+)
 }
 \arguments{
 \item{params_df}{A data frame where each row represents a report. Column
@@ -14,7 +19,9 @@ names must match the parameter names in the Rmd template's YAML header
 \item{template_name}{The name of the template directory inside
 `inst/rmarkdown/templates`.}
 
-\item{package}{The name of the package containing the template.}
+\item{template_package}{The name of the installed package where the template
+is located. **Defaults to "mariner"**, assuming the template is in the
+current package.}
 
 \item{output_dir}{The directory where the final rendered reports will be saved.}
 }
@@ -27,29 +34,20 @@ located within a package.
 }
 \examples{
 \dontrun{
-# This example assumes you have a package named 'myreporter' installed,
-# which contains an Rmd template named 'simple_report'.
+# --- Using a Template to Generate Reports ---
 
-# 1. Define the parameters for the reports you want to generate.
-report_params <- tidyr::expand_grid(
-  a = 1,
-  b = 1:2,
-  author = "Dr. Lastname"
-)
+# Define the parameters for the reports.
+report_params <- tidyr::expand_grid(a = 1, b = 1:2, author = "Dr. Lastname")
 
-# 2. Create a dedicated directory for the output.
-if (!dir.exists("reports")) dir.create("reports")
-
-# 3. Generate the reports from the template.
+# Generate reports using the template from the current "mariner" package.
+# Note: We don't have to specify `template_package` because it defaults to "mariner".
 generate_reports(
   params_df = report_params,
   template_name = "simple_report",
-  package = "myreporter",
-  output_dir = "reports"
+  output_dir = "temp_reports"
 )
-# This creates 'Report-1_1.pdf' and 'Report-1_2.pdf' in the 'reports/' folder.
 
-# 4. Clean up the created files and directory.
-unlink("reports", recursive = TRUE)
+# Clean up the created directory.
+unlink("temp_reports", recursive = TRUE)
 }
 }

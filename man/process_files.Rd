@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_files.R
 \name{process_files}
 \alias{process_files}
-\title{Bundle Multiple R Markdown Files Sequentially}
+\title{Bundle Multiple R Markdown Files in Parallel or Sequentially}
 \usage{
 process_files(input_files)
 }
@@ -15,23 +15,25 @@ Invisibly returns a character vector of paths to the successfully
   by an `NA` in the output vector.
 }
 \description{
-A wrapper around `bundle_rmd()` to process a list of R Markdown
-files sequentially.
+A wrapper around `process_file()` to process a list of R Markdown
+files. Execution is sequential by default but can be run in parallel by
+setting a `future` plan (e.g., `future::plan(future::multisession)`).
 }
 \examples{
 \dontrun{
-# Assumes the 'process_file' function exists and works.
-
-# 1. Create dummy Rmd files for demonstration.
+# 1. Create dummy Rmd files
 writeLines("---\ntitle: A\n---", "reportA.Rmd")
 writeLines("---\ntitle: B\n---", "reportB.Rmd")
-
-# 2. Process the batch of files sequentially.
 files_to_bundle <- c("reportA.Rmd", "reportB.Rmd")
-process_files(files_to_bundle)
-# This will create 'reportA.zip' and 'reportB.zip'.
 
-# 3. Clean up the created source and bundled files.
+# 2. Process sequentially (default)
+process_files(files_to_bundle)
+
+# 3. Process in parallel
+future::plan(future::multisession)
+process_files(files_to_bundle)
+
+# 4. Clean up
 unlink(c("reportA.Rmd", "reportB.Rmd", "reportA.zip", "reportB.zip"))
 }
 }
