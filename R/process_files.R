@@ -17,19 +17,25 @@
 #'
 #' @examples
 #' \dontrun{
-#' # 1. Create dummy Rmd files
+#' # --- Setup: Create dummy Rmd files ---
 #' writeLines("---\ntitle: A\n---", "reportA.Rmd")
 #' writeLines("---\ntitle: B\n---", "reportB.Rmd")
 #' files_to_bundle <- c("reportA.Rmd", "reportB.Rmd")
 #'
-#' # 2. Process sequentially (default)
+#' # --- Example 1: Process sequentially (the default) ---
 #' process_files(files_to_bundle)
 #'
-#' # 3. Process in parallel
-#' future::plan(future::multisession)
+#' # --- Example 2: Process in parallel safely ---
+#'
+#' # Capture the current plan and set the new parallel plan
+#' old_plan <- future::plan(future::multisession)
+#'
+#' on.exit(future::plan(old_plan), add = TRUE)
+#'
+#' # Run the parallel code
 #' process_files(files_to_bundle)
 #'
-#' # 4. Clean up
+#' # --- Cleanup ---
 #' unlink(c("reportA.Rmd", "reportB.Rmd", "reportA.zip", "reportB.zip"))
 #' }
 process_files <- function(input_files) {

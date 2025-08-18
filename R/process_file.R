@@ -18,6 +18,24 @@
 #' @importFrom utils zip
 #' @importFrom fs path_abs path_ext_set file_copy dir_create dir_ls dir_delete path_file
 #' @importFrom withr with_dir
+#' @examples
+#' \dontrun{
+#' # --- Setup: Create a dummy Rmd file ---
+#' writeLines(
+#'   c("---", "title: 'My Report'", "output: pdf_document", "---", "A simple report."),
+#'   "my_report.Rmd"
+#' )
+#'
+#' # --- Example 1: Bundle with a default output name ---
+#' # This will create 'my_report.zip' in the same directory.
+#' process_file("my_report.Rmd")
+#'
+#' # --- Example 2: Bundle with a custom output name ---
+#' process_file("my_report.Rmd", output_zip = "bundled_report.zip")
+#'
+#' # --- Cleanup ---
+#' unlink(c("my_report.Rmd", "my_report.zip", "bundled_report.zip"))
+#' }
 process_file <- \(input_file, output_zip = NULL) {
   # --- 1. Validate input and set up paths ---
   if (!file.exists(input_file)) {

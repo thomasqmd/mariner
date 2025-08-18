@@ -22,3 +22,22 @@ script, and all rendering outputs (e.g., `.pdf`, `.tex`, `_files` directory)
 into a single zip archive. This process occurs in an isolated, temporary
 directory to avoid cluttering the user's workspace.
 }
+\examples{
+\dontrun{
+# --- Setup: Create a dummy Rmd file ---
+writeLines(
+  c("---", "title: 'My Report'", "output: pdf_document", "---", "A simple report."),
+  "my_report.Rmd"
+)
+
+# --- Example 1: Bundle with a default output name ---
+# This will create 'my_report.zip' in the same directory.
+process_file("my_report.Rmd")
+
+# --- Example 2: Bundle with a custom output name ---
+process_file("my_report.Rmd", output_zip = "bundled_report.zip")
+
+# --- Cleanup ---
+unlink(c("my_report.Rmd", "my_report.zip", "bundled_report.zip"))
+}
+}
