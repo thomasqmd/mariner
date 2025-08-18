@@ -2,6 +2,7 @@ Package: mariner
 Type: Package
 Title: Streamline R Markdown Report Generation and Bundling for Dr. Seaman's Classes
 Version: 0.1.1
+Depends: R (>= 4.1.0)
 Authors@R: c(
     person(
       "Thomas", "Reinke",
