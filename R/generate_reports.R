@@ -1,81 +1,97 @@
-#' Generate Reports from a Package Template
+#' Create R Markdown Source Files from a Package Template
 #'
 #' @description
-#' Renders multiple PDF reports from a parameterized R Markdown template
-#' located within a package.
+#' Creates multiple R Markdown (.Rmd) source files from a parameterized
+#' template located within a package. These Rmd files can then be edited
+#' before being rendered or bundled.
 #'
-#' @param params_df A data frame where each row represents a report. Column
-#'   names must match the parameter names in the Rmd template's YAML header
-#'   (e.g., "a", "b", "author").
+#' @param params_df A data frame where each row represents a report to be
+#'   created. Column names must match the parameter names in the Rmd template's
+#'   YAML header (e.g., "a", "b", "author").
 #' @param template_name The name of the template directory inside
 #'   `inst/rmarkdown/templates`.
 #' @param template_package The name of the installed package where the template
-#'   is located. **Defaults to "mariner"**, assuming the template is in the
-#'   current package.
-#' @param output_dir The directory where the final rendered reports will be saved.
+#'   is located. **Defaults to "mariner"**.
+#' @param output_dir The directory where the final .Rmd files will be saved.
 #'
-#' @return Invisibly returns a character vector of the output file paths.
+#' @return Invisibly returns a character vector of the output file paths for
+#'   the newly created .Rmd files.
 #' @export
-#' @importFrom rmarkdown render
 #' @importFrom purrr pwalk
-#' @importFrom utils installed.packages
+#' @importFrom fs dir_create
+#'
 #' @examples
 #' \dontrun{
-#' # --- Using a Template to Generate Reports ---
+#' # --- Setup: Create a temporary directory for the Rmd files ---
+#' temp_dir <- tempfile("rmd-sources-")
+#' dir.create(temp_dir)
 #'
-#' # Define the parameters for the reports.
+#' # --- 1. Define the parameters for the reports ---
 #' report_params <- tidyr::expand_grid(a = 1, b = 1:2, author = "Dr. Lastname")
 #'
-#' # Generate reports using the template from the current "mariner" package.
-#' # Note: We don't have to specify `template_package` because it defaults to "mariner".
-#' generate_reports(
+#' # --- 2. Generate the .Rmd source files ---
+#' # This creates 'Report-1_1.Rmd' and 'Report-1_2.Rmd' in temp_dir.
+#' rmd_files <- generate_reports(
 #'   params_df = report_params,
 #'   template_name = "simple_report",
-#'   output_dir = "temp_reports"
+#'   output_dir = temp_dir
 #' )
 #'
-#' # Clean up the created directory.
-#' unlink("temp_reports", recursive = TRUE)
+#' # --- You can now inspect or edit the generated Rmd files ---
+#' list.files(temp_dir)
+#'
+#' # --- 3. Process the generated Rmd files into zip bundles ---
+#' # This is where the workflow connects to process_files().
+#' process_files(rmd_files)
+#'
+#' # --- View the final output ---
+#' # The directory now contains the Rmd files and their corresponding zip files.
+#' list.files(temp_dir)
+#'
+#' # --- Cleanup ---
+#' unlink(temp_dir, recursive = TRUE)
 #' }
 generate_reports <- function(params_df,
                              template_name,
                              template_package = "mariner",
                              output_dir = ".") {
-  # --- 1. Check if the source package is available ---
-  if (!template_package %in% c(.packages(), rownames(installed.packages()))) {
-    stop("Package '", template_package, "' is not loaded or installed.", call. = FALSE)
-  }
-
-  # --- 2. Find the template file path ---
+  # --- 1. Find the template file path ---
   template_path <- system.file(
     "rmarkdown", "templates", template_name, "skeleton", "skeleton.Rmd",
     package = template_package,
     mustWork = TRUE
   )
+  fs::dir_create(output_dir)
+  template_content <- readLines(template_path)
 
-  # --- 3. Define a helper function to render one report ---
-  render_one_report <- function(...) {
+  # --- 2. Define a helper function to create one Rmd file ---
+  create_one_rmd <- function(...) {
     current_params <- list(...)
-    output_filename <- paste0("Report-", current_params$a, "_", current_params$b, ".pdf")
-    rmarkdown::render(
-      input = template_path,
-      output_file = output_filename,
-      output_dir = output_dir,
-      params = current_params,
-      quiet = TRUE
+    output_filename <- file.path(output_dir, paste0("Report-", current_params$a, "_", current_params$b, ".Rmd"))
+
+    # Substitute parameter values in the template content
+    modified_content <- gsub("a: 1", paste("a:", current_params$a), template_content)
+    modified_content <- gsub("b: 1", paste("b:", current_params$b), modified_content)
+    modified_content <- gsub(
+      'author: "Default Author Name"',
+      paste0('author: "', current_params$author, '"'),
+      modified_content
     )
+
+    # Write the new Rmd file
+    writeLines(modified_content, output_filename)
   }
 
-  # --- 4. Iterate over the parameter data frame and render each report ---
-  message("Generating ", nrow(params_df), " reports from the '", template_package, "' package...")
-  purrr::pwalk(params_df, render_one_report)
+  # --- 3. Iterate over the parameter data frame and create each Rmd file ---
+  message("Generating ", nrow(params_df), " Rmd files...")
+  purrr::pwalk(params_df, create_one_rmd)
 
-  # --- 5. Return the expected output paths for confirmation ---
+  # --- 4. Return the expected output paths for confirmation ---
   output_paths <- file.path(
     output_dir,
-    paste0("Report-", params_df$a, "_", params_df$b, ".pdf")
+    paste0("Report-", params_df$a, "_", params_df$b, ".Rmd")
   )
 
-  message("Report generation complete.")
+  message("Rmd file generation complete.")
   invisible(output_paths)
 }

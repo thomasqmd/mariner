@@ -2,14 +2,10 @@
 #'
 #' @description
 #' Renders an R Markdown file and bundles the source `.Rmd`, the purled R
-#' script, and all rendering outputs (e.g., `.pdf`, `.tex`, `_files` directory)
-#' into a single zip archive. This process occurs in an isolated, temporary
-#' directory to avoid cluttering the user's workspace.
+#' script, and all rendering outputs into a single zip archive.
 #'
 #' @param input_file Path to the input `.Rmd` file.
-#' @param output_zip Path for the output `.zip` file. If `NULL` (the default),
-#'   the zip file is created in the same directory as the input file with the
-#'   same base name.
+#' @param output_zip Path for the output `.zip` file.
 #'
 #' @return Invisibly returns the path to the created zip file.
 #' @export
@@ -20,46 +16,48 @@
 #' @importFrom withr with_dir
 #' @examples
 #' \dontrun{
-#' # --- Setup: Create a dummy Rmd file ---
-#' writeLines(
-#'   c("---", "title: 'My Report'", "output: pdf_document", "---", "A simple report."),
-#'   "my_report.Rmd"
+#' # --- Setup: Create a temporary directory and generate one Rmd file ---
+#' temp_dir <- tempfile("example-")
+#' dir.create(temp_dir)
+#'
+#' report_params <- data.frame(a = 1, b = 1, author = "Dr. Lastname")
+#'
+#' # `generate_reports` returns the path to the created Rmd file.
+#' rmd_file_path <- generate_reports(
+#'   params_df = report_params,
+#'   template_name = "simple_report",
+#'   template_package = "mariner",
+#'   output_dir = temp_dir
 #' )
 #'
-#' # --- Example 1: Bundle with a default output name ---
-#' # This will create 'my_report.zip' in the same directory.
-#' process_file("my_report.Rmd")
+#' # --- Example: Bundle the newly created Rmd file ---
+#' # This will create 'Report-1_1.zip' in the temp directory.
+#' process_file(rmd_file_path)
 #'
-#' # --- Example 2: Bundle with a custom output name ---
-#' process_file("my_report.Rmd", output_zip = "bundled_report.zip")
+#' # --- View the created files ---
+#' # The directory contains the source .Rmd and the bundled .zip.
+#' list.files(temp_dir)
 #'
 #' # --- Cleanup ---
-#' unlink(c("my_report.Rmd", "my_report.zip", "bundled_report.zip"))
+#' unlink(temp_dir, recursive = TRUE)
 #' }
 process_file <- \(input_file, output_zip = NULL) {
-  # --- 1. Validate input and set up paths ---
+  # Function body remains the same
   if (!file.exists(input_file)) {
     stop("Input file does not exist: ", input_file, call. = FALSE)
   }
-
   input_path <- fs::path_abs(input_file)
   output_path <- if (is.null(output_zip)) {
     fs::path_ext_set(input_path, ".zip")
   } else {
     fs::path_abs(output_zip)
   }
-
-  # --- 2. Create a self-cleaning temporary directory ---
   temp_dir <- tempfile(pattern = "rmd-bundle-")
   fs::dir_create(temp_dir)
   on.exit(fs::dir_delete(temp_dir), add = TRUE)
-
-  # --- 3. Process inside the temp directory for isolation ---
   fs::file_copy(input_path, temp_dir)
-
   withr::with_dir(temp_dir, {
     rmd_file_name <- fs::path_file(input_path)
-
     tryCatch(
       {
         knitr::purl(rmd_file_name)
@@ -69,12 +67,9 @@ process_file <- \(input_file, output_zip = NULL) {
         stop("Failed during Rmd processing: ", e$message, call. = FALSE)
       }
     )
-
     files_to_zip <- fs::dir_ls()
     utils::zip(zipfile = output_path, files = files_to_zip)
   })
-
-  # --- 4. Return the path to the created zip file ---
   message("Successfully created bundle: ", fs::path_file(output_path))
   invisible(output_path)
 }

@@ -1,7 +1,7 @@
 # tests/testthat/test-generate_reports.R
 
-# Test Case 1: Successful report generation with valid inputs
-test_that("generate_reports creates valid PDF files", {
+# Test Case 1: Successful Rmd file generation with correct parameter substitution
+test_that("generate_reports creates valid Rmd files with correct parameters", {
   # --- 1. Setup ---
   temp_output_dir <- tempfile(pattern = "test-reports-")
   dir.create(temp_output_dir)
@@ -24,21 +24,28 @@ test_that("generate_reports creates valid PDF files", {
   })
 
   # --- 3. Assertions ---
-  # Check for correct file paths and names
-  expected_filenames <- paste0("Report-", report_params$a, "_", report_params$b, ".pdf")
+  # Check for correct file paths and names (now .Rmd)
+  expected_filenames <- paste0("Report-", report_params$a, "_", report_params$b, ".Rmd")
   expect_equal(length(output_files), nrow(report_params))
   expect_true(all(file.exists(output_files)))
   expect_equal(basename(output_files), expected_filenames)
 
-  # IMPROVEMENT 1: Check file integrity
-  # Verify that the generated files are not empty. This is a simple but
-  # effective way to catch rendering failures that produce a zero-byte file.
+  # Check that files are not empty
   file_info <- file.info(output_files)
   expect_true(all(file_info$size > 0))
+
+  # NEW: Check that parameters were correctly substituted into the Rmd file content
+  first_file_content <- readLines(output_files[1])
+  expect_true(any(grepl('author: "Test Author"', first_file_content, fixed = TRUE)))
+  expect_true(any(grepl("a: 1", first_file_content, fixed = TRUE)))
+  expect_true(any(grepl("b: 1", first_file_content, fixed = TRUE)))
+
+  second_file_content <- readLines(output_files[2])
+  expect_true(any(grepl("b: 2", second_file_content, fixed = TRUE)))
 })
 
 # ---
-# Test Case 2: Graceful failure with invalid inputs
+# Test Case 2: Graceful failure with invalid inputs (remains valid)
 test_that("generate_reports errors correctly with bad inputs", {
   # --- 1. Setup ---
   temp_output_dir <- tempfile(pattern = "bad-inputs-")
@@ -48,10 +55,6 @@ test_that("generate_reports errors correctly with bad inputs", {
   valid_params <- data.frame(a = 1, b = 1, author = "Test")
 
   # --- 2. Assertions for expected errors ---
-  # IMPROVEMENT 2: Check error handling
-  # The function should stop with an informative error if the template
-  # or package cannot be found. testthat::expect_error() checks this.
-
   # Test for a non-existent template name
   expect_error(
     generate_reports(
