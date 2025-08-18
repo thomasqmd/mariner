@@ -4,41 +4,46 @@
 \alias{process_files}
 \title{Bundle Multiple R Markdown Files Sequentially or in Parallel}
 \usage{
-process_files(input_files)
+process_files(input_files, output_dir = NULL)
 }
 \arguments{
 \item{input_files}{A character vector of paths to the `.Rmd` files.}
+
+\item{output_dir}{An optional path to a directory where the output zip
+archives will be saved. If `NULL` (the default), each zip is created in
+the same directory as its corresponding input `.Rmd` file.}
 }
 \value{
 Invisibly returns a character vector of paths to the successfully
-  created zip archives.
+  created zip archives. Any file that fails to process will be represented
+  by an `NA` in the output vector.
 }
 \description{
-A wrapper around `process_file()` to process a list of R Markdown files,
-with support for parallel execution via the `future` package.
+A wrapper around `process_file()` to process a list of R Markdown
+files. Execution is sequential by default but can be run in parallel by
+setting a `future` plan (e.g., `future::plan(future::multisession)`).
 }
 \examples{
 \dontrun{
-# --- Setup: Create a temporary directory and generate multiple Rmd files ---
+# --- Setup: Create a temporary directory and generate Rmd files ---
 temp_dir <- tempfile("example-")
 dir.create(temp_dir)
 
-report_params <- tidyr::expand_grid(a = 1, b = 1:3, author = "Dr. Lastname")
-
-# `generate_reports` returns a vector of paths to the created Rmd files.
-rmd_files_to_bundle <- generate_reports(
+report_params <- tidyr::expand_grid(a = 1, b = 1:2, author = "Dr. Lastname")
+rmd_files <- generate_reports(
   params_df = report_params,
   template_name = "simple_report",
-  template_package = "mariner",
   output_dir = temp_dir
 )
 
-# --- Example: Process the generated Rmd files into zip bundles ---
-process_files(rmd_files_to_bundle)
-
-# --- View the created files ---
-# The directory contains the source Rmd files and their corresponding zips.
+# --- Example 1: Default behavior (zips next to Rmds) ---
+process_files(rmd_files)
 list.files(temp_dir)
+
+# --- Example 2: Specifying an output directory ---
+zip_output_dir <- file.path(temp_dir, "zips")
+process_files(rmd_files, output_dir = zip_output_dir)
+list.files(zip_output_dir)
 
 # --- Cleanup ---
 unlink(temp_dir, recursive = TRUE)
