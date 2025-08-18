@@ -1,66 +1,62 @@
-process_file <- \(file, type = ".Rmd") {
-  # library(knitr)
-  # library(rmarkdown)
-
-  # file_name <- rstudioapi::getSourceEditorContext()$path |>
-  #   basename()
-
-  # .Rmd -> .R
-  knitr::purl(paste0(file, type))
-  # .Rmd -> .pdf & .tex
-  rmarkdown::render(paste0(file, type))
-
-  zip(
-    zipfile = file,
-    files = c(
-      paste0(file, "_files"),
-      paste0(file, ".R"),
-      paste0(file, ".tex"),
-      paste0(file, ".pdf")
-    )
-  )
-}
-
-# process("Reports")
-#
-# for(i in 1:4){
-#   process(paste0("Report-1_", i))
-# }
-
-process_files <- \(files, type = ".Rmd") {
-  # files must all be of the same type
-
-  for (f in files) {
-    process_file(f, type)
+#' Bundle an R Markdown File and its Outputs
+#'
+#' @description
+#' Renders an R Markdown file and bundles the source `.Rmd`, the purled R
+#' script, and all rendering outputs (e.g., `.pdf`, `.tex`, `_files` directory)
+#' into a single zip archive. This process occurs in an isolated, temporary
+#' directory to avoid cluttering the user's workspace.
+#'
+#' @param input_file Path to the input `.Rmd` file.
+#' @param output_zip Path for the output `.zip` file. If `NULL` (the default),
+#'   the zip file is created in the same directory as the input file with the
+#'   same base name.
+#'
+#' @return Invisibly returns the path to the created zip file.
+#' @export
+#' @importFrom knitr purl
+#' @importFrom rmarkdown render
+#' @importFrom utils zip
+#' @importFrom fs path_abs path_ext_set file_copy dir_create dir_ls dir_delete path_file
+#' @importFrom withr with_dir
+process_file <- \(input_file, output_zip = NULL) {
+  # --- 1. Validate input and set up paths ---
+  if (!file.exists(input_file)) {
+    stop("Input file does not exist: ", input_file, call. = FALSE)
   }
+
+  input_path <- fs::path_abs(input_file)
+  output_path <- if (is.null(output_zip)) {
+    fs::path_ext_set(input_path, ".zip")
+  } else {
+    fs::path_abs(output_zip)
+  }
+
+  # --- 2. Create a self-cleaning temporary directory ---
+  temp_dir <- tempfile(pattern = "rmd-bundle-")
+  fs::dir_create(temp_dir)
+  on.exit(fs::dir_delete(temp_dir), add = TRUE)
+
+  # --- 3. Process inside the temp directory for isolation ---
+  fs::file_copy(input_path, temp_dir)
+
+  withr::with_dir(temp_dir, {
+    rmd_file_name <- fs::path_file(input_path)
+
+    tryCatch(
+      {
+        knitr::purl(rmd_file_name)
+        rmarkdown::render(rmd_file_name, quiet = TRUE, clean = FALSE)
+      },
+      error = \(e) {
+        stop("Failed during Rmd processing: ", e$message, call. = FALSE)
+      }
+    )
+
+    files_to_zip <- fs::dir_ls()
+    utils::zip(zipfile = output_path, files = files_to_zip)
+  })
+
+  # --- 4. Return the path to the created zip file ---
+  message("Successfully created bundle: ", fs::path_file(output_path))
+  invisible(output_path)
 }
-
-
-# ch1_lis <- c("Report-1_3")
-# process_files(ch1_lis)
-
-# ch1_lis2 <- c(
-#   "Report-1_6", "Report-1_7", "Report-1_8", "Report-1_9", "Report-1_10",
-#   "Report-1_11", "Report-1_12"
-# )
-# process_files(ch1_lis2)
-# process_file("Report-1_7")
-#
-# reports for ch 2: 4, 5, 7, 11, 13, 15
-# ch2_lis <- c("Report-2_4", "Report-2_5", "Report-2_7", "Report-2_11", "Report-2_13", "Report-2_15")
-# process_files(ch2_lis)
-#
-# reports for ch3: 1, 3, 4
-# ch3_lis <- c("Report-3_1", "Report-3_3", "Report-3_4")
-# process_files(ch3_lis)
-#
-# reports for ch3: 6, 7, 9, 11, 12
-# reports for ch4: 3, 4, 5, 7
-ch34_lis <- c(
-  "Report-3_6", "Report-3_7", "Report-3_9", "Report-3_11", "Report-3_12",
-  "Report-4_3", "Report-4_4", "Report-4_5", "Report-4_7"
-)
-# process_files(ch34_lis)
-# reports for ch6: 2, 3
-ch6_lis <- c("Report-6_2", "Report-6_3")
-# process_files(ch6_lis)

@@ -1,0 +1,51 @@
+---
+title: "`r paste('Report', params$a, params$b, sep = '.')`"
+output: 
+  pdf_document: 
+    keep_tex: true
+date: "`r Sys.Date()`"
+author: "`r params$author`"
+params:
+  a: 1
+  b: 1
+  author: "Default Author Name"
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, cache = TRUE)
+
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 100), tidy = FALSE, fig.align = "center", echo = FALSE, cache = TRUE)
+
+library(tidyverse)
+
+library(knitr)
+
+library(patchwork)
+
+conflicted::conflict_prefer("filter", "dplyr")
+
+conflicted::conflict_prefer("select", "dplyr")
+
+theme_set(theme_minimal())
+
+```
+
+
+# a.b
+
+
+
+\newpage
+
+
+# Appendix
+
+
+```{r ref.label=knitr::all_labels()}
+
+#| echo: true
+
+#| eval: false
+
+``` 
