@@ -2,7 +2,7 @@
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-The `mariner` package simplifies and automates the process of creating and packaging R Markdown documents. It provides a cohesive workflow to first generate multiple R Markdown source files from a single parameterized template, and then bundle the source files and all rendered outputs into easily shareable zip archives.
+The `mariner` package simplifies and automates the process of creating and zipping reports for Dr. Seaman's Class. It provides a cohesive workflow to first generate multiple R Markdown source files from a single parameterized template, and then zips the source files and all rendered outputs into easily shareable zip archives.
 
 ## Installation
 
