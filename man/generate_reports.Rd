@@ -20,7 +20,7 @@ YAML header (e.g., "a", "b", "author").}
 `inst/rmarkdown/templates`.}
 
 \item{template_package}{The name of the installed package where the template
-is located. **Defaults to "mariner"**.}
+is located. \strong{Defaults to "mariner"}.}
 
 \item{output_dir}{The directory where the final .Rmd files will be saved.}
 }

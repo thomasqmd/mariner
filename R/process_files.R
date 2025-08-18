@@ -1,4 +1,4 @@
-#' Bundle Multiple R Markdown Files in Parallel or Sequentially
+#' Bundle Multiple R Markdown Files Sequentially or in Parallel
 #'
 #' @description
 #' A wrapper around `process_file()` to process a list of R Markdown files,

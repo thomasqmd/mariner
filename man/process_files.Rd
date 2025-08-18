@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_files.R
 \name{process_files}
 \alias{process_files}
-\title{Bundle Multiple R Markdown Files in Parallel or Sequentially}
+\title{Bundle Multiple R Markdown Files Sequentially or in Parallel}
 \usage{
 process_files(input_files)
 }

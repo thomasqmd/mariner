@@ -11,7 +11,7 @@
 #' @param template_name The name of the template directory inside
 #'   `inst/rmarkdown/templates`.
 #' @param template_package The name of the installed package where the template
-#'   is located. **Defaults to "mariner"**.
+#'   is located. \strong{Defaults to "mariner"}.
 #' @param output_dir The directory where the final .Rmd files will be saved.
 #'
 #' @return Invisibly returns a character vector of the output file paths for
