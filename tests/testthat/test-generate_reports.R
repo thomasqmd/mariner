@@ -157,3 +157,30 @@ test_that("generate_reports uses template defaults for missing columns", {
 
   expect_true(any(grepl('author: "Default Author Name"', file_content, fixed = TRUE)))
 })
+
+# ---
+# Test Case 6: Correctly substitutes author when provided in params_df
+test_that("generate_reports correctly substitutes the author", {
+  temp_dir <- tempfile("author-test-")
+  dir.create(temp_dir)
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+
+  report_params <- data.frame(
+    a = 1,
+    b = 1,
+    author = "New Author Name"
+  )
+
+  suppressMessages({
+    output_files <- generate_reports(
+      params_df = report_params,
+      template_name = "simple_report",
+      output_dir = temp_dir
+    )
+  })
+
+  expect_true(file.exists(output_files[1]))
+  file_content <- readLines(output_files[1])
+  expect_true(any(grepl('author: "New Author Name"', file_content, fixed = TRUE)))
+  expect_false(any(grepl('author: "Default Author Name"', file_content, fixed = TRUE)))
+})

@@ -148,7 +148,7 @@ generate_reports <- function(params_df,
           yaml_header[param_lines_indices]
         )
       }
-      modified_content[yaml_header_indices]
+      modified_content[yaml_header_indices] <- yaml_header
     }
 
     writeLines(modified_content, output_filename)
