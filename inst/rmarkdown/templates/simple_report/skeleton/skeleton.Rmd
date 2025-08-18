@@ -3,8 +3,9 @@ title: "`r paste('Report', params$a, params$b, sep = '.')`"
 output: 
   pdf_document: 
     keep_tex: true
-date: today
+date: "`r Sys.Date()`"
 date-format: "MMMM D, YYYY"
+format: "
 author: "`r params$author`"
 params:
   a: 1
@@ -13,27 +14,17 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, cache = TRUE)
-
 knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 100), tidy = FALSE, fig.align = "center", echo = FALSE, cache = TRUE)
-
 library(tidyverse)
-
 library(knitr)
-
 library(patchwork)
-
 conflicted::conflict_prefer("filter", "dplyr")
-
 conflicted::conflict_prefer("select", "dplyr")
-
 theme_set(theme_minimal())
-
 ```
 
-
-# a.b
+# `r paste(params$a, params$b, sep = '.')`
 
 
 
@@ -44,9 +35,6 @@ theme_set(theme_minimal())
 
 
 ```{r ref.label=knitr::all_labels()}
-
 #| echo: true
-
 #| eval: false
-
 ``` 
