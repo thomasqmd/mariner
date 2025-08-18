@@ -1,6 +1,5 @@
 # mariner
 
-[![R-CMD-check](https://github.com/thomasqmd/mariner/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thomasqmd/mariner/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 The `mariner` package simplifies and automates the process of creating and packaging R Markdown documents. It provides a cohesive workflow to first generate multiple R Markdown source files from a single parameterized template, and then bundle the source files and all rendered outputs into easily shareable zip archives.
