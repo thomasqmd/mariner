@@ -2,13 +2,14 @@
 % Please edit documentation in R/generate_reports.R
 \name{generate_reports}
 \alias{generate_reports}
-\title{Create R Markdown Source Files from a Package Template}
+\title{Create R Markdown Source Files from a Template}
 \usage{
 generate_reports(
   params_df,
   template_name = "simple_report",
   template_package = "mariner",
-  output_dir = "."
+  output_dir = ".",
+  template_path = NULL
 )
 }
 \arguments{
@@ -17,12 +18,15 @@ created. Column names must match the parameter names in the Rmd template's
 YAML header (e.g., "a", "b", "author").}
 
 \item{template_name}{The name of the template directory inside
-`inst/rmarkdown/templates`.}
+`inst/rmarkdown/templates`. This is ignored if `template_path` is provided.}
 
 \item{template_package}{The name of the installed package where the template
-is located. \strong{Defaults to "mariner"}.}
+is located. Defaults to "mariner".}
 
 \item{output_dir}{The directory where the final .Rmd files will be saved.}
+
+\item{template_path}{An optional path to a single `.Rmd` template file. If
+provided, this template will be used instead of one from a package.}
 }
 \value{
 Invisibly returns a character vector of the output file paths for
@@ -30,38 +34,63 @@ Invisibly returns a character vector of the output file paths for
 }
 \description{
 Creates multiple R Markdown (.Rmd) source files from a parameterized
-template located within a package. These Rmd files can then be edited
-before being rendered or bundled.
+template. The template can be located within a package or provided as a
+direct file path.
 }
 \examples{
 \dontrun{
-# --- Setup: Create a temporary directory for the Rmd files ---
-temp_dir <- tempfile("rmd-sources-")
-dir.create(temp_dir)
+# --- Example 1: Using the default package template ---
+temp_dir_pkg <- tempfile("pkg-example-")
+dir.create(temp_dir_pkg)
 
-# --- 1. Define the parameters for the reports ---
-report_params <- tidyr::expand_grid(a = 1, b = 1:2, author = "Dr. Lastname")
+report_params <- tidyr::expand_grid(
+  a = 1,
+  b = 1:2,
+  author = "Dr. Lastname"
+)
 
-# --- 2. Generate the .Rmd source files ---
-# This creates 'Report-1_1.Rmd' and 'Report-1_2.Rmd' in temp_dir.
 rmd_files <- generate_reports(
   params_df = report_params,
   template_name = "simple_report",
-  output_dir = temp_dir
+  output_dir = temp_dir_pkg
 )
 
-# --- You can now inspect or edit the generated Rmd files ---
-list.files(temp_dir)
+list.files(temp_dir_pkg)
 
-# --- 3. Process the generated Rmd files into zip bundles ---
-# This is where the workflow connects to process_files().
-process_files(rmd_files)
+# --- Example 2: Using an external template file ---
+temp_dir_ext <- tempfile("ext-example-")
+dir.create(temp_dir_ext)
 
-# --- View the final output ---
-# The directory now contains the Rmd files and their corresponding zip files.
-list.files(temp_dir)
+# Create a custom template on the fly
+custom_template_path <- file.path(temp_dir_ext, "custom.Rmd")
+writeLines(
+  c(
+    "---",
+    "title: Custom Report",
+    "params:",
+    "  region: Midwest",
+    "---",
+    "This report is for the `r params$region` region."
+  ),
+  custom_template_path
+)
+
+custom_params <- data.frame(
+  a = 1,
+  b = 1,
+  region = c("East", "West")
+)
+
+generate_reports(
+  params_df = custom_params,
+  template_path = custom_template_path,
+  output_dir = temp_dir_ext
+)
+
+list.files(temp_dir_ext)
 
 # --- Cleanup ---
-unlink(temp_dir, recursive = TRUE)
+unlink(temp_dir_pkg, recursive = TRUE)
+unlink(temp_dir_ext, recursive = TRUE)
 }
 }
