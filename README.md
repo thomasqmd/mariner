@@ -18,6 +18,10 @@ pak::pak("thomasqmd/mariner")
 
 The typical workflow involves two main steps: using `generate_reports()` to create parameterized `.Rmd` files, and then using `process_files()` to render and bundle them.
 
+### Generate Reports
+
+Use `generate_reports` to create multiple report files base on a template.
+
 ```r
 library(mariner)
 library(tidyr)
@@ -43,6 +47,8 @@ rmd_files <- generate_reports(
 #> Generating 2 Rmd files...
 #> Rmd file generation complete.
 ```
+
+### Proccess Reports
 
 Then you will have two Rmd files in your temporary directory, named `Report-1_1.Rmd` and `Report-1_2.Rmd`, each containing the parameters specified. After editing the reports as needed, you can proceed to render and zip them with `process_file` or `process_files` as shown below.
 
