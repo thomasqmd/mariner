@@ -3,7 +3,8 @@ title: "`r paste('Report', params$a, params$b, sep = '.')`"
 output: 
   pdf_document: 
     keep_tex: true
-date: "`r Sys.Date()`"
+date: today
+date-format: "MMMM D, YYYY"
 author: "`r params$author`"
 params:
   a: 1
