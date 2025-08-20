@@ -35,7 +35,7 @@ dir.create(temp_dir)
 report_params <- expand_grid(
   a = 1, 
   b = 1:2, 
-  author = "Dr. Lastname"
+  author = "Firstname Lastname"
 )
 
 # --- 3. Generate the .Rmd source files ---

@@ -25,7 +25,7 @@
 #' temp_dir <- tempfile("example-")
 #' dir.create(temp_dir)
 #'
-#' report_params <- tidyr::expand_grid(a = 1, b = 1:2, author = "Dr. Lastname")
+#' report_params <- tidyr::expand_grid(a = 1, b = 1:2, author = "Firstname Lastname")
 #' rmd_files <- generate_reports(
 #'   params_df = report_params,
 #'   template_name = "simple_report",

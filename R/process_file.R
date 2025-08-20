@@ -20,7 +20,7 @@
 #' temp_dir <- tempfile("example-")
 #' dir.create(temp_dir)
 #'
-#' report_params <- data.frame(a = 1, b = 1, author = "Dr. Lastname")
+#' report_params <- data.frame(a = 1, b = 1, author = "Firstname Lastname")
 #'
 #' # `generate_reports` returns the path to the created Rmd file.
 #' rmd_file_path <- generate_reports(
