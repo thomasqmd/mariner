@@ -33,5 +33,6 @@ Suggests:
     testthat (>= 3.0.0),
     tidyr,
     tidyverse,
-    conflicted
+    conflicted,
+    patchwork
 Config/testthat/edition: 3
