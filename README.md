@@ -33,8 +33,8 @@ dir.create(temp_dir)
 # --- 2. Define the parameters for each report ---
 # Each row in the data frame corresponds to one report.
 report_params <- expand_grid(
-  a = 1, 
-  b = 1:2, 
+  chapter = 1, 
+  problem_numbers = 1:2, 
   author = "Firstname Lastname"
 )
 

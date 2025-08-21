@@ -24,7 +24,8 @@ test_that("generate_reports creates valid Rmd files with correct parameters", {
   })
 
   # --- 3. Assertions ---
-  expected_filenames <- paste0("Report-", report_params$a, "_", report_params$b, ".Rmd")
+  # Corrected the expected filenames to use the new variables.
+  expected_filenames <- paste0("Report-", report_params$chapter, "_", report_params$problem_numbers, ".Rmd")
   expect_equal(length(output_files), nrow(report_params))
   expect_true(all(file.exists(output_files)))
   expect_equal(basename(output_files), expected_filenames)

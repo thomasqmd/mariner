@@ -161,7 +161,7 @@ generate_reports <- function(params_df,
   # --- 4. Return the expected output paths ---
   output_paths <- file.path(
     output_dir,
-    paste0("Report-", params_df$a, "_", params_df$b, ".Rmd")
+    paste0("Report-", params_df$chapter, "_", params_df$problem_numbers, ".Rmd")
   )
 
   message("Rmd file generation complete.")
