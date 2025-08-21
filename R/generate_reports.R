@@ -29,9 +29,9 @@
 #' dir.create(temp_dir_pkg)
 #'
 #' report_params <- tidyr::expand_grid(
-#'   a = 1,
-#'   b = 1:2,
-#'   author = "Dr. Lastname"
+#'   chapter = 1,
+#'   problem_numbers = 1:2,
+#'   author = "Firstname Lastname"
 #' )
 #'
 #' rmd_files <- generate_reports(
@@ -61,8 +61,8 @@
 #' )
 #'
 #' custom_params <- data.frame(
-#'   a = 1,
-#'   b = 1,
+#'   chapter = 1,
+#'   problem_numbers = 1,
 #'   region = c("East", "West")
 #' )
 #'
@@ -105,7 +105,7 @@ generate_reports <- function(params_df,
     current_params <- list(...)
     output_filename <- file.path(
       output_dir,
-      paste0("Report-", current_params$a, "_", current_params$b, ".Rmd")
+      paste0("Report-", current_params$chapter, "_", current_params$problem_numbers, ".Rmd")
     )
 
     modified_content <- template_content
@@ -161,7 +161,7 @@ generate_reports <- function(params_df,
   # --- 4. Return the expected output paths ---
   output_paths <- file.path(
     output_dir,
-    paste0("Report-", params_df$a, "_", params_df$b, ".Rmd")
+    paste0("Report-", params_df$chapter, "_", params_df$problem_numbers, ".Rmd")
   )
 
   message("Rmd file generation complete.")

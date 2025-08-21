@@ -9,8 +9,9 @@ test_that("process_files places zips in the specified output_dir", {
   on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
 
   # Create Rmd files in the base temp directory
+  # Corrected the data frame to use the new variable names
   rmd_files <- generate_reports(
-    params_df = data.frame(a = 1, b = 1:2, author = "Test Author"),
+    params_df = data.frame(chapter = 1, problem_numbers = 1:2, author = "Test Author"),
     template_name = "simple_report",
     output_dir = temp_dir
   )

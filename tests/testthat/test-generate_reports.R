@@ -8,8 +8,8 @@ test_that("generate_reports creates valid Rmd files with correct parameters", {
   on.exit(unlink(temp_output_dir, recursive = TRUE), add = TRUE)
 
   report_params <- data.frame(
-    a = 1,
-    b = 1:2,
+    chapter = 1,
+    problem_numbers = 1:2,
     author = "Test Author"
   )
 
@@ -24,15 +24,16 @@ test_that("generate_reports creates valid Rmd files with correct parameters", {
   })
 
   # --- 3. Assertions ---
-  expected_filenames <- paste0("Report-", report_params$a, "_", report_params$b, ".Rmd")
+  # Corrected the expected filenames to use the new variables.
+  expected_filenames <- paste0("Report-", report_params$chapter, "_", report_params$problem_numbers, ".Rmd")
   expect_equal(length(output_files), nrow(report_params))
   expect_true(all(file.exists(output_files)))
   expect_equal(basename(output_files), expected_filenames)
 
   first_file_content <- readLines(output_files[1])
   expect_true(any(grepl('author: "Test Author"', first_file_content, fixed = TRUE)))
-  expect_true(any(grepl("a: 1", first_file_content, fixed = TRUE)))
-  expect_true(any(grepl("b: 1", first_file_content, fixed = TRUE)))
+  expect_true(any(grepl("chapter: 1", first_file_content, fixed = TRUE)))
+  expect_true(any(grepl("problem_numbers: 1", first_file_content, fixed = TRUE)))
 })
 
 # ---
@@ -42,7 +43,7 @@ test_that("generate_reports errors correctly with bad inputs", {
   dir.create(temp_output_dir)
   on.exit(unlink(temp_output_dir, recursive = TRUE), add = TRUE)
 
-  valid_params <- data.frame(a = 1, b = 1, author = "Test")
+  valid_params <- data.frame(chapter = 1, problem_numbers = 1, author = "Test")
 
   expect_error(
     generate_reports(
@@ -83,8 +84,8 @@ test_that("generate_reports works with a valid template_path", {
   )
 
   report_params <- data.frame(
-    a = 1,
-    b = 1,
+    chapter = 1,
+    problem_numbers = 1,
     region = "West",
     author = "Custom Author"
   )
@@ -114,8 +115,8 @@ test_that("generate_reports ignores extra columns in params_df", {
   on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
 
   report_params <- data.frame(
-    a = 1,
-    b = 1,
+    chapter = 1,
+    problem_numbers = 1,
     author = "Test Author",
     extra_col = "should be ignored"
   )
@@ -139,7 +140,7 @@ test_that("generate_reports uses template defaults for missing columns", {
   dir.create(temp_dir)
   on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
 
-  report_params <- data.frame(a = 1, b = 1)
+  report_params <- data.frame(chapter = 1, problem_numbers = 1)
 
   suppressMessages({
     output_files <- generate_reports(
@@ -152,8 +153,8 @@ test_that("generate_reports uses template defaults for missing columns", {
   expect_true(file.exists(output_files[1]))
   file_content <- readLines(output_files[1])
 
-  expect_true(any(grepl("a: 1", file_content, fixed = TRUE)))
-  expect_true(any(grepl("b: 1", file_content, fixed = TRUE)))
+  expect_true(any(grepl("chapter: 1", file_content, fixed = TRUE)))
+  expect_true(any(grepl("problem_numbers: 1", file_content, fixed = TRUE)))
 
   expect_true(any(grepl('author: "Default Author Name"', file_content, fixed = TRUE)))
 })
@@ -166,8 +167,8 @@ test_that("generate_reports correctly substitutes the author", {
   on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
 
   report_params <- data.frame(
-    a = 1,
-    b = 1,
+    chapter = 1,
+    problem_numbers = 1,
     author = "New Author Name"
   )
 

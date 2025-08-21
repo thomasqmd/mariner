@@ -7,8 +7,9 @@ test_that("process_file correctly bundles a valid Rmd from generate_reports", {
   dir.create(temp_dir)
   on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
 
+  # Corrected the data frame to use the new variable names
   rmd_file_path <- generate_reports(
-    params_df = data.frame(a = 1, b = 1, author = "Test Author"),
+    params_df = data.frame(chapter = 1, problem_numbers = 1, author = "Test Author"),
     template_name = "simple_report",
     template_package = "mariner",
     output_dir = temp_dir
