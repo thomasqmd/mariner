@@ -44,9 +44,9 @@ temp_dir_pkg <- tempfile("pkg-example-")
 dir.create(temp_dir_pkg)
 
 report_params <- tidyr::expand_grid(
-  a = 1,
-  b = 1:2,
-  author = "Dr. Lastname"
+  chapter = 1,
+  problem_numbers = 1:2,
+  author = "Firstname Lastname"
 )
 
 rmd_files <- generate_reports(
@@ -76,8 +76,8 @@ writeLines(
 )
 
 custom_params <- data.frame(
-  a = 1,
-  b = 1,
+  chapter = 1,
+  problem_numbers = 1,
   region = c("East", "West")
 )
 
