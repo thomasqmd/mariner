@@ -1,14 +1,14 @@
 ---
 title: "`r paste('Report', params$chapter, params$problem_numbers, sep = '.')`"
-output: 
-  pdf_document: 
-    keep_tex: true
-date: "`r Sys.Date()`"
 author: "`r params$author`"
+date: "`r Sys.Date()`"
 params:
   chapter: 1
   problem_numbers: 1
   author: "Default Author Name"
+format:
+  pdf:
+    keep-tex: true
 ---
 
 ```{r setup, include=FALSE}
@@ -23,9 +23,6 @@ theme_set(theme_minimal())
 ```
 
 # `r paste(params$chapter, params$problem_numbers, sep = '.')`
-
-
-
 
 \newpage
 
