@@ -40,10 +40,23 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
+  <a href="articles/get-started.html">Get Started</a>
+</li>
+<li>
   <a href="reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="news/index.html">Changelog</a>
+</li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/thomasqmd/mariner" class="external-link">
+    <span class="fa fa-github"></span>
+
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -59,7 +72,7 @@
 <div class="page-header"><h1 id="mariner">mariner<a class="anchor" aria-label="anchor" href="#mariner"></a>
 </h1></div>
 <p><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/thomasqmd/mariner/actions/workflows/r.yml" class="external-link"><img src="https://github.com/thomasqmd/mariner/actions/workflows/r.yml/badge.svg" alt="R-CMD-check"></a> <a href="https://codecov.io/github/thomasqmd/mariner" class="external-link"><img src="https://codecov.io/github/thomasqmd/mariner/graph/badge.svg?token=A4PDZWC3IL" alt="codecov"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
-<p>The <strong>mariner</strong> package simplifies and automates the process of creating and zipping reports for Dr. Seaman’s Class. It provides a cohesive workflow to first generate multiple Quarto or R Markdown source files from a single parameterized template, and then zips the source files and all rendered outputs into easily shareable zip archives. See the reference website <a href="https://thomasqmd.github.io/mariner/" class="external-link">here</a>.</p>
+<p>The <strong>mariner</strong> package simplifies and automates the process of creating and zipping reports for Dr. Seaman’s Class. It provides a cohesive workflow to first generate multiple Quarto or R Markdown source files from a single parameterized template, and then zips the source files and all rendered outputs into easily shareable zip archives. See the reference website <a href="https://thomasqmd.github.io/mariner/">here</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -98,7 +111,7 @@
 <span>  template_name <span class="op">=</span> <span class="st">"simple_report"</span>,</span>
 <span>  output_dir <span class="op">=</span> <span class="va">temp_dir</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating 2 qmd files...</span></span>
+<span><span class="co">#&gt; Generating 2 Qmd files...</span></span>
 <span><span class="co">#&gt; Rmd file generation complete.</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -118,7 +131,7 @@
 <span><span class="co"># --- 5. View the final output ---</span></span>
 <span><span class="co"># The directory now contains the source Rmd files and their zip archives.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">temp_dir</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Report-1_1.Rmd" "Report-1_1.zip" "Report-1_2.Rmd" "Report-1_2.zip"</span></span>
+<span><span class="co">#&gt; [1] "Report-1_1.qmd" "Report-1_1.zip" "Report-1_2.qmd" "Report-1_2.zip"</span></span>
 <span></span>
 <span><span class="co"># --- Cleanup ---</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">temp_dir</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>

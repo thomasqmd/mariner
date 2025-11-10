@@ -1,0 +1,146 @@
+---
+title: "Get Started with mariner"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get Started with mariner}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The **mariner** package simplifies and automates the process of creating and
+packaging R Markdown (.Rmd) and Quarto (.qmd) documents.
+
+The core workflow involves two main steps:
+
+1.  **`generate_reports()`**: Create multiple, parameterized `.qmd` or `.Rmd` source files from a single template.
+2.  **`process_files()`**: Render each source file and bundle the source, scripts, and all outputs into a `.zip` archive.
+
+This vignette provides a complete, runnable example.
+
+### Setup
+
+First, we load **mariner** and **tidyr** (for creating parameter data frames). We also create a temporary directory for this example.
+
+```{r setup_libs_and_dir}
+library(mariner)
+library(tidyr)
+
+# Create a temporary directory for our example files
+temp_dir <- tempfile("mariner-vignette-")
+dir.create(temp_dir)
+
+# We'll clean this up at the end
+on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+```
+
+### Step 1: Generate Source Files
+
+The `generate_reports()` function takes a data frame where each row corresponds to one report you want to create. The column names in the data frame must match the parameter names in the template's YAML header (e.g., "chapter", "problem_numbers", "author").
+
+```{r gen_reports}
+# --- 1. Define Parameters ---
+# Each row will become one report.
+report_params <- expand_grid(
+  chapter = 1, 
+  problem_numbers = 1:3, 
+  author = "Firstname Lastname"
+)
+
+print(report_params)
+
+# --- 2. Generate Files ---
+# This uses the built-in "simple_report" template
+# and creates .qmd files in our temp_dir.
+report_files <- generate_reports(
+  params_df = report_params,
+  output_dir = temp_dir
+)
+
+# The function invisibly returns the paths of the created files
+print(report_files)
+
+# Let's list the directory contents
+list.files(temp_dir)
+```
+
+The `temp_dir` now contains three `.qmd` files. Each file's YAML `params` block has been updated based on the `report_params` data frame.
+
+### Step 2: Process and Bundle Files
+
+Now, we pass the vector of file paths to `process_files()`. This function will:
+
+1.  Render each source file (to PDF, in this case, based on the template's settings).
+2.  Purl an R script from the source file.
+3.  Bundle the source file (`.qmd`), the output (`.pdf`), the script (`.R`), and any intermediate files (like `.tex`) into a single `.zip` archive.
+
+```{r process_reports}
+# This can be run in parallel by setting a future plan
+# e.g., future::plan(future::multisession)
+zip_paths <- process_files(report_files)
+
+# Let's see the final contents of the directory
+# We now have the source files and their corresponding zips
+list.files(temp_dir)
+
+# The return value shows the paths to the new zips
+# Any failures would be represented by an NA
+print(zip_paths)
+```
+
+### Advanced Usage
+
+#### Parallel Processing
+
+Processing many files can be slow. `process_files()` supports parallel processing via the `future` package. To run in parallel, simply set a `future` plan before calling the function.
+
+```{r parallel_example, eval=FALSE}
+library(future)
+
+# Set up 2 parallel R sessions
+plan(multisession, workers = 2)
+
+# This call will now run in parallel
+process_files(report_files)
+
+# Set back to sequential
+plan(sequential)
+```
+
+#### Using a Custom Template
+
+You can also use your own `.qmd` or `.Rmd` file as a template by providing a direct path to it using the `template_path` argument.
+
+```{r custom_template, eval=FALSE}
+# Create a custom template on the fly
+custom_template_file <- file.path(temp_dir, "custom.qmd")
+writeLines(
+  c(
+    "---",
+    "title: Custom Report",
+    "params:",
+    "  region: Midwest",
+    "---",
+    "This report is for the `r params$region` region."
+  ),
+  custom_template_file
+)
+
+custom_params <- data.frame(
+  chapter = 1,
+  problem_numbers = 1,
+  region = c("East", "West")
+)
+
+generate_reports(
+  params_df = custom_params,
+  template_path = custom_template_file,
+  output_dir = temp_dir
+)
+```
