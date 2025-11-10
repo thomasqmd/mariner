@@ -40,9 +40,11 @@ jobs:
             any::covr
           needs: check
 
-      - name: Check
+      - name: Test coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
+          covr::codecov()
         shell: Rscript {0}
 
       - name: Test coverage
