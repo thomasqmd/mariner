@@ -1,13 +1,9 @@
-# Trivial change to force re-run
-
 # .github/workflows/r.yml
 
 name: R
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
 
 permissions:
