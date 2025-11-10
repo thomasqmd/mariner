@@ -1,7 +1,7 @@
 Package: mariner
 Type: Package
-Title: Streamline R Markdown Report Generation and Bundling for Dr. Seaman's Classes
-Version: 0.1.2
+Title: Streamline Quarto and R Markdown Report Generation and Bundling for Dr. Seaman's Classes
+Version: 0.1.3
 Depends: R (>= 4.1.0)
 Authors@R: c(
     person(
@@ -11,9 +11,9 @@ Authors@R: c(
     )
   )
 Description: Provides a set of functions to simplify and automate the
-    process of rendering and packaging R Markdown documents. The package
+    process of rendering and packaging Quarto and R Markdown documents. The package
     allows users to generate multiple reports from a single parameterized
-    template and to bundle R Markdown files along with their outputs, such
+    template and to bundle Quarto and R Markdown files along with their outputs, such
     as PDFs, TeX files, and purled R scripts, into a single, easily
     shareable zip archive.
 License: MIT + file LICENSE
