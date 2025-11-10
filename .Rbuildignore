@@ -4,3 +4,4 @@
 .*_cache$
 .github
 docs
+^_pkgdown\.yml$

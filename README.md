@@ -47,7 +47,7 @@ qmd_files <- generate_reports(
   template_name = "simple_report",
   output_dir = temp_dir
 )
-#> Generating 2 qmd files...
+#> Generating 2 Qmd files...
 #> Rmd file generation complete.
 ```
 
@@ -68,7 +68,7 @@ process_files(qmd_files)
 # --- 5. View the final output ---
 # The directory now contains the source Rmd files and their zip archives.
 list.files(temp_dir)
-#> [1] "Report-1_1.Rmd" "Report-1_1.zip" "Report-1_2.Rmd" "Report-1_2.zip"
+#> [1] "Report-1_1.qmd" "Report-1_1.zip" "Report-1_2.qmd" "Report-1_2.zip"
 
 # --- Cleanup ---
 unlink(temp_dir, recursive = TRUE)
