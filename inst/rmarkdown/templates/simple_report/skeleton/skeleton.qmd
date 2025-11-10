@@ -1,0 +1,34 @@
+---
+title: "`r paste('Report', params$chapter, params$problem_numbers, sep = '.')`"
+author: "`r params$author`"
+date: "`r Sys.Date()`"
+params:
+  chapter: 1
+  problem_numbers: 1
+  author: "Default Author Name"
+format:
+  pdf:
+    keep-tex: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, cache = FALSE)
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 100), tidy = FALSE, fig.align = "center", echo = FALSE)
+library(tidyverse)
+library(knitr)
+library(patchwork)
+conflicted::conflict_prefer("filter", "dplyr")
+conflicted::conflict_prefer("select", "dplyr")
+theme_set(theme_minimal())
+```
+
+# `r paste(params$chapter, params$problem_numbers, sep = '.')`
+
+\newpage
+
+# Appendix
+
+```{r ref.label=knitr::all_labels()}
+#| echo: true
+#| eval: false
+``` 

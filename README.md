@@ -9,7 +9,7 @@ The `mariner` package simplifies and automates the process of creating and zippi
 
 ## Installation
 
-You can install the development version of mariner from [GitHub](https://github.com/thomasqmd/mariner) with:
+You can install the current version of mariner from [GitHub](https://github.com/thomasqmd/mariner) with:
 
 ```r
 # install.packages("pak")

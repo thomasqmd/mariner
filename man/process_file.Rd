@@ -2,12 +2,12 @@
 % Please edit documentation in R/process_file.R
 \name{process_file}
 \alias{process_file}
-\title{Bundle an R Markdown File and its Outputs}
+\title{Bundle an R Markdown or Quarto File and its Outputs}
 \usage{
 process_file(input_file, output_zip = NULL)
 }
 \arguments{
-\item{input_file}{Path to the input `.Rmd` file.}
+\item{input_file}{Path to the input `.Rmd` or `.qmd` file.}
 
 \item{output_zip}{Path for the output `.zip` file.}
 }
@@ -15,31 +15,31 @@ process_file(input_file, output_zip = NULL)
 Invisibly returns the path to the created zip file.
 }
 \description{
-Renders an R Markdown file and bundles the source `.Rmd`, the purled R
-script, and all rendering outputs into a single zip archive.
+Renders an R Markdown (.Rmd) or Quarto (.qmd) file and bundles the source
+file, the purled R script, and all rendering outputs into a single zip archive.
 }
 \examples{
 \dontrun{
-# --- Setup: Create a temporary directory and generate one Rmd file ---
+# --- Setup: Create a temporary directory and generate one file ---
 temp_dir <- tempfile("example-")
 dir.create(temp_dir)
 
 report_params <- data.frame(chapter = 1, problem_numbers = 1, author = "Firstname Lastname")
 
-# `generate_reports` returns the path to the created Rmd file.
-rmd_file_path <- generate_reports(
+# `generate_reports` returns the path to the created file (e.g., .qmd)
+doc_file_path <- generate_reports(
   params_df = report_params,
   template_name = "simple_report",
   template_package = "mariner",
   output_dir = temp_dir
 )
 
-# --- Example: Bundle the newly created Rmd file ---
+# --- Example: Bundle the newly created file ---
 # This will create 'Report-1_1.zip' in the temp directory.
-process_file(rmd_file_path)
+process_file(doc_file_path)
 
 # --- View the created files ---
-# The directory contains the source .Rmd and the bundled .zip.
+# The directory contains the source file and the bundled .zip.
 list.files(temp_dir)
 
 # --- Cleanup ---

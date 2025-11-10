@@ -2,16 +2,16 @@
 % Please edit documentation in R/process_files.R
 \name{process_files}
 \alias{process_files}
-\title{Bundle Multiple R Markdown Files Sequentially or in Parallel}
+\title{Bundle Multiple R Markdown or Quarto Files Sequentially or in Parallel}
 \usage{
 process_files(input_files, output_dir = NULL)
 }
 \arguments{
-\item{input_files}{A character vector of paths to the `.Rmd` files.}
+\item{input_files}{A character vector of paths to the `.Rmd` or `.qmd` files.}
 
 \item{output_dir}{An optional path to a directory where the output zip
 archives will be saved. If `NULL` (the default), each zip is created in
-the same directory as its corresponding input `.Rmd` file.}
+the same directory as its corresponding input file.}
 }
 \value{
 Invisibly returns a character vector of paths to the successfully
@@ -19,13 +19,13 @@ Invisibly returns a character vector of paths to the successfully
   by an `NA` in the output vector.
 }
 \description{
-A wrapper around `process_file()` to process a list of R Markdown
-files. Execution is sequential by default but can be run in parallel by
-setting a `future` plan (e.g., `future::plan(future::multisession)`).
+A wrapper around `process_file()` to process a list of R Markdown (.Rmd) or
+Quarto (.qmd) files. Execution is sequential by default but can be run in
+parallel by setting a `future` plan (e.g., `future::plan(future::multisession)`).
 }
 \examples{
 \dontrun{
-# --- Setup: Create a temporary directory and generate Rmd files ---
+# --- Setup: Create a temporary directory and generate document files ---
 temp_dir <- tempfile("example-")
 dir.create(temp_dir)
 
@@ -35,19 +35,20 @@ report_params <- tidyr::expand_grid(
   author = "Firstname Lastname"
 )
 
-rmd_files <- generate_reports(
+# This will now likely create .qmd files
+doc_files <- generate_reports(
   params_df = report_params,
   template_name = "simple_report",
   output_dir = temp_dir
 )
 
-# --- Example 1: Default behavior (zips next to Rmds) ---
-process_files(rmd_files)
+# --- Example 1: Default behavior (zips next to source files) ---
+process_files(doc_files)
 list.files(temp_dir)
 
 # --- Example 2: Specifying an output directory ---
 zip_output_dir <- file.path(temp_dir, "zips")
-process_files(rmd_files, output_dir = zip_output_dir)
+process_files(doc_files, output_dir = zip_output_dir)
 list.files(zip_output_dir)
 
 # --- Cleanup ---
