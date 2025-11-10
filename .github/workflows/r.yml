@@ -1,5 +1,5 @@
 # .github/workflows/r.yml
-
+    
 name: R
 
 on:
@@ -27,7 +27,7 @@ jobs:
           r-version: ${{ matrix.r-version }}
 
       - name: Set up Quarto
-        uses: r-lib/actions/setup-quarto@v2
+        uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Install LaTeX
         uses: r-lib/actions/setup-tinytex@v2
