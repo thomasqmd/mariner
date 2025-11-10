@@ -1,5 +1,3 @@
-# Trivial change to force re-run
-
 # .github/workflows/r.yml
 
 name: R
