@@ -6,8 +6,9 @@
 #' background, rule grids, and primary colors of the document theme.
 #'
 #' @param theme One of [mariner_themes]. Defaults to `"baylor"`.
-#' @param format Format context: `"revealjs"`, `"html"`, `"pdf"`, or `"typst"`.
-#' @param base_size Base font size in points. Defaults to `16` for slides, `11` for reports.
+#' @param format One of [mariner_formats].
+#' @param base_size Base font size in points. Defaults to `11`, matching the
+#'   report body text set in `_extension.yml`.
 #' @param base_family Font family name. Defaults to `"Atkinson Hyperlegible Next"`.
 #' @param ... Additional arguments passed to [ggplot2::theme()].
 #' @return A ggplot2 theme object.
@@ -18,26 +19,21 @@
 #' ggplot(mpg, aes(displ, hwy, colour = class)) +
 #'   geom_point() +
 #'   scale_colour_mariner_d("baylor") +
-#'   theme_mariner("baylor", format = "revealjs")
+#'   theme_mariner("baylor")
 #' }
 theme_mariner <- function(theme = "baylor",
-                      format = c("revealjs", "html", "pdf", "typst"),
-                      base_size = NULL,
+                      format = mariner_formats,
+                      base_size = 11,
                       base_family = NULL,
                       ...) {
   theme <- check_theme(theme)
-  format <- rlang::arg_match(format)
-
-  if (is.null(base_size)) {
-    base_size <- if (format == "revealjs") 16 else 11
-  }
+  check_format(format)
 
   if (is.null(base_family)) {
-    # One family for every format, now that mariner_register_fonts() makes the
-    # bundled face reachable. This used to be "" for pdf and typst, which meant
-    # the two PRINT formats silently opted out of the theme's own typeface --
-    # their figures were drawn in the device default while their body text was
-    # Atkinson, and nothing said so.
+    # The bundled face, once mariner_register_fonts() has made it reachable.
+    # This used to be "" for pdf, which meant a report's FIGURES silently opted
+    # out of the theme's own typeface -- they were drawn in the device default
+    # while the body text around them was Atkinson, and nothing said so.
     #
     # The guard is not belt-and-braces. If the face cannot be resolved the
     # device does not merely substitute: it reports zero text metrics and lays
@@ -102,19 +98,19 @@ theme_mariner <- function(theme = "baylor",
 #' continuous scales so subsequent plots use the brand palette automatically.
 #'
 #' @param theme One of [mariner_themes]. Defaults to `"baylor"`.
-#' @param format Format context: `"revealjs"`, `"html"`, `"pdf"`, or `"typst"`.
+#' @param format One of [mariner_formats].
 #' @param ... Arguments passed to [theme_mariner()].
 #' @return Invisibly returns the previous theme.
 #' @export
 #' @examples
 #' \dontrun{
-#' mariner_set_theme("baylor", format = "revealjs")
+#' mariner_set_theme("baylor")
 #' }
 mariner_set_theme <- function(theme = "baylor",
-                          format = c("revealjs", "html", "pdf", "typst"),
+                          format = mariner_formats,
                           ...) {
   theme <- check_theme(theme)
-  format <- rlang::arg_match(format)
+  check_format(format)
 
   th <- theme_mariner(theme = theme, format = format, ...)
   old_theme <- ggplot2::theme_set(th)
@@ -129,41 +125,9 @@ mariner_set_theme <- function(theme = "baylor",
   invisible(old_theme)
 }
 
-#' Apply brand layout styling to Plotly figures
-#'
-#' Configures fonts, background colors, and gridlines for Plotly charts to match
-#' the active brand identity.
-#'
-#' @param p A plotly visualization object.
-#' @param theme One of [mariner_themes]. Defaults to `"baylor"`.
-#' @param font_family Font family name. Defaults to `"Atkinson Hyperlegible Next"`.
-#' @return A styled plotly object.
-#' @export
-mariner_plotly_theme <- function(p, theme = "baylor",
-                             font_family = "Atkinson Hyperlegible Next") {
-  if (!requireNamespace("plotly", quietly = TRUE)) {
-    cli::cli_abort("Package {.pkg plotly} is required for {.fn mariner_plotly_theme}.")
-  }
-
-  theme <- check_theme(theme)
-  cols <- mariner_colors(theme)
-
-  plotly::layout(
-    p,
-    font = list(family = font_family, color = cols[["ink"]]),
-    paper_bgcolor = cols[["background"]],
-    plot_bgcolor = cols[["background"]],
-    xaxis = list(
-      gridcolor = cols[["rule-grid"]],
-      linecolor = cols[["rule-axis"]],
-      tickcolor = cols[["rule-axis"]],
-      tickfont = list(color = cols[["ink-muted"]])
-    ),
-    yaxis = list(
-      gridcolor = cols[["rule-grid"]],
-      linecolor = cols[["rule-axis"]],
-      tickcolor = cols[["rule-axis"]],
-      tickfont = list(color = cols[["ink-muted"]])
-    )
-  )
-}
+# mariner_plotly_theme() was removed with the html and revealjs formats.
+#
+# A plotly figure is an htmlwidget: it needs a browser to draw, and a pdf report
+# has no browser. Keeping a themed plotly wrapper in a pdf-only package would
+# export a function that cannot be used in the only format the package targets.
+# It is in the git history if an interactive format ever comes back.

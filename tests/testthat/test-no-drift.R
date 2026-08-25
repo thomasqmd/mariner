@@ -5,6 +5,10 @@
 # constant or a logo's pixel dimensions without re-running
 # data-raw/build-tokens.R fails here, instead of shipping a stylesheet that
 # disagrees with the brand file it claims to come from.
+#
+# Only the six files in inst/generated/<theme>/ are checked, because they are
+# the only build outputs in the package. The assembled extension is not
+# committed at all -- test-extension.R covers that, by building one.
 
 test_that("generated files match their generators", {
   root <- skip_if_no_source()
@@ -45,11 +49,7 @@ test_that("no hex colour is typed outside the brand file", {
 
   # Where a colour is ALLOWED to appear literally: the brand definition itself,
   # and any file carrying the generated marker.
-  sources <- c(
-    list.files(file.path(root, "inst", "scss"), full.names = TRUE),
-    list.files(file.path(root, "inst", "tex"), full.names = TRUE),
-    list.files(file.path(root, "inst", "typst"), full.names = TRUE)
-  )
+  sources <- list.files(file.path(root, "inst", "tex"), full.names = TRUE)
 
   # Six- and three-digit hex, but not a Typst/CSS identifier that merely follows
   # a '#'. Requires a word boundary before the hash.

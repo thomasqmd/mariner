@@ -25,9 +25,10 @@ output.
 \section{Why you may want this}{
 
 mariner bundles its fonts and registers them with R at load time, which is
-enough for HTML and revealjs figures and for all PDF \emph{body text}. It is not
-enough for PDF \emph{figures}: those are drawn by \code{cairo_pdf()}, which reads the
-system font configuration and cannot see a font that is merely bundled. Until
+enough for all PDF \emph{body text}, which xelatex reads from the bundled files by
+path. It is not enough for PDF \emph{figures}: those are drawn by \code{cairo_pdf()},
+which reads the system font configuration and cannot see a font that is
+merely bundled. Until
 the faces are installed, figures in a PDF report fall back to the device's
 default typeface while the surrounding text does not.
 

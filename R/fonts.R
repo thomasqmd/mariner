@@ -13,10 +13,9 @@
 # around labels it believes have no size, so axis titles collide, legends
 # overlap the panel, and an svg can come out effectively blank.
 #
-# theme_mariner() used to work around this by passing base_family = "" for pdf and
-# typst, which is why the printed figures looked right and the html and revealjs
-# ones did not: the print formats were quietly opting out of the theme's own
-# typeface.
+# theme_mariner() used to work around this by passing base_family = "" for pdf,
+# which meant a report's FIGURES quietly opted out of the theme's own typeface
+# while the body text around them kept it.
 #
 # THE STATIC CUTS, NOT THE VARIABLE FILE. systemfonts can register a file per
 # style but cannot instance a variable axis for a font it did not find on the
@@ -27,9 +26,9 @@
 # files.
 
 # Which device honours this registry is not a detail: it is read by svglite and
-# ragg, and NOT by the cairo-backed grDevices::svg() or cairo_pdf(), which go to
-# fontconfig instead. mariner_knitr_setup() therefore selects svglite for the svg
-# formats -- registering without switching the device would change nothing.
+# ragg, and NOT by cairo_pdf(), which goes to fontconfig instead. That is why
+# mariner_install_fonts() exists -- a report's FIGURES need the faces installed,
+# not merely registered, even though its body text does not.
 
 mariner_font_files <- function() {
   list(
@@ -199,7 +198,7 @@ mariner_fonts_available <- function(format = NULL) {
   }
 
   # cairo_pdf() and pdf() both ignore the registry; only an installed face
-  # reaches them. Every other format is drawn by svglite, which reads it.
+  # reaches them. svglite, used outside a render, reads the registry instead.
   if (identical(format, "pdf")) return(installed())
 
   reg <- tryCatch(systemfonts::registry_fonts(), error = function(e) NULL)
@@ -256,9 +255,10 @@ user_font_dir <- function() {
 #'
 #' @section Why you may want this:
 #' mariner bundles its fonts and registers them with R at load time, which is
-#' enough for HTML and revealjs figures and for all PDF *body text*. It is not
-#' enough for PDF *figures*: those are drawn by `cairo_pdf()`, which reads the
-#' system font configuration and cannot see a font that is merely bundled. Until
+#' enough for all PDF *body text*, which xelatex reads from the bundled files by
+#' path. It is not enough for PDF *figures*: those are drawn by `cairo_pdf()`,
+#' which reads the system font configuration and cannot see a font that is
+#' merely bundled. Until
 #' the faces are installed, figures in a PDF report fall back to the device's
 #' default typeface while the surrounding text does not.
 #'

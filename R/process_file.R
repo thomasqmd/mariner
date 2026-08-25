@@ -1,18 +1,16 @@
-#' Bundle an R Markdown or Quarto File and its Outputs
+#' Bundle a Quarto File and its Outputs
 #'
 #' @description
-#' Renders an R Markdown (.Rmd) or Quarto (.qmd) file and bundles the source
-#' file, the purled R script, and all rendering outputs into a single zip archive.
+#' Renders a Quarto (.qmd) file and bundles the source file, the purled R
+#' script, and all rendering outputs into a single zip archive.
 #'
-#' @param input_file Path to the input `.Rmd` or `.qmd` file.
+#' @param input_file Path to the input `.qmd` file.
 #' @param output_zip Path for the output `.zip` file.
 #'
 #' @return Invisibly returns the path to the created zip file.
 #' @export
 #' @importFrom knitr purl
-#' @importFrom rmarkdown render
 #' @importFrom quarto quarto_render
-#' @importFrom utils zip
 #' @importFrom fs path_abs path_ext_set file_copy dir_create dir_ls dir_delete path_file
 #' @importFrom withr with_dir
 #' @importFrom tools file_ext
@@ -25,7 +23,7 @@
 #'
 #' report_params <- data.frame(chapter = 1, problem_numbers = 1, author = "Firstname Lastname")
 #'
-#' # `generate_reports` returns the path to the created file (e.g., .qmd)
+#' # `generate_reports` returns the path to the created .qmd file
 #' doc_file_path <- generate_reports(
 #'   params_df = report_params,
 #'   template_name = "simple_report",
@@ -52,9 +50,9 @@ process_file <- \(input_file, output_zip = NULL) {
   input_path <- fs::path_abs(input_file)
   input_ext <- tolower(tools::file_ext(input_path))
 
-  if (!input_ext %in% c("rmd", "qmd")) {
+  if (!identical(input_ext, "qmd")) {
     stop(
-      "Input file must be a .Rmd or .qmd file. Got: .",
+      "Input file must be a .qmd file. Got: .",
       input_ext,
       call. = FALSE
     )
@@ -77,25 +75,38 @@ process_file <- \(input_file, output_zip = NULL) {
 
     tryCatch(
       {
-        # Purl the R code. This works for both .Rmd and .qmd.
         knitr::purl(doc_file_name)
-
-        # Conditionally render based on file type
-        if (input_ext == "rmd") {
-          rmarkdown::render(doc_file_name, quiet = TRUE, clean = FALSE)
-        } else if (input_ext == "qmd") {
-          quarto::quarto_render(doc_file_name, quiet = TRUE)
-        }
+        quarto::quarto_render(doc_file_name, quiet = TRUE)
       },
       error = \(e) {
         stop("Failed during file processing: ", e$message, call. = FALSE)
       }
     )
 
-    # Bundle all files created in the temp directory
-    files_to_zip <- fs::dir_ls()
-    utils::zip(zipfile = output_path, files = files_to_zip)
+    # Bundle everything the render left behind.
+    #
+    # zip::zip(), not utils::zip(): the latter shells out to an external `zip`
+    # binary that a stock Windows install does not have, so a student without
+    # Rtools on PATH got a nonzero status this code never checked and an empty
+    # or missing archive. It also ADDS to an existing archive rather than
+    # replacing it, so re-running a batch left yesterday's stale entries inside
+    # today's bundle. zip::zip is pure C, needs no system tool, and replaces.
+    #
+    # `recurse = TRUE` reaches into the `_files/` directory Quarto writes beside
+    # the output; `root` makes every archive path relative to the scratch
+    # directory, so the zip has no absolute paths in it.
+    files_to_zip <- fs::path_file(fs::dir_ls())
+    zip::zip(
+      zipfile = output_path,
+      files = files_to_zip,
+      root = ".",
+      recurse = TRUE
+    )
   })
+
+  if (!file.exists(output_path)) {
+    stop("Bundling failed: no archive at ", output_path, call. = FALSE)
+  }
 
   message("Successfully created bundle: ", fs::path_file(output_path))
   invisible(output_path)

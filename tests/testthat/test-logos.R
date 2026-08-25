@@ -64,17 +64,11 @@ test_that("an undefined logo slot errors rather than sizing nothing", {
   expect_error(mariner_logo_file("baylor", "enormous"), class = "rlang_error")
 })
 
-test_that("the generated artefacts name the medium mark for corners", {
+test_that("the preamble names the medium mark and sizes it from the file", {
   wordmark <- mariner_logo_name("baylor", "medium")
-
-  ext_yml <- build_extension_yml("baylor")
-  expect_true(grepl(wordmark, ext_yml, fixed = TRUE))
 
   preamble <- build_pdf_preamble("baylor")
   expect_true(grepl(wordmark, preamble, fixed = TRUE))
-
-  header <- build_brand_header("baylor")
-  expect_true(grepl(wordmark, header, fixed = TRUE))
 
   # And the derived width reached the preamble, rather than a leftover constant.
   expected <- num_str(mariner_logo_width(LOGO_HEIGHT$pdf_corner_in, "baylor", "medium"))
@@ -82,11 +76,14 @@ test_that("the generated artefacts name the medium mark for corners", {
     grepl(paste0("\\setlength{\\qmdlogowidth}{", expected, "in}"), preamble, fixed = TRUE),
     info = "pdf corner width is not the derived value"
   )
-})
 
-test_that("the brand header describes the mark it shows", {
-  header <- build_brand_header("baylor")
-  # The wordmark reads "Baylor University"; alt text of "Baylor" would describe
-  # it incompletely to the readers who depend on it.
-  expect_true(grepl('alt="Baylor University"', header, fixed = TRUE))
+  # The stacked and interlock marks stay bundled but are placed by nothing, now
+  # that the formats that placed them are gone. Asserting their absence keeps a
+  # future edit from reaching for one without sizing it.
+  for (slot in c("small", "large")) {
+    expect_false(
+      grepl(mariner_logo_name("baylor", slot), preamble, fixed = TRUE),
+      info = paste("the", slot, "mark is placed but has no derived size")
+    )
+  }
 })

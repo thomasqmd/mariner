@@ -9,8 +9,8 @@
 #' archives.
 #'
 #' It also carries a complete Baylor-branded Quarto theme, so a generated report
-#' or slide deck is styled, typeset in bundled fonts, and has figures drawn from
-#' the same palette as the page, without anything to install separately.
+#' is styled, typeset in bundled fonts, and has its figures drawn from the same
+#' palette as the page, without anything to install separately.
 #'
 #' @section Core Workflow:
 #' \enumerate{
@@ -65,30 +65,33 @@ mariner_themes <- c("baylor")
 #'
 #' The Quarto formats the vendored extension contributes.
 #'
-#' `pdf` and `revealjs` are the two that ship document templates. `html` and
-#' `typst` are contributed and fully styled -- a document that names them by
-#' hand renders correctly and gets correct figures -- they simply have no
-#' starter template yet.
+#' There is one: `pdf`, rendered through xelatex. mariner exists to turn a
+#' parameterized `.qmd` into a bundled report, and a report is a PDF.
 #'
-#' @format A character vector of length 4.
+#' It stays a vector, and `format` stays a named argument on the functions that
+#' take one, for the same reason [mariner_themes] does: a second target later is
+#' an entry here rather than a signature change across the package.
+#'
+#' @format A character vector.
 #' @export
-mariner_formats <- c("html", "revealjs", "pdf", "typst")
+mariner_formats <- c("pdf")
 
 # The Quarto extension directory name for a theme.
 #
-# Derived, never typed. It appears inside asset paths that Quarto, xelatex and
-# Typst each resolve at render time -- the logo, the font directory, the SCSS
-# $qmd-ext-dir -- and every one of those is GENERATED from this function. A
-# rename is therefore this line plus a rebuild, rather than a search across five
-# file formats where a miss fails silently (Quarto simply does not find the
-# logo; xelatex simply substitutes a font).
+# Derived, never typed. It appears inside asset paths that Quarto and xelatex
+# resolve at render time -- the logo and the font directory -- and both of those
+# are GENERATED from this function. A rename is therefore this line plus a
+# rebuild, rather than a search through a LaTeX preamble where a miss fails
+# silently (Quarto simply does not find the logo; xelatex simply substitutes a
+# font).
 mariner_ext_name <- function(theme = mariner_themes) {
   paste0("mariner-", check_theme(theme))
 }
 
 # The extension directory as the RENDERED DOCUMENT sees it: relative to the
-# project root, which is where Quarto writes the .tex and .typ it hands to the
-# engines.
+# directory Quarto writes the .tex into, which is the document's own. That is
+# why the extension has to be assembled beside the document rather than shared
+# from a parent -- see R/extension.R.
 mariner_ext_rel <- function(theme = mariner_themes) {
   paste0("_extensions/", mariner_ext_name(theme))
 }

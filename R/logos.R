@@ -27,19 +27,10 @@
 # Rounding to 0.25in keeps the title-page mark visually where it was while the
 # width moves to suit the new file's slightly wider 5.62:1.
 #
-# revealjs_corner is NOT a constant here -- it comes from the slide geometry
-# (MARINER_SLIDE$logo_lines, via mariner_slide_geometry()$logo_height), because
-# deck furniture is measured against the root font size like the rest of the
-# deck. See R/slides.R.
+# One placement, one number. The slide and html-header heights that used to sit
+# beside it went with the formats that placed them.
 LOGO_HEIGHT <- list(
-  pdf_corner_in = 0.25,
-  # The cover mark on a title slide, as a share of the slide height. The stacked
-  # lockup at 0.18 stands ~162px on a 900px slide, which reads as a title-block
-  # element rather than as furniture.
-  cover_frac = 0.18,
-  # The html header mark, in rem, so it tracks the page's type like the rest of
-  # the header does.
-  html_header_rem = 2.4
+  pdf_corner_in = 0.25
 )
 
 # PNG pixel dimensions, from the file's own header.
@@ -101,7 +92,7 @@ mariner_logo_aspect <- function(theme = mariner_themes, slot = "medium") {
 #'
 #' Returns the width a logo should be drawn at to stand `height` tall, computed
 #' from the file's actual pixel aspect ratio. Units are whatever `height` is in
-#' -- inches for LaTeX, pixels for a slide -- since the ratio is unitless.
+#' -- since the ratio is unitless.
 #'
 #' This is the function that lets `_brand.yml` name a logo without also stating
 #' how big it is.

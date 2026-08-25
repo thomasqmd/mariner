@@ -2,12 +2,12 @@
 % Please edit documentation in R/process_file.R
 \name{process_file}
 \alias{process_file}
-\title{Bundle an R Markdown or Quarto File and its Outputs}
+\title{Bundle a Quarto File and its Outputs}
 \usage{
 process_file(input_file, output_zip = NULL)
 }
 \arguments{
-\item{input_file}{Path to the input \code{.Rmd} or \code{.qmd} file.}
+\item{input_file}{Path to the input \code{.qmd} file.}
 
 \item{output_zip}{Path for the output \code{.zip} file.}
 }
@@ -15,8 +15,8 @@ process_file(input_file, output_zip = NULL)
 Invisibly returns the path to the created zip file.
 }
 \description{
-Renders an R Markdown (.Rmd) or Quarto (.qmd) file and bundles the source
-file, the purled R script, and all rendering outputs into a single zip archive.
+Renders a Quarto (.qmd) file and bundles the source file, the purled R
+script, and all rendering outputs into a single zip archive.
 }
 \examples{
 \dontrun{
@@ -26,7 +26,7 @@ dir.create(temp_dir)
 
 report_params <- data.frame(chapter = 1, problem_numbers = 1, author = "Firstname Lastname")
 
-# `generate_reports` returns the path to the created file (e.g., .qmd)
+# `generate_reports` returns the path to the created .qmd file
 doc_file_path <- generate_reports(
   params_df = report_params,
   template_name = "simple_report",

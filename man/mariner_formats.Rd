@@ -5,7 +5,7 @@
 \alias{mariner_formats}
 \title{Formats shipped by mariner}
 \format{
-A character vector of length 4.
+A character vector.
 }
 \usage{
 mariner_formats
@@ -14,9 +14,11 @@ mariner_formats
 The Quarto formats the vendored extension contributes.
 }
 \details{
-\code{pdf} and \code{revealjs} are the two that ship document templates. \code{html} and
-\code{typst} are contributed and fully styled -- a document that names them by
-hand renders correctly and gets correct figures -- they simply have no
-starter template yet.
+There is one: \code{pdf}, rendered through xelatex. mariner exists to turn a
+parameterized \code{.qmd} into a bundled report, and a report is a PDF.
+
+It stays a vector, and \code{format} stays a named argument on the functions that
+take one, for the same reason \link{mariner_themes} does: a second target later is
+an entry here rather than a signature change across the package.
 }
 \keyword{datasets}

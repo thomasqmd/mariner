@@ -5,7 +5,7 @@
 \title{Global knitr setup for branded Quarto documents}
 \usage{
 mariner_knitr_setup(
-  format = c("revealjs", "html", "pdf", "typst"),
+  format = mariner_formats,
   theme = "baylor",
   dpi = 300,
   fig_format = NULL,
@@ -13,13 +13,14 @@ mariner_knitr_setup(
 )
 }
 \arguments{
-\item{format}{Format target: \code{"revealjs"}, \code{"html"}, \code{"pdf"}, or \code{"typst"}.}
+\item{format}{One of \link{mariner_formats}.}
 
 \item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
 
 \item{dpi}{Numeric figure resolution in dots per inch. Defaults to \code{300}.}
 
-\item{fig_format}{Image file format: \code{"svg"}, \code{"pdf"}, or \code{"png"}. Defaults to \code{"svg"} for web/slides and \code{"pdf"} for LaTeX.}
+\item{fig_format}{Image device. Defaults to \code{"cairo_pdf"} where the build has
+cairo, and base \code{"pdf"} where it does not.}
 
 \item{...}{Additional chunk options passed to \code{knitr::opts_chunk$set()}.}
 }
@@ -27,10 +28,11 @@ mariner_knitr_setup(
 Invisibly returns the previous knitr chunk options.
 }
 \description{
-Configures knitr chunk options with figure dimensions, resolution, and theme settings.
+Configures knitr chunk options with figure dimensions, resolution, and theme
+settings. Call it in the setup chunk of a report.
 }
 \examples{
 \dontrun{
-mariner_knitr_setup("revealjs", theme = "baylor")
+mariner_knitr_setup("pdf", theme = "baylor")
 }
 }

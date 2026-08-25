@@ -14,8 +14,8 @@ outputs (e.g., PDFs, scripts, and dependency files) into easily shareable zip
 archives.
 
 It also carries a complete Baylor-branded Quarto theme, so a generated report
-or slide deck is styled, typeset in bundled fonts, and has figures drawn from
-the same palette as the page, without anything to install separately.
+is styled, typeset in bundled fonts, and has its figures drawn from the same
+palette as the page, without anything to install separately.
 }
 \section{Core Workflow}{
 

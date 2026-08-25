@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_reports.R
 \name{generate_reports}
 \alias{generate_reports}
-\title{Create R Markdown or Quarto Source Files from a Template}
+\title{Create Quarto Source Files from a Template}
 \usage{
 generate_reports(
   params_df,
@@ -23,23 +23,23 @@ YAML header (e.g., "chapter", "problem_numbers", "author").}
 \item{template_package}{The name of the installed package where the template
 is located. Defaults to "mariner".}
 
-\item{output_dir}{The directory where the final .Rmd or .qmd files will be saved.}
+\item{output_dir}{The directory where the final .qmd files will be saved.}
 
-\item{template_path}{An optional path to a single \code{.Rmd} or \code{.qmd} template
-file. If provided, this template will be used instead of one from a package.}
+\item{template_path}{An optional path to a single \code{.qmd} template file. If
+provided, this template will be used instead of one from a package.}
 }
 \value{
 Invisibly returns a character vector of the output file paths for
-the newly created .Rmd or .qmd files.
+the newly created .qmd files.
 }
 \description{
-Creates multiple R Markdown (.Rmd) or Quarto (.qmd) source files from a
-parameterized template. The template can be located within a package or
-provided as a direct file path.
+Creates multiple Quarto (.qmd) source files from a parameterized template.
+The template can be located within a package or provided as a direct file
+path.
 }
 \examples{
 \dontrun{
-# --- Example 1: Using the default package template (finds .qmd or .Rmd) ---
+# --- Example 1: Using the default package template ---
 temp_dir_pkg <- tempfile("pkg-example-")
 dir.create(temp_dir_pkg)
 
@@ -49,20 +49,20 @@ report_params <- tidyr::expand_grid(
   author = "Firstname Lastname"
 )
 
-rmd_files <- generate_reports(
+qmd_files <- generate_reports(
   params_df = report_params,
   template_name = "simple_report",
   output_dir = temp_dir_pkg
 )
 
-list.files(temp_dir_pkg) # Will be .qmd if skeleton.qmd exists
+list.files(temp_dir_pkg)
 
-# --- Example 2: Using an external .Rmd template file ---
+# --- Example 2: Using an external .qmd template file ---
 temp_dir_ext <- tempfile("ext-example-")
 dir.create(temp_dir_ext)
 
 # Create a custom template on the fly
-custom_template_path <- file.path(temp_dir_ext, "custom.Rmd")
+custom_template_path <- file.path(temp_dir_ext, "custom.qmd")
 writeLines(
   c(
     "---",
@@ -87,7 +87,7 @@ generate_reports(
   output_dir = temp_dir_ext
 )
 
-list.files(temp_dir_ext) # Will be .Rmd
+list.files(temp_dir_ext)
 
 # --- Cleanup ---
 unlink(temp_dir_pkg, recursive = TRUE)

@@ -1,3 +1,19 @@
+# mariner 0.2.0 (development)
+
+## Breaking Changes
+
+* **R Markdown support is removed.** `generate_reports()`, `process_file()` and
+  `process_files()` accept `.qmd` only; a `.Rmd` input is refused with a message
+  rather than rendered. `rmarkdown` is no longer a dependency, and the
+  `simple_report` template no longer carries a `skeleton.Rmd`.
+
+## Major Changes
+
+* Bundling moved from `utils::zip()` to `zip::zip()`. The old backend shelled
+  out to an external `zip` binary that a stock Windows install does not have,
+  and it added to an existing archive rather than replacing it, so re-running a
+  batch could leave stale files inside a bundle.
+
 # mariner 0.1.3
 
 This version introduces support for Quarto (`.qmd`) files, which is now the default.

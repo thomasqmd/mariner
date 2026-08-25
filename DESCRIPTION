@@ -16,10 +16,9 @@ Description: Provides a set of functions to simplify and automate the
     template and to bundle Quarto files along with their outputs, such
     as PDFs, TeX files, and purled R scripts, into a single, easily
     shareable zip archive. It also carries a complete Baylor-branded Quarto
-    theme, with bundled fonts and a palette validated for contrast and
-    colour-vision separation, so reports and slide decks are styled and their
-    figures drawn from the same colours as the page without anything to
-    install separately.
+    pdf theme, with bundled fonts and a palette validated for contrast and
+    colour-vision separation, so reports are styled and their figures drawn
+    from the same colours as the page without anything to install separately.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -40,14 +39,12 @@ Imports:
     stats,
     systemfonts,
     tools,
-    utils,
     withr,
-    yaml
+    yaml,
+    zip
 Suggests:
     testthat (>= 3.0.0),
     pkgload,
-    svglite,
-    plotly,
     tidyr,
     patchwork
 Config/testthat/edition: 3

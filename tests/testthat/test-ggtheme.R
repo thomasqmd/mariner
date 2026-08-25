@@ -19,31 +19,33 @@ test_that("theme_mariner() returns a valid theme object", {
   }
 })
 
-test_that("mariner_fig_dims() returns proper dimensions for all formats", {
-  # The slide figure is DERIVED -- the slide box less the heading bar, at
-  # MARINER_SLIDE$px_per_in to the inch -- so this asserts the derivation rather
-  # than a pair of numbers that would have to be edited alongside it.
-  geom <- mariner_slide_geometry()
-  rev_dims <- mariner_fig_dims("revealjs")
-  expect_equal(rev_dims$width, geom$width / mariner:::MARINER_SLIDE$px_per_in)
-  expect_equal(rev_dims$height, (geom$height - geom$chrome) / mariner:::MARINER_SLIDE$px_per_in)
+test_that("mariner_fig_dims() fits the page geometry in _extension.yml", {
+  dims <- mariner_fig_dims("pdf")
+  expect_equal(dims$width, 6.5)
+  expect_equal(dims$height, 4.5)
 
-  pdf_dims <- mariner_fig_dims("pdf")
-  expect_equal(pdf_dims$width, 6.5)
-  expect_equal(pdf_dims$height, 4.5)
+  # The width is the text block: US Letter less the left and right margins the
+  # manifest sets. A figure wider than this overflows into the margin, so the
+  # two numbers are checked against each other rather than merely written down.
+  geometry <- yaml::read_yaml(
+    mariner_path("generated", "baylor", "_extension.yml")
+  )$contributes$formats$pdf$geometry
+  margin_in <- function(side) {
+    as.numeric(sub("in$", "", sub(paste0("^", side, "="), "",
+                                  grep(paste0("^", side, "="), geometry, value = TRUE))))
+  }
+  expect_equal(dims$width, 8.5 - margin_in("left") - margin_in("right"))
 
-  html_dims <- mariner_fig_dims("html")
-  expect_equal(html_dims$width, 8.0)
-  expect_equal(html_dims$height, 5.0)
+  expect_error(mariner_fig_dims("revealjs"))
 })
 
 test_that("mariner_knitr_setup() configures knitr chunk options", {
   skip_if_not_installed("knitr")
-  old_opts <- mariner_knitr_setup("revealjs", theme = "baylor")
+  old_opts <- mariner_knitr_setup("pdf", theme = "baylor")
 
   opts <- knitr::opts_chunk$get()
-  expect_equal(opts$fig.width, mariner_fig_dims("revealjs")$width)
-  expect_equal(opts$fig.height, mariner_fig_dims("revealjs")$height)
+  expect_equal(opts$fig.width, mariner_fig_dims("pdf")$width)
+  expect_equal(opts$fig.height, mariner_fig_dims("pdf")$height)
   expect_equal(opts$dpi, 300)
   expect_equal(opts$fig.align, "center")
   expect_false(opts$echo)

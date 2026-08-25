@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/github/thomasqmd/mariner/graph/badge.svg?token=A4PDZWC3IL)](https://codecov.io/github/thomasqmd/mariner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The **mariner** package simplifies and automates the process of creating and zipping reports for Dr. Seaman's Class. It provides a cohesive workflow to first generate multiple Quarto or R Markdown source files from a single parameterized template, and then zips the source files and all rendered outputs into easily shareable zip archives. See the reference website [here](https://thomasqmd.github.io/mariner/).
+The **mariner** package simplifies and automates the process of creating and zipping reports for Dr. Seaman's Class. It provides a cohesive workflow to first generate multiple Quarto source files from a single parameterized template, and then zips the source files and all rendered outputs into easily shareable zip archives. See the reference website [here](https://thomasqmd.github.io/mariner/).
 
 ## Installation
 
@@ -19,7 +19,7 @@ pak::pak("thomasqmd/mariner")
 
 ## Workflow
 
-The typical workflow involves two main steps: using `generate_reports()` to create parameterized `.qmd` or `.Rmd` files, and then using `process_files()` to render and bundle them.
+The typical workflow involves two main steps: using `generate_reports()` to create parameterized `.qmd` files, and then using `process_files()` to render and bundle them.
 
 ### Generate Reports
 
@@ -47,8 +47,8 @@ qmd_files <- generate_reports(
   template_name = "simple_report",
   output_dir = temp_dir
 )
-#> Generating 2 Qmd files...
-#> Rmd file generation complete.
+#> Generating 2 qmd files...
+#> qmd file generation complete.
 ```
 
 ### Proccess Reports
@@ -66,7 +66,7 @@ process_files(qmd_files)
 #> Bundling complete. Success: 2, Failures: 0.
 
 # --- 5. View the final output ---
-# The directory now contains the source Rmd files and their zip archives.
+# The directory now contains the source .qmd files and their zip archives.
 list.files(temp_dir)
 #> [1] "Report-1_1.qmd" "Report-1_1.zip" "Report-1_2.qmd" "Report-1_2.zip"
 

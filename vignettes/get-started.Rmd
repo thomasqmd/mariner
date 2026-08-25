@@ -15,11 +15,11 @@ knitr::opts_chunk$set(
 ```
 
 The **mariner** package simplifies and automates the process of creating and
-packaging R Markdown (.Rmd) and Quarto (.qmd) documents.
+packaging Quarto (.qmd) documents.
 
 The core workflow involves two main steps:
 
-1.  **`generate_reports()`**: Create multiple, parameterized `.qmd` or `.Rmd` source files from a single template.
+1.  **`generate_reports()`**: Create multiple, parameterized `.qmd` source files from a single template.
 2.  **`process_files()`**: Render each source file and bundle the source, scripts, and all outputs into a `.zip` archive.
 
 This vignette provides a complete, runnable example.
@@ -115,7 +115,7 @@ plan(sequential)
 
 #### Using a Custom Template
 
-You can also use your own `.qmd` or `.Rmd` file as a template by providing a direct path to it using the `template_path` argument.
+You can also use your own `.qmd` file as a template by providing a direct path to it using the `template_path` argument.
 
 ```{r custom_template, eval=FALSE}
 # Create a custom template on the fly

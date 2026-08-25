@@ -70,21 +70,35 @@ test_that("generate_reports errors correctly with bad inputs", {
   expect_error(
     generate_reports(
       params_df = valid_params,
-      template_path = "non_existent_file.Rmd",
+      template_path = "non_existent_file.qmd",
       output_dir = temp_output_dir
     )
+  )
+
+  # A template that exists but is a .Rmd is refused outright: the package is
+  # Quarto-only as of 0.2.0.
+  legacy_template <- file.path(temp_output_dir, "legacy.Rmd")
+  writeLines(c("---", "title: Legacy", "---", "Hello."), legacy_template)
+  expect_error(
+    generate_reports(
+      params_df = valid_params,
+      template_path = legacy_template,
+      output_dir = temp_output_dir
+    ),
+    "must be a .qmd file",
+    fixed = TRUE
   )
 })
 
 # ---
-# Test Case 3: Successful generation from an external .Rmd template_path (Unchanged)
-test_that("generate_reports works with a valid .Rmd template_path", {
+# Test Case 3: Successful generation from an external .qmd template_path
+test_that("generate_reports works with a valid custom template_path", {
   # --- 1. Setup ---
   temp_dir <- tempfile("template-path-test-")
   dir.create(temp_dir)
   on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
 
-  custom_template_path <- file.path(temp_dir, "custom_template.Rmd")
+  custom_template_path <- file.path(temp_dir, "custom_template.qmd")
   writeLines(
     c(
       "---",
@@ -115,7 +129,7 @@ test_that("generate_reports works with a valid .Rmd template_path", {
 
   # --- 3. Assertions ---
   expect_true(file.exists(output_files[1]))
-  expect_equal(tools::file_ext(output_files[1]), "Rmd")
+  expect_equal(tools::file_ext(output_files[1]), "qmd")
   file_content <- readLines(output_files[1])
   expect_true(any(grepl('region: "West"', file_content, fixed = TRUE)))
   expect_true(any(grepl('author: "Custom Author"', file_content, fixed = TRUE)))

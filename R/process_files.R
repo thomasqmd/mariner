@@ -1,11 +1,11 @@
-#' Bundle Multiple R Markdown or Quarto Files Sequentially or in Parallel
+#' Bundle Multiple Quarto Files Sequentially or in Parallel
 #'
 #' @description
-#' A wrapper around `process_file()` to process a list of R Markdown (.Rmd) or
-#' Quarto (.qmd) files. Execution is sequential by default but can be run in
-#' parallel by setting a `future` plan (e.g., `future::plan(future::multisession)`).
+#' A wrapper around `process_file()` to process a list of Quarto (.qmd) files.
+#' Execution is sequential by default but can be run in parallel by setting a
+#' `future` plan (e.g., `future::plan(future::multisession)`).
 #'
-#' @param input_files A character vector of paths to the `.Rmd` or `.qmd` files.
+#' @param input_files A character vector of paths to the `.qmd` files.
 #' @param output_dir An optional path to a directory where the output zip
 #'   archives will be saved. If `NULL` (the default), each zip is created in
 #'   the same directory as its corresponding input file.
@@ -31,7 +31,6 @@
 #'   author = "Firstname Lastname"
 #' )
 #'
-#' # This will now likely create .qmd files
 #' doc_files <- generate_reports(
 #'   params_df = report_params,
 #'   template_name = "simple_report",

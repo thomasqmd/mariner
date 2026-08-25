@@ -6,8 +6,8 @@
 \usage{
 theme_mariner(
   theme = "baylor",
-  format = c("revealjs", "html", "pdf", "typst"),
-  base_size = NULL,
+  format = mariner_formats,
+  base_size = 11,
   base_family = NULL,
   ...
 )
@@ -15,9 +15,10 @@ theme_mariner(
 \arguments{
 \item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
 
-\item{format}{Format context: \code{"revealjs"}, \code{"html"}, \code{"pdf"}, or \code{"typst"}.}
+\item{format}{One of \link{mariner_formats}.}
 
-\item{base_size}{Base font size in points. Defaults to \code{16} for slides, \code{11} for reports.}
+\item{base_size}{Base font size in points. Defaults to \code{11}, matching the
+report body text set in \verb{_extension.yml}.}
 
 \item{base_family}{Font family name. Defaults to \code{"Atkinson Hyperlegible Next"}.}
 
@@ -36,6 +37,6 @@ library(ggplot2)
 ggplot(mpg, aes(displ, hwy, colour = class)) +
   geom_point() +
   scale_colour_mariner_d("baylor") +
-  theme_mariner("baylor", format = "revealjs")
+  theme_mariner("baylor")
 }
 }

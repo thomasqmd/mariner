@@ -2,12 +2,12 @@
 % Please edit documentation in R/process_files.R
 \name{process_files}
 \alias{process_files}
-\title{Bundle Multiple R Markdown or Quarto Files Sequentially or in Parallel}
+\title{Bundle Multiple Quarto Files Sequentially or in Parallel}
 \usage{
 process_files(input_files, output_dir = NULL)
 }
 \arguments{
-\item{input_files}{A character vector of paths to the \code{.Rmd} or \code{.qmd} files.}
+\item{input_files}{A character vector of paths to the \code{.qmd} files.}
 
 \item{output_dir}{An optional path to a directory where the output zip
 archives will be saved. If \code{NULL} (the default), each zip is created in
@@ -19,9 +19,9 @@ created zip archives. Any file that fails to process will be represented
 by an \code{NA} in the output vector.
 }
 \description{
-A wrapper around \code{process_file()} to process a list of R Markdown (.Rmd) or
-Quarto (.qmd) files. Execution is sequential by default but can be run in
-parallel by setting a \code{future} plan (e.g., \code{future::plan(future::multisession)}).
+A wrapper around \code{process_file()} to process a list of Quarto (.qmd) files.
+Execution is sequential by default but can be run in parallel by setting a
+\code{future} plan (e.g., \code{future::plan(future::multisession)}).
 }
 \examples{
 \dontrun{
@@ -35,7 +35,6 @@ report_params <- tidyr::expand_grid(
   author = "Firstname Lastname"
 )
 
-# This will now likely create .qmd files
 doc_files <- generate_reports(
   params_df = report_params,
   template_name = "simple_report",

@@ -131,8 +131,8 @@
   \ifcsname arrayrulecolor\endcsname\arrayrulecolor{qmdprimary}\fi
 }
 
-% Definition cross-references, matching the .term / .defn classes in the
-% stylesheets so the same concept renders alike in every format.
+% Definition cross-references, for the \linkeddefn / \defanchor pair in
+% defn.tex.
 \providecommand{\texorpdfstring}[2]{#1}
 \DeclareRobustCommand{\defn}[1]{\textcolor{qmdprimary}{\underline{\textit{#1}}}}
 \DeclareRobustCommand{\linkeddefn}[2]{%
@@ -154,9 +154,6 @@
 % same time so a tall figure is accepted on a page with text rather than
 % being deferred in the first place -- barriers alone would just turn the
 % deferral into a half-empty page.
-%
-% Typst needs none of this: it has no float model, so its figures were always
-% in the right place.
 \usepackage{placeins}
 \makeatletter
 \AtBeginDocument{%

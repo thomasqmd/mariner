@@ -7,14 +7,14 @@
 #   no font could be found for family "Atkinson Hyperlegible Next"
 #   Unable to calculate text width/height (using zero)
 #
-# Zero-width text is not cosmetic. The device lays the panel out around labels it
-# believes have no size, so an svg can come out empty -- which is exactly how
-# this surfaced, as figures that did not appear in the html and revealjs
-# documents while the printed ones looked fine.
+# Zero-width text is not cosmetic. The device lays the panel out around labels
+# it believes have no size, so axis titles collide and legends overlap the
+# panel. Worse, base pdf() does not degrade at all -- it refuses with "invalid
+# font type" and takes the whole render down.
 #
-# They looked fine for the wrong reason: theme_mariner() passed base_family = "" for
-# pdf and typst, so the print formats were quietly opting out of the theme's own
-# typeface rather than resolving it.
+# The old workaround was theme_mariner() passing base_family = "" for pdf, which
+# meant a report's figures were drawn in the device default while the body text
+# around them was Atkinson, and nothing said so.
 
 test_that("the bundled fonts are found regardless of working directory", {
   # The directory has to resolve from anywhere. testthat runs with the working
@@ -99,21 +99,6 @@ test_that("the four styles are real cuts, not one file four times", {
                label = "a variable font registered as a static cut")
 })
 
-test_that("theme_mariner() uses the theme's face in every svg-drawn format", {
-  skip_if_not_installed("systemfonts")
-  mariner_register_fonts(quiet = TRUE)
-  skip_if_not(mariner:::mariner_fonts_available())
-
-  # Not pdf. Those three are drawn by svglite, which reads the registry that
-  # mariner_register_fonts() populates; the LaTeX pdf path is not, and gets its own
-  # test below.
-  for (format in setdiff(mariner_formats, "pdf")) {
-    th <- theme_mariner("baylor", format = format)
-    expect_equal(th$text$family, "Atkinson Hyperlegible Next",
-                 label = sprintf("theme_mariner(format = %s) base family", format))
-  }
-})
-
 test_that("theme_mariner() never asks the pdf device for a face it cannot reach", {
   # The regression this exists for takes a whole render down rather than
   # degrading: knitr draws the LaTeX pdf figures with cairo_pdf(), or with base
@@ -151,61 +136,62 @@ test_that("theme_mariner() never asks the pdf device for a face it cannot reach"
   expect_equal(mariner:::mariner_fonts_available("pdf"), installed)
 })
 
-test_that("a figure draws with real text metrics and no font warning", {
+test_that("a report figure draws with real text metrics and no font warning", {
   skip_if_not_installed("systemfonts")
-  skip_if_not_installed("svglite")
   skip_if_not_installed("ggplot2")
   mariner_register_fonts(quiet = TRUE)
-  skip_if_not(mariner:::mariner_fonts_available())
 
+  # cairo_pdf() is the device a report's figures are actually drawn with, and
+  # the only one whose answer matters now. It reads fontconfig rather than the
+  # registry, so this runs only where the faces are genuinely installed --
+  # which is exactly the condition mariner_fonts_available("pdf") reports.
+  skip_if_not(capabilities("cairo"))
+  skip_if_not(mariner:::mariner_fonts_available("pdf"))
+
+  dims <- mariner_fig_dims("pdf")
   p <- ggplot2::ggplot(ggplot2::mpg, ggplot2::aes(class, hwy)) +
     ggplot2::geom_point() +
     ggplot2::labs(x = "Vehicle class", y = "Highway MPG") +
-    theme_mariner("baylor", format = "html")
+    theme_mariner("baylor")
 
-  out <- withr::local_tempfile(fileext = ".svg")
+  out <- withr::local_tempfile(fileext = ".pdf")
   warnings_seen <- character()
   withCallingHandlers(
-    ggplot2::ggsave(out, p, device = svglite::svglite, width = 7, height = 4),
+    ggplot2::ggsave(out, p, device = grDevices::cairo_pdf,
+                    width = dims$width, height = dims$height),
     warning = function(w) {
       warnings_seen <<- c(warnings_seen, conditionMessage(w))
       invokeRestart("muffleWarning")
     }
   )
 
-  expect_false(any(grepl("no font could be found|Unable to calculate text",
+  expect_false(any(grepl("no font could be found|Unable to calculate text|invalid font",
                          warnings_seen)),
                label = paste("font warnings while drawing:",
                              paste(unique(warnings_seen), collapse = "; ")))
 
   # An empty file is the failure mode this is really guarding: zero metrics
-  # produced a zero-byte svg, which reads as "the plot did not appear".
+  # produced a figure that read as "the plot did not appear".
   expect_gt(file.size(out), 5000)
 
-  svg <- paste(readLines(out, warn = FALSE), collapse = "")
-  expect_match(svg, "font-family: *\"Atkinson Hyperlegible")
-  # textLength is written from the measured advance; zero metrics show up here
-  # before they show up as a missing figure.
-  expect_match(svg, "textLength='[1-9]")
+  # The metric itself, asked of the device directly. Zero-width text shows up
+  # here before it shows up as a collapsed panel layout.
+  grDevices::cairo_pdf(withr::local_tempfile(fileext = ".pdf"))
+  withr::defer(grDevices::dev.off())
+  graphics::par(family = "Atkinson Hyperlegible Next")
+  expect_gt(graphics::strwidth("Vehicle class", units = "inches"), 0)
 })
 
-test_that("mariner_knitr_setup() picks a device that reads the registry", {
+test_that("mariner_knitr_setup() picks a vector device for the report", {
   skip_if_not_installed("knitr")
-  skip_if_not_installed("svglite")
 
-  # svglite and ragg read the systemfonts registry; the cairo-backed
-  # grDevices::svg() and cairo_pdf() consult fontconfig and cannot see a font
-  # that is bundled rather than installed. Registering without switching the
-  # device would change nothing, so the two have to stay in step.
   old <- knitr::opts_chunk$get()
   withr::defer(knitr::opts_chunk$set(old))
 
-  for (format in c("html", "revealjs", "typst")) {
-    mariner_knitr_setup(format, theme = "baylor")
-    expect_equal(knitr::opts_chunk$get("dev"), "svglite",
-                 label = sprintf("%s figure device", format))
-  }
-
   mariner_knitr_setup("pdf", theme = "baylor")
   expect_true(knitr::opts_chunk$get("dev") %in% c("cairo_pdf", "pdf"))
+
+  # The format vocabulary is one value, and asking for anything else is an
+  # error rather than a silent fallback to pdf defaults.
+  expect_error(mariner_knitr_setup("revealjs", theme = "baylor"))
 })

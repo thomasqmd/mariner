@@ -38,6 +38,21 @@ test_that("process_files places zips in the specified output_dir", {
 
 # Test Case 2: Parallel processing with mixed file types and failures
 test_that("process_files works in parallel with mixed types and success", {
+  # A multisession worker is a FRESH R process: it attaches mariner from the
+  # library, not from the parent session. Under devtools::test() / load_all()
+  # the package is loaded from source and is not installed anywhere the worker
+  # can reach, so every future fails to attach it -- a failure about the test
+  # setup, not about the code. R CMD check installs first and runs this for
+  # real.
+  #
+  # requireNamespace() is no good as the test: pkgload registers the namespace,
+  # so it answers TRUE for a source load too. Asking pkgload directly is the
+  # question that actually distinguishes the two.
+  skip_if(
+    isTRUE(pkgload::is_dev_package("mariner")),
+    "mariner is loaded from source; a multisession worker cannot attach it"
+  )
+
   # --- 1. Setup ---
   old_plan <- future::plan(future::multisession, workers = 2)
   on.exit(future::plan(old_plan), add = TRUE)
@@ -57,11 +72,11 @@ test_that("process_files works in parallel with mixed types and success", {
     output_dir = temp_dir
   )
 
-  # A valid .Rmd file
-  valid_rmd <- file.path(temp_dir, "valid.Rmd")
+  # A second valid .qmd file, written by hand
+  simple_qmd <- file.path(temp_dir, "simple.qmd")
   writeLines(
-    c("---", "title: 'Valid Rmd'", "---", "A simple Rmd."),
-    valid_rmd
+    c("---", "title: 'Simple'", "format: html", "---", "A simple document."),
+    simple_qmd
   )
 
   # An invalid .qmd file
@@ -71,7 +86,7 @@ test_that("process_files works in parallel with mixed types and success", {
     invalid_qmd
   )
 
-  input_list <- c(valid_qmd, valid_rmd, invalid_qmd)
+  input_list <- c(valid_qmd, simple_qmd, invalid_qmd)
 
   # --- 2. Execute ---
   suppressMessages({
@@ -80,8 +95,8 @@ test_that("process_files works in parallel with mixed types and success", {
 
   # --- 3. Assertions ---
   expect_length(output_paths, 3)
-  expect_true(!is.na(output_paths[1])) # valid .qmd
-  expect_true(!is.na(output_paths[2])) # valid .Rmd
+  expect_true(!is.na(output_paths[1])) # valid .qmd from the template
+  expect_true(!is.na(output_paths[2])) # valid hand-written .qmd
   expect_true(is.na(output_paths[3])) # invalid .qmd
   expect_true(file.exists(output_paths[1]))
   expect_true(file.exists(output_paths[2]))

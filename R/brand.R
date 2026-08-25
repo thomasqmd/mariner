@@ -1,6 +1,6 @@
 # Reading the source of truth.
 #
-# Everything downstream -- SCSS, CSS custom properties, LaTeX, Typst, the R
+# Everything downstream -- the LaTeX preamble, the R
 # palettes -- comes through here, so there is exactly one parser and one place
 # that knows the shape of a _brand.yml.
 #
@@ -9,8 +9,8 @@
 #' Read the theme's brand definition
 #'
 #' Parses the theme's `_brand.yml`, the single file in this package where a
-#' colour is written down. Every other colour artefact -- the SCSS variables,
-#' the CSS custom properties, the LaTeX preamble, the Typst tokens, and the
+#' colour is written down. Every other colour artefact -- the LaTeX preamble
+#' and the
 #' ggplot2 palettes -- is generated or read from it.
 #'
 #' @param theme One of [mariner_themes].

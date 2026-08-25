@@ -4,16 +4,12 @@
 \alias{mariner_set_theme}
 \title{Set global ggplot2 theme and scale defaults}
 \usage{
-mariner_set_theme(
-  theme = "baylor",
-  format = c("revealjs", "html", "pdf", "typst"),
-  ...
-)
+mariner_set_theme(theme = "baylor", format = mariner_formats, ...)
 }
 \arguments{
 \item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
 
-\item{format}{Format context: \code{"revealjs"}, \code{"html"}, \code{"pdf"}, or \code{"typst"}.}
+\item{format}{One of \link{mariner_formats}.}
 
 \item{...}{Arguments passed to \code{\link[=theme_mariner]{theme_mariner()}}.}
 }
@@ -26,6 +22,6 @@ continuous scales so subsequent plots use the brand palette automatically.
 }
 \examples{
 \dontrun{
-mariner_set_theme("baylor", format = "revealjs")
+mariner_set_theme("baylor")
 }
 }

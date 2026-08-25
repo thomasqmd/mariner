@@ -1,5 +1,4 @@
-# Regenerate every derived artefact, and re-sync the shared partials into the
-# extension directory.
+# Regenerate every derived artefact into inst/generated/<theme>/.
 #
 # Run after ANY edit to a source of truth:
 #
@@ -9,10 +8,13 @@
 #   R/slides.R                      the slide box, and everything measured on it
 #   R/scss.R                        the stylesheet layer order
 #   R/logos.R                       the per-placement target heights
-#   inst/scss/, inst/typst/, inst/tex/, inst/html/
-#                                   the shared partials, which are COPIED in
 #
 #   Rscript data-raw/build-tokens.R
+#
+# The hand-written partials in inst/scss/, inst/tex/, inst/typst/ and inst/js/
+# are NOT touched by this script and are not copied anywhere: the extension
+# Quarto reads is assembled from them on demand by mariner_build_extension(), so
+# editing one needs no rebuild at all.
 #
 # tests/testthat/test-no-drift.R re-runs the same generators into a temporary
 # directory and diffs against what is committed, so forgetting this step fails

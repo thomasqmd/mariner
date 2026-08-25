@@ -2,28 +2,22 @@
 % Please edit documentation in R/knitr.R
 \name{mariner_fig_dims}
 \alias{mariner_fig_dims}
-\title{Figure dimensions by document format}
+\title{Figure dimensions for a branded report}
 \usage{
-mariner_fig_dims(format = c("revealjs", "html", "pdf", "typst"))
+mariner_fig_dims(format = mariner_formats)
 }
 \arguments{
-\item{format}{Format target: \code{"revealjs"}, \code{"html"}, \code{"pdf"}, or \code{"typst"}.}
+\item{format}{One of \link{mariner_formats}.}
 }
 \value{
 A named list with numeric \code{width} and \code{height} in inches.
 }
 \description{
-Provides aspect ratio and dimension calculations tailored to each presentation
-and reporting target.
-}
-\details{
-The slide figure is not a fourth pair of numbers: it is the slide box less
-the heading bar, computed by \code{mariner_slide_geometry()} from the constants in
-\code{R/slides.R}, so the size knitr draws at, the cap in the stylesheet and the
-\verb{width:}/\verb{height:} pair in the extension YAML all move together. The other
-three are page sizes less their margins, which do not vary with anything.
+The drawing area a figure gets on the page: the geometry in \verb{_extension.yml}
+(US Letter, 1in left and right, 0.75in top and bottom) leaves 6.5in of text
+width, and 4.5in tall is a little under the 3:2 that leaves room for a
+caption and surrounding prose.
 }
 \examples{
-mariner_fig_dims("revealjs")
 mariner_fig_dims("pdf")
 }
