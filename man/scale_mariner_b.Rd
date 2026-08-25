@@ -6,15 +6,13 @@
 \alias{scale_fill_mariner_b}
 \title{Binned colour and fill scales for mariner}
 \usage{
-scale_colour_mariner_b(theme = "baylor", reverse = FALSE, ...)
+scale_colour_mariner_b(reverse = FALSE, ...)
 
-scale_color_mariner_b(theme = "baylor", reverse = FALSE, ...)
+scale_color_mariner_b(reverse = FALSE, ...)
 
-scale_fill_mariner_b(theme = "baylor", reverse = FALSE, ...)
+scale_fill_mariner_b(reverse = FALSE, ...)
 }
 \arguments{
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
-
 \item{reverse}{Logical; if \code{TRUE}, reverses the color steps.}
 
 \item{...}{Arguments passed to \code{\link[ggplot2:scale_steps]{ggplot2::scale_colour_stepsn()}} or \code{\link[ggplot2:scale_steps]{ggplot2::scale_fill_stepsn()}}.}

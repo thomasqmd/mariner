@@ -190,10 +190,10 @@ test_that("overwrite = TRUE restores a clobbered starter", {
 
 test_that("setup rejects an unknown theme and an unknown template", {
   root <- make_project("DESCRIPTION")
-  expect_error(mariner_setup_project(root = root, theme = "nosuch"))
+  expect_error(mariner_setup_project(root = root, theme = "nosuch"), "must be one of")
   expect_error(
     suppressMessages(mariner_setup_project(root = root, template = "nosuch")),
-    "Unknown template"
+    "No template named"
   )
 })
 

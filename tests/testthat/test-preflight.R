@@ -83,7 +83,7 @@ test_that("every package the packaged template loads is declared in DESCRIPTION"
     trimws(sub("\\(.*", "", deps))
   }
 
-  pkgs <- template_packages(setup_template_path("simple_report"))
+  pkgs <- template_packages(mariner_template_path("report"))
   expect_gt(length(pkgs), 0L)
   expect_equal(setdiff(pkgs, declared), character())
 })

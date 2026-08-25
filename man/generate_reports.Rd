@@ -6,7 +6,7 @@
 \usage{
 generate_reports(
   params_df,
-  template_name = "simple_report",
+  template_name = "report",
   template_package = "mariner",
   output_dir = mariner_dirs()$reports,
   template_path = NULL,
@@ -66,7 +66,7 @@ report_params <- data.frame(
 
 qmd_files <- generate_reports(
   params_df = report_params,
-  template_name = "simple_report",
+  template_name = "report",
   output_dir = temp_dir
 )
 

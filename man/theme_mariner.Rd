@@ -5,7 +5,7 @@
 \title{Branded ggplot2 theme for mariner}
 \usage{
 theme_mariner(
-  theme = "baylor",
+  theme = mariner_themes,
   format = mariner_formats,
   base_size = 11,
   base_family = NULL,
@@ -13,7 +13,7 @@ theme_mariner(
 )
 }
 \arguments{
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
+\item{theme}{Theme name. Defaults to the built-in mariner theme.}
 
 \item{format}{One of \link{mariner_formats}.}
 
@@ -32,11 +32,9 @@ Provides a consistent ggplot2 theme aligned with the brand typography,
 background, rule grids, and primary colors of the document theme.
 }
 \examples{
-\dontrun{
 library(ggplot2)
 ggplot(mpg, aes(displ, hwy, colour = class)) +
   geom_point() +
-  scale_colour_mariner_d("baylor") +
-  theme_mariner("baylor")
-}
+  scale_colour_mariner_d() +
+  theme_mariner()
 }

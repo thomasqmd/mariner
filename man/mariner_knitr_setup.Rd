@@ -6,7 +6,7 @@
 \usage{
 mariner_knitr_setup(
   format = mariner_formats,
-  theme = "baylor",
+  theme = mariner_themes,
   dpi = 300,
   fig_format = NULL,
   ...
@@ -15,7 +15,7 @@ mariner_knitr_setup(
 \arguments{
 \item{format}{One of \link{mariner_formats}.}
 
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
+\item{theme}{Theme name. Defaults to the built-in mariner theme.}
 
 \item{dpi}{Numeric figure resolution in dots per inch. Defaults to \code{300}.}
 
@@ -33,6 +33,6 @@ settings. Call it in the setup chunk of a report.
 }
 \examples{
 \dontrun{
-mariner_knitr_setup("pdf", theme = "baylor")
+mariner_knitr_setup("pdf")
 }
 }

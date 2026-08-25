@@ -6,15 +6,13 @@
 \alias{scale_fill_mariner_d}
 \title{Discrete colour and fill scales for mariner}
 \usage{
-scale_colour_mariner_d(theme = "baylor", reverse = FALSE, ...)
+scale_colour_mariner_d(reverse = FALSE, ...)
 
-scale_color_mariner_d(theme = "baylor", reverse = FALSE, ...)
+scale_color_mariner_d(reverse = FALSE, ...)
 
-scale_fill_mariner_d(theme = "baylor", reverse = FALSE, ...)
+scale_fill_mariner_d(reverse = FALSE, ...)
 }
 \arguments{
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
-
 \item{reverse}{Logical; if \code{TRUE}, reverses the color vector.}
 
 \item{...}{Arguments passed to \code{\link[ggplot2:discrete_scale]{ggplot2::discrete_scale()}}.}
@@ -26,10 +24,8 @@ A ggplot2 discrete scale object.
 Discrete colour and fill scales for mariner
 }
 \examples{
-\dontrun{
 library(ggplot2)
 ggplot(mpg, aes(displ, hwy, colour = class)) +
   geom_point() +
-  scale_colour_mariner_d("baylor")
-}
+  scale_colour_mariner_d()
 }

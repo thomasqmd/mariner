@@ -27,6 +27,7 @@ write_qmd <- function(dir, name, format = "pdf", body = "Hello world.") {
 }
 
 test_that("the scratch directory is a real path", {
+  skip_if_no_quarto()
   dir <- spaced_dir()
   doc <- write_qmd(dir, "spaced")
 
@@ -43,6 +44,7 @@ test_that("the scratch directory is a real path", {
 })
 
 test_that("process_file renders a document whose own name has a space", {
+  skip_if_no_quarto()
   dir <- spaced_dir()
   doc <- write_qmd(dir, "report with spaces")
   out <- file.path(dir, "b.zip")
@@ -60,6 +62,7 @@ test_that("process_file renders a document whose own name has a space", {
 })
 
 test_that("a spaced html document keeps its _files directory", {
+  skip_if_no_quarto()
   # The bug the slugified name hides. classify_artefacts() used to look for
   # `<input stem>_files`, so `report-with-spaces_files/` fell through to
   # `intermediates`: invisible under the default include, and a BROKEN html

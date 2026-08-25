@@ -4,10 +4,10 @@
 \alias{mariner_set_theme}
 \title{Set global ggplot2 theme and scale defaults}
 \usage{
-mariner_set_theme(theme = "baylor", format = mariner_formats, ...)
+mariner_set_theme(theme = mariner_themes, format = mariner_formats, ...)
 }
 \arguments{
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
+\item{theme}{Theme name. Defaults to the built-in mariner theme.}
 
 \item{format}{One of \link{mariner_formats}.}
 
@@ -21,7 +21,5 @@ Sets \code{\link[=theme_mariner]{theme_mariner()}} as the global default theme a
 continuous scales so subsequent plots use the brand palette automatically.
 }
 \examples{
-\dontrun{
-mariner_set_theme("baylor")
-}
+mariner_set_theme()
 }

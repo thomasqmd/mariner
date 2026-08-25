@@ -5,7 +5,7 @@
 #' Provides a consistent ggplot2 theme aligned with the brand typography,
 #' background, rule grids, and primary colors of the document theme.
 #'
-#' @param theme One of [mariner_themes]. Defaults to `"baylor"`.
+#' @param theme Theme name. Defaults to the built-in mariner theme.
 #' @param format One of [mariner_formats].
 #' @param base_size Base font size in points. Defaults to `11`, matching the
 #'   report body text set in `_extension.yml`.
@@ -14,14 +14,12 @@
 #' @return A ggplot2 theme object.
 #' @export
 #' @examples
-#' \dontrun{
 #' library(ggplot2)
 #' ggplot(mpg, aes(displ, hwy, colour = class)) +
 #'   geom_point() +
-#'   scale_colour_mariner_d("baylor") +
-#'   theme_mariner("baylor")
-#' }
-theme_mariner <- function(theme = "baylor",
+#'   scale_colour_mariner_d() +
+#'   theme_mariner()
+theme_mariner <- function(theme = mariner_themes,
                       format = mariner_formats,
                       base_size = 11,
                       base_family = NULL,
@@ -97,16 +95,14 @@ theme_mariner <- function(theme = "baylor",
 #' Sets [theme_mariner()] as the global default theme and configures default discrete and
 #' continuous scales so subsequent plots use the brand palette automatically.
 #'
-#' @param theme One of [mariner_themes]. Defaults to `"baylor"`.
+#' @param theme Theme name. Defaults to the built-in mariner theme.
 #' @param format One of [mariner_formats].
 #' @param ... Arguments passed to [theme_mariner()].
 #' @return Invisibly returns the previous theme.
 #' @export
 #' @examples
-#' \dontrun{
-#' mariner_set_theme("baylor")
-#' }
-mariner_set_theme <- function(theme = "baylor",
+#' mariner_set_theme()
+mariner_set_theme <- function(theme = mariner_themes,
                           format = mariner_formats,
                           ...) {
   theme <- check_theme(theme)
@@ -116,10 +112,10 @@ mariner_set_theme <- function(theme = "baylor",
   old_theme <- ggplot2::theme_set(th)
 
   options(
-    ggplot2.discrete.colour = function(...) scale_colour_mariner_d(theme = theme, ...),
-    ggplot2.discrete.fill = function(...) scale_fill_mariner_d(theme = theme, ...),
-    ggplot2.continuous.colour = function(...) scale_colour_mariner_c(theme = theme, ...),
-    ggplot2.continuous.fill = function(...) scale_fill_mariner_c(theme = theme, ...)
+    ggplot2.discrete.colour = function(...) scale_colour_mariner_d(...),
+    ggplot2.discrete.fill = function(...) scale_fill_mariner_d(...),
+    ggplot2.continuous.colour = function(...) scale_colour_mariner_c(...),
+    ggplot2.continuous.fill = function(...) scale_fill_mariner_c(...)
   )
 
   invisible(old_theme)

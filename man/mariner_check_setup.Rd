@@ -7,7 +7,7 @@
 mariner_check_setup(
   root = NULL,
   theme = mariner_themes,
-  template = "simple_report",
+  template = "report",
   quiet = FALSE
 )
 }

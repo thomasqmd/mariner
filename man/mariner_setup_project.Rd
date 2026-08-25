@@ -7,7 +7,7 @@
 mariner_setup_project(
   root = NULL,
   theme = mariner_themes,
-  template = "simple_report",
+  template = "report",
   overwrite = FALSE
 )
 }

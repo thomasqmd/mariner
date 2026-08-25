@@ -17,12 +17,13 @@ write_qmd <- function(dir, name, format = "pdf", body = "A simple document.") {
 }
 
 test_that("process_files places zips in the specified output_dir", {
+  skip_if_no_quarto()
   dir <- local_dir()
   docs <- suppressMessages(generate_reports(
     params_df = data.frame(
       chapter = 1, problem_numbers = 1:2, author = "Test Author"
     ),
-    template_name = "simple_report",
+    template_name = "report",
     output_dir = dir
   ))
 
@@ -36,6 +37,7 @@ test_that("process_files places zips in the specified output_dir", {
 })
 
 test_that("a NULL output_dir resolves per input file", {
+  skip_if_no_quarto()
   # Two documents in two different project roots. Resolving once in the parent
   # from getwd() would put both bundles in the same place.
   root_a <- local_dir()
@@ -53,6 +55,7 @@ test_that("a NULL output_dir resolves per input file", {
 })
 
 test_that("a failure is an NA and its message is reported, not discarded", {
+  skip_if_no_quarto()
   dir <- local_dir()
   good <- write_qmd(dir, "good")
   bad <- file.path(dir, "bad.qmd")
@@ -73,6 +76,7 @@ test_that("a failure is an NA and its message is reported, not discarded", {
 })
 
 test_that("include is forwarded to each file", {
+  skip_if_no_quarto()
   dir <- local_dir()
   docs <- c(write_qmd(dir, "one"), write_qmd(dir, "two"))
   zip_dir <- file.path(dir, "zips")
@@ -91,6 +95,7 @@ test_that("process_files handles an empty input vector gracefully", {
 })
 
 test_that("process_files works in parallel", {
+  skip_if_no_quarto()
   # A multisession worker is a FRESH R process: it attaches mariner from the
   # library, not from the parent session. Under devtools::test() / load_all()
   # the package is loaded from source and is not installed anywhere the worker
@@ -111,7 +116,7 @@ test_that("process_files works in parallel", {
   dir <- local_dir()
   valid <- suppressMessages(generate_reports(
     params_df = data.frame(chapter = 1, problem_numbers = 1, author = "Valid"),
-    template_name = "simple_report",
+    template_name = "report",
     output_dir = dir
   ))
   simple <- write_qmd(dir, "simple", format = "html")

@@ -12,7 +12,7 @@ mariner_pal(
 )
 }
 \arguments{
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
+\item{theme}{Theme name. Defaults to the built-in mariner theme.}
 
 \item{family}{Palette family: \code{"discrete"}, \code{"sequential"}, \code{"ordinal"}, or \code{"diverging"}.}
 
@@ -27,8 +27,8 @@ A character vector of hex colors if \code{n} is supplied, or a palette function 
 Constructs discrete, sequential, ordinal, or diverging color palettes for a theme.
 }
 \examples{
-mariner_pal("baylor", "discrete", n = 4)
-mariner_pal("personal", "diverging", n = 7)
-pal_fn <- mariner_pal("baylor", "sequential")
+mariner_pal(family = "discrete", n = 4)
+mariner_pal(family = "diverging", n = 7)
+pal_fn <- mariner_pal(family = "sequential")
 pal_fn(5)
 }

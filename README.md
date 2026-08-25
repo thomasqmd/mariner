@@ -5,71 +5,82 @@
 [![codecov](https://codecov.io/github/thomasqmd/mariner/graph/badge.svg?token=A4PDZWC3IL)](https://codecov.io/github/thomasqmd/mariner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The **mariner** package simplifies and automates the process of creating and zipping reports for Dr. Seaman's Class. It provides a cohesive workflow to first generate multiple Quarto source files from a single parameterized template, and then zips the source files and all rendered outputs into easily shareable zip archives. See the reference website [here](https://thomasqmd.github.io/mariner/).
+The **mariner** package automates the generation, rendering, and bundling of parameterized Quarto reports. It includes a built-in Baylor Quarto PDF theme with typography, colors, and `ggplot2` scales.
+
+Visit the documentation site at [https://thomasqmd.github.io/mariner/](https://thomasqmd.github.io/mariner/).
 
 ## Installation
 
-You can install the current version of mariner from [GitHub](https://github.com/thomasqmd/mariner) with:
+Install the development version from GitHub:
 
 ```r
 # install.packages("pak")
 pak::pak("thomasqmd/mariner")
-
 ```
 
-## Workflow
+## Folder Structure
 
-The typical workflow involves two main steps: using `generate_reports()` to create parameterized `.qmd` files, and then using `process_files()` to render and bundle them.
+`mariner` organizes files into three project directories:
 
-### Generate Reports
+```
+your-project/
+├── assets/          # Theme cache and font assets
+├── reports/         # Quarto source files (.qmd) and staged _extensions/
+└── zip_files/       # Output zip archives containing PDF, source, and R script
+```
 
-Use `generate_reports` to create multiple report files base on a template.
+## Quickstart
 
 ```r
 library(mariner)
 library(tidyr)
 
-# --- 1. Setup: Create a temporary directory for the output ---
-temp_dir <- tempfile("mariner-example-")
-dir.create(temp_dir)
+# 1. Initialize project folders and Quarto theme
+mariner_setup_project()
 
-# --- 2. Define the parameters for each report ---
-# Each row in the data frame corresponds to one report.
+# 2. Define report parameters
 report_params <- expand_grid(
-  chapter = 1, 
-  problem_numbers = 1:2, 
-  author = "Firstname Lastname"
+  chapter = 1,
+  problem_numbers = 1:2,
+  author = c("Alice Smith", "Bob Jones")
 )
 
-# --- 3. Generate the .qmd source files ---
-qmd_files <- generate_reports(
-  params_df = report_params,
-  template_name = "simple_report",
-  output_dir = temp_dir
-)
-#> Generating 2 qmd files...
-#> qmd file generation complete.
+# 3. Generate .qmd files in reports/
+qmd_files <- generate_reports(report_params)
+
+# 4. Render and bundle into zip_files/
+zip_files <- process_files(qmd_files)
 ```
 
-### Proccess Reports
+## Theming and Visualization
 
-Then you will have two `.qmd` files in your temporary directory, named `Report-1_1.qmd` and `Report-1_2.qmd`, each containing the parameters specified. After editing the reports as needed, you can proceed to render and zip them with `process_file` or `process_files` as shown below.
+`mariner` exports `theme_mariner()` and custom scale functions:
 
 ```r
-# --- 4. Render the reports and bundle them into zip archives ---
-# This can be run in parallel by setting a future plan.
-process_files(qmd_files)
-#> Starting bundling process...
-#> Progress: ────────────────────────────────── 100%
-#> Successfully created bundle: Report-1_1.zip
-#> Successfully created bundle: Report-1_2.zip
-#> Bundling complete. Success: 2, Failures: 0.
+library(ggplot2)
 
-# --- 5. View the final output ---
-# The directory now contains the source .qmd files and their zip archives.
-list.files(temp_dir)
-#> [1] "Report-1_1.qmd" "Report-1_1.zip" "Report-1_2.qmd" "Report-1_2.zip"
+ggplot(mpg, aes(class, hwy, color = class)) +
+  geom_jitter(width = 0.2, height = 0, size = 2) +
+  scale_colour_mariner_d() +
+  labs(
+    title = "Fuel Economy by Vehicle Class",
+    x = "Vehicle Class",
+    y = "Highway MPG"
+  ) +
+  theme_mariner() +
+  theme(legend.position = "none")
+```
 
-# --- Cleanup ---
-unlink(temp_dir, recursive = TRUE)
+## System Verification and Troubleshooting
+
+To verify your system environment (Quarto CLI, LaTeX, and theme fonts):
+
+```r
+mariner_check_setup()
+```
+
+If fonts are missing on your operating system:
+
+```r
+mariner_install_fonts()
 ```

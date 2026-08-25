@@ -6,15 +6,13 @@
 \alias{scale_fill_mariner_o}
 \title{Ordinal colour and fill scales for mariner}
 \usage{
-scale_colour_mariner_o(theme = "baylor", reverse = FALSE, ...)
+scale_colour_mariner_o(reverse = FALSE, ...)
 
-scale_color_mariner_o(theme = "baylor", reverse = FALSE, ...)
+scale_color_mariner_o(reverse = FALSE, ...)
 
-scale_fill_mariner_o(theme = "baylor", reverse = FALSE, ...)
+scale_fill_mariner_o(reverse = FALSE, ...)
 }
 \arguments{
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
-
 \item{reverse}{Logical; if \code{TRUE}, reverses the color ramp.}
 
 \item{...}{Arguments passed to \code{\link[ggplot2:discrete_scale]{ggplot2::discrete_scale()}}.}

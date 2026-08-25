@@ -7,7 +7,7 @@
 mariner_colors(theme = mariner_themes)
 }
 \arguments{
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
+\item{theme}{Theme name. Defaults to the built-in mariner theme.}
 }
 \value{
 A named character vector of hex codes.
@@ -16,6 +16,6 @@ A named character vector of hex codes.
 Extracts all named colours and semantic roles defined in the theme's \verb{_brand.yml}.
 }
 \examples{
-mariner_colors("baylor")
-mariner_colors("personal")[c("primary", "secondary")]
+mariner_colors()
+mariner_colors()[c("primary", "secondary")]
 }

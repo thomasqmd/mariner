@@ -1,0 +1,188 @@
+---
+title: "Theming and Scales"
+format: html
+vignette: >
+  %\VignetteIndexEntry{Theming and Scales}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6.5,
+  fig.height = 3.5,
+  fig.align = "center"
+)
+library(ggplot2)
+library(mariner)
+```
+
+`mariner` provides a Baylor theme and a palette system for `ggplot2`.
+
+## 1. Brand Palette and Chrome
+
+Brand colours separate into chrome roles and data series palettes.
+
+* **Chrome roles**: Page background, headings, rules, and link text.
+* **Data series**: Colors selected and tested for contrast against the background and distinction under color vision deficiencies.
+
+Inspect available brand hex codes:
+
+```{r brand-colors}
+mariner_colors()
+```
+
+### Brand Chrome Roles
+
+```{r chrome-swatch, fig.height = 1.8}
+chrome_roles  <- c("primary", "secondary", "accent-ink", "accent-rule",
+                   "link", "ink", "ink-muted")
+chrome_labels <- c("Primary", "Secondary", "Accent Ink", "Accent Rule",
+                   "Link", "Ink", "Muted Ink")
+
+chrome_df <- data.frame(
+  Slot  = seq_along(chrome_roles),
+  Role  = factor(chrome_labels, levels = chrome_labels),
+  Color = unname(mariner_colors()[chrome_roles])
+)
+
+ggplot(chrome_df, aes(Slot, 1, fill = Color)) +
+  geom_tile(color = mariner_colors()[["background"]],
+            linewidth = 1.2, width = 0.88, height = 0.88) +
+  scale_fill_identity() +
+  scale_x_continuous(breaks = chrome_df$Slot, labels = chrome_df$Role,
+                     position = "top", expand = c(0.02, 0.02)) +
+  scale_y_continuous(breaks = NULL, expand = c(0.04, 0.04)) +
+  coord_fixed() +
+  labs(x = NULL, y = NULL) +
+  theme_mariner() +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.y = element_blank()
+  )
+```
+
+## 2. Palette Families
+
+`mariner_pal()` generates palettes across five families:
+
+1. **Discrete (`"discrete"`)**: Categorical data up to 8 classes.
+2. **Sequential (`"sequential"`)**: Quantitative magnitude.
+3. **Ordinal (`"ordinal"`)**: Ordered factors.
+4. **Diverging (`"diverging"`)**: Values with a neutral midpoint.
+5. **Chart chrome**: Structural grid and axis rules.
+
+```{r palette-swatches, fig.height = 2.6}
+fams <- list(
+  "Categorical (8)"  = mariner_pal(family = "discrete",   n = 8),
+  "Sequential (7)"   = mariner_pal(family = "sequential", n = 7),
+  "Ordinal (5)"      = mariner_pal(family = "ordinal",    n = 5),
+  "Diverging (7)"    = mariner_pal(family = "diverging",  n = 7),
+  "Chart chrome (5)" = unname(mariner_colors()[
+    c("ink", "ink-secondary", "ink-muted", "rule-axis", "rule-grid")])
+)
+
+swatches <- do.call(rbind, lapply(names(fams), function(f) {
+  data.frame(Family = f, Step = seq_along(fams[[f]]), Color = fams[[f]])
+}))
+swatches$Family <- factor(swatches$Family, levels = rev(names(fams)))
+
+ggplot(swatches, aes(Step, Family, fill = Color)) +
+  geom_tile(color = mariner_colors()[["background"]],
+            linewidth = 1.2, height = 0.72) +
+  scale_fill_identity() +
+  scale_x_continuous(breaks = NULL, expand = c(0.01, 0.01)) +
+  labs(x = NULL, y = NULL) +
+  theme_mariner() +
+  theme(
+    panel.grid = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(face = "bold")
+  )
+```
+
+## 3. Scale Functions
+
+`mariner` exports scale functions for `colour` and `fill`.
+
+### Discrete Scale: `scale_colour_mariner_d()`
+
+```{r scale-discrete}
+ggplot(mpg, aes(class, hwy, color = class)) +
+  geom_jitter(width = 0.2, height = 0, size = 2) +
+  scale_colour_mariner_d() +
+  labs(title = "Fuel Economy by Vehicle Class",
+       x = "Vehicle Class", y = "Highway MPG") +
+  theme_mariner() +
+  theme(legend.position = "none")
+```
+
+### Continuous Scale: `scale_colour_mariner_c()`
+
+```{r scale-continuous}
+ggplot(mpg, aes(displ, hwy, color = cty)) +
+  geom_point(size = 2.5) +
+  scale_colour_mariner_c() +
+  labs(title = "Displacement and Highway MPG",
+       x = "Engine Displacement (L)", y = "Highway MPG", color = "City MPG") +
+  theme_mariner()
+```
+
+### Diverging Scale: `scale_fill_mariner_div()`
+
+Diverging scales center on zero or a reference value with symmetric limits:
+
+```{r scale-diverging}
+class_mean <- tapply(mpg$hwy, mpg$class, mean)
+class_deviation <- data.frame(
+  class = names(class_mean),
+  deviation = unname(class_mean) - mean(mpg$hwy)
+)
+class_deviation <- class_deviation[order(class_deviation$deviation), ]
+class_deviation$class <- factor(class_deviation$class, levels = class_deviation$class)
+
+div_limit <- max(abs(class_deviation$deviation)) * c(-1, 1)
+
+ggplot(class_deviation, aes(class, deviation, fill = deviation)) +
+  geom_col(width = 0.7) +
+  coord_flip() +
+  scale_fill_mariner_div(limits = div_limit) +
+  labs(title = "Highway MPG Relative to Mean",
+       x = NULL, y = "MPG Deviation from Average", fill = "Deviation") +
+  theme_mariner()
+```
+
+### Ordinal Scale: `scale_fill_mariner_o()`
+
+```{r scale-ordinal}
+ggplot(diamonds, aes(x = cut, fill = cut)) +
+  geom_bar(width = 0.6) +
+  scale_fill_mariner_o() +
+  labs(title = "Diamond Counts by Cut Quality", x = "Cut", y = "Count") +
+  theme_mariner() +
+  theme(legend.position = "none")
+```
+
+### Binned Scale: `scale_fill_mariner_b()`
+
+```{r scale-binned}
+ggplot(faithfuld, aes(waiting, eruptions, fill = density)) +
+  geom_tile() +
+  scale_fill_mariner_b() +
+  labs(title = "Old Faithful Eruption Density",
+       x = "Waiting Time (min)", y = "Eruption Duration (min)", fill = "Density") +
+  theme_mariner()
+```
+
+## 4. Knitr Chunk Configuration
+
+In report `.qmd` setup chunks, `mariner_knitr_setup()` initializes options and sets the ggplot2 theme:
+
+```r
+mariner_knitr_setup("pdf")
+```

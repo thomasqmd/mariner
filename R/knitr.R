@@ -23,7 +23,7 @@ mariner_fig_dims <- function(format = mariner_formats) {
 #' settings. Call it in the setup chunk of a report.
 #'
 #' @param format One of [mariner_formats].
-#' @param theme One of [mariner_themes]. Defaults to `"baylor"`.
+#' @param theme Theme name. Defaults to the built-in mariner theme.
 #' @param dpi Numeric figure resolution in dots per inch. Defaults to `300`.
 #' @param fig_format Image device. Defaults to `"cairo_pdf"` where the build has
 #'   cairo, and base `"pdf"` where it does not.
@@ -32,10 +32,10 @@ mariner_fig_dims <- function(format = mariner_formats) {
 #' @export
 #' @examples
 #' \dontrun{
-#' mariner_knitr_setup("pdf", theme = "baylor")
+#' mariner_knitr_setup("pdf")
 #' }
 mariner_knitr_setup <- function(format = mariner_formats,
-                            theme = "baylor",
+                            theme = mariner_themes,
                             dpi = 300,
                             fig_format = NULL,
                             ...) {

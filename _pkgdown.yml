@@ -1,11 +1,14 @@
-# This tells pkgdown how to build the site
 url: https://thomasqmd.github.io/mariner/
 
-# This section builds the top navigation bar
+template:
+  bootstrap: 5
+
 navbar:
   left:
     - text: "Get Started"
       href: articles/get-started.html
+    - text: "Theming & Scales"
+      href: articles/theming.html
     - text: "Reference"
       href: reference/index.html
     - text: "Changelog"
@@ -13,4 +16,41 @@ navbar:
   right:
     - icon: fa-github
       href: https://github.com/thomasqmd/mariner
-      
+      aria-label: GitHub
+
+reference:
+  - title: "Setup and Scaffolding"
+    desc: "Project initialization and environment verification."
+    contents:
+      - mariner_check_setup
+      - mariner_setup_project
+      - mariner_dirs
+      - mariner_project_root
+      - mariner_looks_like_project
+      - mariner_install_fonts
+  - title: "Template and Generation"
+    desc: "Quarto report source generation from templates."
+    contents:
+      - generate_reports
+      - mariner_templates
+      - mariner_template_path
+  - title: "Rendering and Bundling"
+    desc: "Render documents and package into zip archives."
+    contents:
+      - process_file
+      - process_files
+  - title: "Theming and Palettes"
+    desc: "Brand theme, colors, and knitr chunk options."
+    contents:
+      - theme_mariner
+      - mariner_set_theme
+      - mariner_colors
+      - mariner_pal
+      - mariner_knitr_setup
+      - mariner_fig_dims
+      - mariner_themes
+      - mariner_formats
+  - title: "Scales"
+    desc: "ggplot2 scale functions for brand palettes."
+    contents:
+      - starts_with("scale_")

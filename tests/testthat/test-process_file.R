@@ -23,7 +23,7 @@ test_that("process_file bundles source, script and output", {
   dir <- local_dir()
   doc <- suppressMessages(generate_reports(
     params_df = data.frame(chapter = 1, problem_numbers = 1, author = "Test"),
-    template_name = "simple_report",
+    template_name = "report",
     output_dir = dir
   ))
   expect_equal(tools::file_ext(doc), "qmd")
@@ -109,7 +109,7 @@ test_that("include selects what reaches the archive", {
 test_that("include rejects an unknown category", {
   dir <- local_dir()
   doc <- write_qmd(dir, "simple")
-  expect_error(process_file(doc, include = "everything"))
+  expect_error(process_file(doc, include = "everything"), "must be one of")
 })
 
 test_that("classify_artefacts sorts a render's leftovers", {
@@ -138,7 +138,8 @@ test_that("a document using the branded format renders", {
   # This is the only test that proves the theme is reachable at render time, so
   # it renders for real rather than inspecting the scratch directory.
   skip_on_cran()
-  skip_if_not(nzchar(Sys.which("quarto")), "quarto CLI not available")
+  skip_if_no_quarto()
+  skip_if_no_latex()
 
   dir <- local_dir()
   mariner_build_extension(dir, "baylor", quiet = TRUE)
@@ -193,7 +194,10 @@ test_that("process_file errors on bad inputs", {
     c("---", "title: 'Invalid'", "---", "```{r}", "stop('error')", "```"),
     invalid
   )
-  expect_error(suppressMessages(process_file(invalid, file.path(dir, "x.zip"))))
+  expect_error(
+    suppressMessages(process_file(invalid, file.path(dir, "x.zip"))),
+    "Failed while processing"
+  )
 
   txt <- file.path(dir, "invalid.txt")
   writeLines("hello", txt)

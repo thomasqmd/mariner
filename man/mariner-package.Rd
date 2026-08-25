@@ -51,6 +51,15 @@ the working directory looks like a project root -- see
 \code{options(mariner.auto_setup = FALSE)} to turn that off.
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://thomasqmd.github.io/mariner/}
+  \item \url{https://github.com/thomasqmd/mariner}
+  \item Report bugs at \url{https://github.com/thomasqmd/mariner/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Thomas Reinke \email{thomas_reinke1@baylor.edu}
 

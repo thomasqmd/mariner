@@ -146,7 +146,7 @@ test_that("a report figure draws with real text metrics and no font warning", {
   # registry, so this runs only where the faces are genuinely installed --
   # which is exactly the condition mariner_fonts_available("pdf") reports.
   skip_if_not(capabilities("cairo"))
-  skip_if_not(mariner:::mariner_fonts_available("pdf"))
+  skip_if_no_fonts("pdf")
 
   dims <- mariner_fig_dims("pdf")
   p <- ggplot2::ggplot(ggplot2::mpg, ggplot2::aes(class, hwy)) +
@@ -188,10 +188,10 @@ test_that("mariner_knitr_setup() picks a vector device for the report", {
   old <- knitr::opts_chunk$get()
   withr::defer(knitr::opts_chunk$set(old))
 
-  mariner_knitr_setup("pdf", theme = "baylor")
+  mariner_knitr_setup("pdf")
   expect_true(knitr::opts_chunk$get("dev") %in% c("cairo_pdf", "pdf"))
 
   # The format vocabulary is one value, and asking for anything else is an
   # error rather than a silent fallback to pdf defaults.
-  expect_error(mariner_knitr_setup("revealjs", theme = "baylor"))
+  expect_error(mariner_knitr_setup("revealjs"))
 })

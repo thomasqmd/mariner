@@ -17,8 +17,20 @@
   rather than rendered. `rmarkdown` is no longer a dependency, and the
   `simple_report` template no longer carries a `skeleton.Rmd`.
 
-## Major Changes
-
+* **Vendored Quarto Theme and Palettes.** `mariner` vendors the complete
+  Baylor-branded Quarto PDF theme, fonts, and brand tokens. A report renders with
+  bundled Atkinson Hyperlegible Next, Lora, and JetBrains Mono fonts and
+  integrated LaTeX geometry.
+* **New `ggplot2` Theming and Scales.** Exported `theme_mariner()`,
+  `mariner_set_theme()`, `mariner_colors()`, and `mariner_pal()`, along with
+  scales `scale_colour_mariner_d()`, `scale_fill_mariner_d()`,
+  `scale_colour_mariner_c()`, `scale_fill_mariner_c()`,
+  `scale_colour_mariner_o()`, `scale_fill_mariner_o()`,
+  `scale_colour_mariner_div()`, `scale_fill_mariner_div()`,
+  `scale_colour_mariner_b()`, and `scale_fill_mariner_b()`.
+* **New `report` Template.** The built-in template is now `report` (replacing
+  `simple_report`), with `mariner_templates()` and `mariner_template_path()` for
+  discovery and inspection.
 * **New project scaffolding.** `mariner_setup_project()` creates the three
   folders a mariner workflow uses — `assets/`, `reports/` and `zip_files/` —
   assembles the Quarto theme into `assets/`, copies it beside the documents in

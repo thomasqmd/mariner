@@ -7,12 +7,12 @@
 #'
 #' Extracts all named colours and semantic roles defined in the theme's `_brand.yml`.
 #'
-#' @param theme One of [mariner_themes]. Defaults to `"baylor"`.
+#' @param theme Theme name. Defaults to the built-in mariner theme.
 #' @return A named character vector of hex codes.
 #' @export
 #' @examples
-#' mariner_colors("baylor")
-#' mariner_colors("personal")[c("primary", "secondary")]
+#' mariner_colors()
+#' mariner_colors()[c("primary", "secondary")]
 mariner_colors <- function(theme = mariner_themes) {
   theme <- check_theme(theme)
   brand <- read_brand(theme)
@@ -25,16 +25,16 @@ mariner_colors <- function(theme = mariner_themes) {
 #'
 #' Constructs discrete, sequential, ordinal, or diverging color palettes for a theme.
 #'
-#' @param theme One of [mariner_themes]. Defaults to `"baylor"`.
+#' @param theme Theme name. Defaults to the built-in mariner theme.
 #' @param family Palette family: `"discrete"`, `"sequential"`, `"ordinal"`, or `"diverging"`.
 #' @param n Optional integer number of colors. If `NULL` (default), returns a palette function `function(n)`.
 #' @param reverse Logical; if `TRUE`, reverses the color vector.
 #' @return A character vector of hex colors if `n` is supplied, or a palette function if `n` is `NULL`.
 #' @export
 #' @examples
-#' mariner_pal("baylor", "discrete", n = 4)
-#' mariner_pal("personal", "diverging", n = 7)
-#' pal_fn <- mariner_pal("baylor", "sequential")
+#' mariner_pal(family = "discrete", n = 4)
+#' mariner_pal(family = "diverging", n = 7)
+#' pal_fn <- mariner_pal(family = "sequential")
 #' pal_fn(5)
 mariner_pal <- function(theme = mariner_themes,
                     family = c("discrete", "sequential", "ordinal", "diverging"),

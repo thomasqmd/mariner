@@ -172,7 +172,7 @@ as_param_value <- function(x) {
 #'
 #' qmd_files <- generate_reports(
 #'   params_df = report_params,
-#'   template_name = "simple_report",
+#'   template_name = "report",
 #'   output_dir = temp_dir
 #' )
 #'
@@ -188,7 +188,7 @@ as_param_value <- function(x) {
 #' unlink(temp_dir, recursive = TRUE)
 generate_reports <- function(
   params_df,
-  template_name = "simple_report",
+  template_name = "report",
   template_package = "mariner",
   output_dir = mariner_dirs()$reports,
   template_path = NULL,
@@ -320,27 +320,5 @@ resolve_template <- function(template_name, template_package, template_path,
     return(template_path)
   }
 
-  path <- system.file(
-    "rmarkdown", "templates", template_name, "skeleton", "skeleton.qmd",
-    package = template_package
-  )
-  if (identical(path, "")) {
-    available <- list.dirs(
-      system.file("rmarkdown", "templates", package = template_package),
-      recursive = FALSE, full.names = FALSE
-    )
-    cli::cli_abort(
-      c(
-        "No template named {.val {template_name}} in package \\
-         {.pkg {template_package}}.",
-        i = if (length(available)) {
-          "Available: {.val {available}}."
-        } else {
-          "That package ships no mariner templates."
-        }
-      ),
-      call = call
-    )
-  }
-  path
+  mariner_template_path(template_name, package = template_package, call = call)
 }

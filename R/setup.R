@@ -211,12 +211,7 @@ mariner_dirs <- function(root = NULL) {
 #' }
 mariner_setup_project <- function(root = NULL,
                                   theme = mariner_themes,
-                                  # P6 renames this template to "report" and
-                                  # moves it to inst/templates/. The default
-                                  # tracks the template that actually exists, so
-                                  # this function works today rather than
-                                  # aborting on a name reserved for later.
-                                  template = "simple_report",
+                                  template = "report",
                                   overwrite = FALSE) {
   theme <- check_theme(theme)
   dirs <- mariner_dirs(root)
@@ -314,31 +309,9 @@ mariner_setup_project <- function(root = NULL,
   invisible(dirs)
 }
 
-# Locate a starter template's skeleton.qmd.
-#
-# P6 moves templates to inst/templates/<name>/skeleton.qmd and gives them a
-# proper registry (mariner_templates(), mariner_template_path()). Until then
-# this reads the inst/rmarkdown/templates/ layout that is still on disk, in one
-# place, so P6 is an edit here rather than a search.
+# Path to a packaged template skeleton.
 setup_template_path <- function(template, call = rlang::caller_env()) {
-  path <- system.file(
-    "rmarkdown", "templates", template, "skeleton", "skeleton.qmd",
-    package = "mariner"
-  )
-  if (identical(path, "")) {
-    available <- list.dirs(
-      system.file("rmarkdown", "templates", package = "mariner"),
-      recursive = FALSE, full.names = FALSE
-    )
-    cli::cli_abort(
-      c(
-        "Unknown template {.val {template}}.",
-        i = "Available: {.val {available}}."
-      ),
-      call = call
-    )
-  }
-  path
+  mariner_template_path(template, package = "mariner", call = call)
 }
 
 # Append lines to a project .gitignore, skipping any already there.

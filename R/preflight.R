@@ -276,7 +276,7 @@ check_ggplot <- function(theme) {
 }
 
 check_template_packages <- function(template) {
-  path <- tryCatch(setup_template_path(template), error = function(e) NULL)
+  path <- tryCatch(mariner_template_path(template), error = function(e) NULL)
   if (is.null(path)) {
     return(check_row(
       "Template packages", "warn", paste0("template ", template, " not found")
@@ -337,7 +337,7 @@ check_template_packages <- function(template) {
 #' }
 mariner_check_setup <- function(root = NULL,
                                 theme = mariner_themes,
-                                template = "simple_report",
+                                template = "report",
                                 quiet = FALSE) {
   theme <- check_theme(theme)
   # Resolved once and passed down, so two checks cannot report on two different

@@ -6,15 +6,13 @@
 \alias{scale_fill_mariner_div}
 \title{Diverging colour and fill scales for mariner}
 \usage{
-scale_colour_mariner_div(theme = "baylor", reverse = FALSE, ...)
+scale_colour_mariner_div(reverse = FALSE, ...)
 
-scale_color_mariner_div(theme = "baylor", reverse = FALSE, ...)
+scale_color_mariner_div(reverse = FALSE, ...)
 
-scale_fill_mariner_div(theme = "baylor", reverse = FALSE, ...)
+scale_fill_mariner_div(reverse = FALSE, ...)
 }
 \arguments{
-\item{theme}{One of \link{mariner_themes}. Defaults to \code{"baylor"}.}
-
 \item{reverse}{Logical; if \code{TRUE}, reverses the color gradient.}
 
 \item{...}{Arguments passed to \code{\link[ggplot2:scale_gradient]{ggplot2::scale_colour_gradientn()}} or \code{\link[ggplot2:scale_gradient]{ggplot2::scale_fill_gradientn()}}.}
