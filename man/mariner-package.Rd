@@ -20,13 +20,35 @@ palette as the page, without anything to install separately.
 \section{Core Workflow}{
 
 \enumerate{
-\item Use \code{mariner_setup_project()} once to create the project
+\item Run \code{\link{mariner_check_setup}} to confirm this machine has
+everything a branded report needs -- Quarto, a LaTeX engine, the fonts.
+It reports and prints the fix; it changes nothing.
+\item Use \code{\link{mariner_setup_project}} once to create the project
 folders and install the theme assets into them.
 \item Use \code{\link{generate_reports}} to create multiple, parameterized
-\code{.qmd} source files from a template.
+\code{.qmd} source files from a template, into \verb{reports/}.
 \item Use \code{\link{process_files}} to render each source file and bundle
-the source, R script, and all outputs into a zip archive.
+the source, R script, and all outputs into a zip archive, into
+\verb{zip_files/}.
 }
+}
+
+\section{Project Folders}{
+
+mariner works in three directories beneath the project root, returned by
+\code{\link{mariner_dirs}}:
+
+\describe{
+\item{\verb{assets/}}{The built Quarto extension, assembled once.}
+\item{\verb{reports/}}{Generated \code{.qmd} sources, their rendered PDFs, and a copy
+of the extension beside them.}
+\item{\verb{zip_files/}}{The bundles handed to students.}
+}
+
+Attaching the package with \code{library(mariner)} creates the three folders if
+the working directory looks like a project root -- see
+\code{\link{mariner_looks_like_project}}. Set
+\code{options(mariner.auto_setup = FALSE)} to turn that off.
 }
 
 \author{

@@ -34,6 +34,39 @@ EXTENSION_SOURCES <- list(
   list(from = c("assets", "logos"), pattern = "\\.(png|svg)$",   into = "logos")
 )
 
+# The relative paths a freshly built extension contains.
+#
+# Derived by walking EXTENSION_SOURCES, the same list mariner_build_extension()
+# walks, so "complete" cannot come to mean two different things -- which is the
+# whole reason that list exists. A checker with its own hardcoded inventory
+# would go stale the first time a font cut or a logo slot is added.
+extension_manifest <- function(theme = mariner_themes) {
+  theme <- check_theme(theme)
+
+  rel <- character()
+  for (src in EXTENSION_SOURCES) {
+    from <- mariner_path(paste(src$from, collapse = .Platform$file.sep))
+    files <- basename(list.files(from, pattern = src$pattern))
+    rel <- c(rel, if (identical(src$into, ".")) files else file.path(src$into, files))
+  }
+
+  # The generated half, named from what is on disk rather than from a list of
+  # expected filenames -- build_tokens() decides what it writes.
+  c(rel, basename(list.files(mariner_path("generated", theme))))
+}
+
+# Which of those an assembled extension is missing. character(0) means complete.
+#
+# A partially-assembled extension is the failure mode worth naming: xelatex does
+# not fall back to a system face when fonts/ is short a cut, it aborts with "the
+# font Lora-Regular cannot be found", which says nothing about the directory
+# being incomplete.
+extension_missing <- function(ext_dir, theme = mariner_themes) {
+  want <- extension_manifest(theme)
+  if (!dir.exists(ext_dir)) return(want)
+  want[!file.exists(file.path(ext_dir, want))]
+}
+
 #' Assemble the Quarto extension for a theme into a directory
 #'
 #' Builds `<dest>/_extensions/mariner-<theme>/` from the package's installed
@@ -56,7 +89,7 @@ mariner_build_extension <- function(dest, theme = mariner_themes,
                                     overwrite = TRUE, quiet = FALSE) {
   theme <- check_theme(theme)
 
-  ext_dir <- file.path(dest, "_extensions", mariner_ext_name(theme))
+  ext_dir <- mariner_ext_dir(dest, theme)
   dir.create(ext_dir, recursive = TRUE, showWarnings = FALSE)
 
   copied <- character()

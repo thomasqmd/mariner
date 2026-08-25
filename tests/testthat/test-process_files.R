@@ -1,49 +1,101 @@
-# tests/testthat/test-process_files.R
+# process_files(): the sequential/parallel wrapper.
+
 library(future)
 
-# Test Case 1: Sequential processing with an output directory specified
-test_that("process_files places zips in the specified output_dir", {
-  # --- 1. Setup ---
-  temp_dir <- tempfile("test-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+local_dir <- function(env = parent.frame()) {
+  withr::local_tempdir(.local_envir = env)
+}
 
-  # Create document files (will be .qmd by default) in the base temp directory
-  doc_files <- generate_reports(
+write_qmd <- function(dir, name, format = "pdf", body = "A simple document.") {
+  path <- file.path(dir, paste0(name, ".qmd"))
+  writeLines(
+    c("---", paste0("title: '", name, "'"), paste0("format: ", format),
+      "---", body),
+    path
+  )
+  path
+}
+
+test_that("process_files places zips in the specified output_dir", {
+  dir <- local_dir()
+  docs <- suppressMessages(generate_reports(
     params_df = data.frame(
-      chapter = 1,
-      problem_numbers = 1:2,
-      author = "Test Author"
+      chapter = 1, problem_numbers = 1:2, author = "Test Author"
     ),
     template_name = "simple_report",
-    output_dir = temp_dir
-  )
+    output_dir = dir
+  ))
 
-  # Define a separate subdirectory for the zip files
-  zip_dir <- file.path(temp_dir, "zip_outputs")
+  zip_dir <- file.path(dir, "zip_outputs")
+  paths <- suppressMessages(process_files(docs, output_dir = zip_dir))
 
-  # --- 2. Execute ---
-  suppressMessages({
-    output_paths <- process_files(doc_files, output_dir = zip_dir)
-  })
-
-  # --- 3. Assertions ---
-  expect_length(output_paths, 2)
-  expect_true(all(!is.na(output_paths)))
-  expect_true(all(file.exists(output_paths)))
-  # Crucially, check that the output zips are in the correct directory
-  expect_true(all(dirname(output_paths) == fs::path_norm(zip_dir)))
+  expect_length(paths, 2L)
+  expect_true(all(!is.na(paths)))
+  expect_true(all(file.exists(paths)))
+  expect_true(all(dirname(paths) == fs::path_norm(zip_dir)))
 })
 
+test_that("a NULL output_dir resolves per input file", {
+  # Two documents in two different project roots. Resolving once in the parent
+  # from getwd() would put both bundles in the same place.
+  root_a <- local_dir()
+  root_b <- local_dir()
+  file.create(file.path(root_a, "A.Rproj"))
+  file.create(file.path(root_b, "B.Rproj"))
 
-# Test Case 2: Parallel processing with mixed file types and failures
-test_that("process_files works in parallel with mixed types and success", {
+  docs <- c(write_qmd(root_a, "a"), write_qmd(root_b, "b"))
+  paths <- suppressMessages(process_files(docs))
+
+  expect_equal(
+    fs::path_norm(dirname(paths)),
+    fs::path_norm(c(mariner_dirs(root_a)$zips, mariner_dirs(root_b)$zips))
+  )
+})
+
+test_that("a failure is an NA and its message is reported, not discarded", {
+  dir <- local_dir()
+  good <- write_qmd(dir, "good")
+  bad <- file.path(dir, "bad.qmd")
+  writeLines(
+    c("---", "title: 'Bad'", "---", "```{r}", "stop('boom')", "```"),
+    bad
+  )
+
+  zip_dir <- file.path(dir, "zips")
+  expect_message(
+    paths <- process_files(c(good, bad), output_dir = zip_dir),
+    "bad.qmd"
+  )
+
+  expect_false(is.na(paths[[1]]))
+  expect_true(is.na(paths[[2]]))
+  expect_true(file.exists(paths[[1]]))
+})
+
+test_that("include is forwarded to each file", {
+  dir <- local_dir()
+  docs <- c(write_qmd(dir, "one"), write_qmd(dir, "two"))
+  zip_dir <- file.path(dir, "zips")
+
+  paths <- suppressMessages(
+    process_files(docs, output_dir = zip_dir, include = "source")
+  )
+
+  expect_equal(utils::unzip(paths[[1]], list = TRUE)$Name, "one.qmd")
+  expect_equal(utils::unzip(paths[[2]], list = TRUE)$Name, "two.qmd")
+})
+
+test_that("process_files handles an empty input vector gracefully", {
+  paths <- suppressMessages(process_files(character(0)))
+  expect_length(paths, 0L)
+})
+
+test_that("process_files works in parallel", {
   # A multisession worker is a FRESH R process: it attaches mariner from the
   # library, not from the parent session. Under devtools::test() / load_all()
   # the package is loaded from source and is not installed anywhere the worker
   # can reach, so every future fails to attach it -- a failure about the test
-  # setup, not about the code. R CMD check installs first and runs this for
-  # real.
+  # setup, not about the code. R CMD check installs first and runs this for real.
   #
   # requireNamespace() is no good as the test: pkgload registers the namespace,
   # so it answers TRUE for a source load too. Asking pkgload directly is the
@@ -53,60 +105,30 @@ test_that("process_files works in parallel with mixed types and success", {
     "mariner is loaded from source; a multisession worker cannot attach it"
   )
 
-  # --- 1. Setup ---
   old_plan <- future::plan(future::multisession, workers = 2)
   on.exit(future::plan(old_plan), add = TRUE)
 
-  temp_dir <- tempfile("test-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  # A valid .qmd file
-  valid_qmd <- generate_reports(
-    params_df = data.frame(
-      chapter = 1,
-      problem_numbers = 1,
-      author = "Valid Author"
-    ),
+  dir <- local_dir()
+  valid <- suppressMessages(generate_reports(
+    params_df = data.frame(chapter = 1, problem_numbers = 1, author = "Valid"),
     template_name = "simple_report",
-    output_dir = temp_dir
-  )
-
-  # A second valid .qmd file, written by hand
-  simple_qmd <- file.path(temp_dir, "simple.qmd")
-  writeLines(
-    c("---", "title: 'Simple'", "format: html", "---", "A simple document."),
-    simple_qmd
-  )
-
-  # An invalid .qmd file
-  invalid_qmd <- file.path(temp_dir, "invalid.qmd")
+    output_dir = dir
+  ))
+  simple <- write_qmd(dir, "simple", format = "html")
+  invalid <- file.path(dir, "invalid.qmd")
   writeLines(
     c("---", "title: 'Invalid'", "---", "```{r}", "stop('error')", "```"),
-    invalid_qmd
+    invalid
   )
 
-  input_list <- c(valid_qmd, simple_qmd, invalid_qmd)
+  zip_dir <- file.path(dir, "zips")
+  paths <- suppressMessages(
+    process_files(c(valid, simple, invalid), output_dir = zip_dir)
+  )
 
-  # --- 2. Execute ---
-  suppressMessages({
-    output_paths <- process_files(input_list)
-  })
-
-  # --- 3. Assertions ---
-  expect_length(output_paths, 3)
-  expect_true(!is.na(output_paths[1])) # valid .qmd from the template
-  expect_true(!is.na(output_paths[2])) # valid hand-written .qmd
-  expect_true(is.na(output_paths[3])) # invalid .qmd
-  expect_true(file.exists(output_paths[1]))
-  expect_true(file.exists(output_paths[2]))
-})
-
-
-# Test Case 3: Empty input list
-test_that("process_files handles an empty input vector gracefully", {
-  suppressMessages({
-    output_paths <- process_files(character(0))
-  })
-  expect_length(output_paths, 0)
+  expect_length(paths, 3L)
+  expect_true(!is.na(paths[[1]]))
+  expect_true(!is.na(paths[[2]]))
+  expect_true(is.na(paths[[3]]))
+  expect_true(all(file.exists(paths[1:2])))
 })

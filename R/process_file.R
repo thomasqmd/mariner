@@ -1,101 +1,249 @@
+# Rendering one document and bundling what comes out of it.
+
+# What a bundle can contain. Order is the order they are documented in; the
+# vocabulary is fixed so `include` can be checked rather than trusted.
+INCLUDE_KINDS <- c("source", "script", "output", "intermediates")
+
+# Rendered-document extensions. Anything here is the deliverable itself.
+OUTPUT_EXTS <- c("pdf", "html", "docx", "pptx", "odt", "epub", "rtf")
+
+# Sort one render's leftovers into the four `include` categories.
+#
+# `<stem>_files/` is classed as OUTPUT, not intermediates, and the asymmetry is
+# deliberate. For html it is not optional -- the document is broken without it.
+# For pdf it is merely redundant, since the figures are already embedded. Being
+# wrong in the first direction ships a broken deliverable; being wrong in the
+# second ships a slightly larger zip, so the classification takes the safe side.
+#
+# The `_files` directory is matched by SUFFIX rather than against `<stem>_files`,
+# because the stem of the output is not always the stem of the input: Quarto
+# slugifies the name it writes, so `report with spaces.qmd` renders to
+# `report-with-spaces.pdf` and `report-with-spaces_files/`. Matching the input
+# stem sent that directory to `intermediates`, which is invisible under the
+# default `include` and ships a BROKEN html bundle under
+# `include = c("source", "output")` -- for documents whose only distinguishing
+# feature is a space in the filename.
+#
+# Matching every `*_files` is safe by construction rather than by luck: the
+# scratch directory is created empty and receives exactly one file, so anything
+# else in it was produced by the render.
+#
+# Everything unrecognised falls to `intermediates` rather than being dropped:
+# the default includes all four, so an unfamiliar artefact travels with the
+# bundle instead of going missing without anyone noticing.
+classify_artefacts <- function(entries, stem) {
+  ext <- tolower(tools::file_ext(entries))
+
+  kind <- rep("intermediates", length(entries))
+  kind[ext %in% OUTPUT_EXTS] <- "output"
+  kind[grepl("_files$", entries)] <- "output"
+  kind[entries == paste0(stem, ".R")] <- "script"
+  kind[entries == paste0(stem, ".qmd")] <- "source"
+
+  split(entries, factor(kind, levels = INCLUDE_KINDS))
+}
+
+# Put the theme where the document can reach it, and return an undo function.
+#
+# §0.4 of the plan, measured rather than assumed: `brand-preamble.tex` reaches
+# the bundled fonts through `Path=_extensions/mariner-<theme>/fonts/`, and
+# xelatex resolves that against the directory holding the `.tex` -- the
+# document's own. An extension one level up gives a render that finds its
+# *format* and then dies with "The font Lora-Regular cannot be found".
+#
+# Symlinked when the platform allows it, because a copy is ~1.3 MB per document
+# and a class set is fifty of them. Windows refuses symlinks without developer
+# mode or elevation, and file.symlink() reports that as FALSE plus a warning, so
+# the copy is the fallback rather than the default.
+stage_extension <- function(scratch, theme, assets_dir) {
+  ext_name <- mariner_ext_name(theme)
+  dest <- file.path(scratch, "_extensions", ext_name)
+  dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+
+  source_ext <- if (is.null(assets_dir)) NULL else mariner_ext_dir(assets_dir, theme)
+
+  if (!is.null(source_ext) && dir.exists(source_ext)) {
+    linked <- suppressWarnings(file.symlink(normalizePath(source_ext), dest))
+    if (!isTRUE(linked)) copy_dir_safe(source_ext, dest, overwrite = TRUE)
+  } else {
+    # No prebuilt extension to serve from -- mariner_setup_project() has not
+    # been run, or the caller passed assets_dir = NULL. Assemble one straight
+    # into the scratch directory from the installed package.
+    mariner_build_extension(scratch, theme = theme, quiet = TRUE)
+  }
+
+  # Removing the LINK before the scratch tree goes is not superstition: a
+  # recursive delete that followed it would take the project's assets/ with it.
+  # R's unlink() removes the link rather than its target, and this makes that
+  # guarantee local rather than something inherited from a helper's docs.
+  function() unlink(dest, recursive = FALSE, force = TRUE)
+}
+
 #' Bundle a Quarto File and its Outputs
 #'
 #' @description
-#' Renders a Quarto (.qmd) file and bundles the source file, the purled R
-#' script, and all rendering outputs into a single zip archive.
+#' Renders a Quarto (`.qmd`) file in a scratch directory and bundles the source,
+#' the purled R script, the rendered document and the render's intermediates
+#' into a single zip archive.
+#'
+#' @details
+#' The render happens in a temporary directory with the theme staged beside the
+#' document, not in place, so nothing is written next to the source and parallel
+#' callers cannot collide on a shared cache.
+#'
+#' `include` selects what reaches the archive:
+#'
+#' \describe{
+#'   \item{`source`}{the `.qmd` itself}
+#'   \item{`script`}{the purled `.R`}
+#'   \item{`output`}{the rendered document, and its `_files/` directory --
+#'     which an HTML document is broken without}
+#'   \item{`intermediates`}{everything else the render left behind, such as the
+#'     `.tex` when `keep-tex` is set}
+#' }
+#'
+#' The Quarto extension is never bundled. Reports are rendered inside a project
+#' that already has it, and a copy per archive would add ~1.3 MB to each.
 #'
 #' @param input_file Path to the input `.qmd` file.
-#' @param output_zip Path for the output `.zip` file.
+#' @param output_zip Path for the output `.zip`. Defaults to the project's
+#'   `zip_files/` folder -- see [mariner_dirs()] -- under the source's name.
+#' @param theme One of [mariner_themes].
+#' @param assets_dir Directory holding an already-built extension, as
+#'   [mariner_setup_project()] leaves in `assets/`. Pass `NULL` to assemble one
+#'   from the installed package for this render instead.
+#' @param include Which categories of file to bundle. Any of `"source"`,
+#'   `"script"`, `"output"`, `"intermediates"`.
 #'
-#' @return Invisibly returns the path to the created zip file.
+#' @return Invisibly, the path to the created zip file.
 #' @export
 #' @importFrom knitr purl
 #' @importFrom quarto quarto_render
-#' @importFrom fs path_abs path_ext_set file_copy dir_create dir_ls dir_delete path_file
+#' @importFrom fs path_abs path_ext_set file_copy dir_create dir_delete path_file
 #' @importFrom withr with_dir
-#' @importFrom tools file_ext
+#' @importFrom tools file_ext file_path_sans_ext
 #'
 #' @examples
 #' \dontrun{
-#' # --- Setup: Create a temporary directory and generate one file ---
 #' temp_dir <- tempfile("example-")
-#' dir.create(temp_dir)
 #'
-#' report_params <- data.frame(chapter = 1, problem_numbers = 1, author = "Firstname Lastname")
-#'
-#' # `generate_reports` returns the path to the created .qmd file
-#' doc_file_path <- generate_reports(
-#'   params_df = report_params,
-#'   template_name = "simple_report",
-#'   template_package = "mariner",
+#' doc <- generate_reports(
+#'   params_df = data.frame(chapter = 1, problem_numbers = 1, author = "A. Name"),
 #'   output_dir = temp_dir
 #' )
 #'
-#' # --- Example: Bundle the newly created file ---
-#' # This will create 'Report-1_1.zip' in the temp directory.
-#' process_file(doc_file_path)
+#' # Everything, into zip_files/:
+#' process_file(doc)
 #'
-#' # --- View the created files ---
-#' # The directory contains the source file and the bundled .zip.
-#' list.files(temp_dir)
+#' # Just the source and the PDF, somewhere explicit:
+#' process_file(
+#'   doc,
+#'   output_zip = file.path(temp_dir, "handout.zip"),
+#'   include = c("source", "output")
+#' )
 #'
-#' # --- Cleanup ---
 #' unlink(temp_dir, recursive = TRUE)
 #' }
-process_file <- \(input_file, output_zip = NULL) {
+process_file <- function(input_file,
+                         output_zip = NULL,
+                         theme = mariner_themes,
+                         assets_dir = mariner_dirs()$assets,
+                         include = INCLUDE_KINDS) {
   if (!file.exists(input_file)) {
-    stop("Input file does not exist: ", input_file, call. = FALSE)
+    cli::cli_abort("Input file does not exist: {.file {input_file}}.")
   }
 
   input_path <- fs::path_abs(input_file)
   input_ext <- tolower(tools::file_ext(input_path))
-
   if (!identical(input_ext, "qmd")) {
-    stop(
-      "Input file must be a .qmd file. Got: .",
-      input_ext,
-      call. = FALSE
-    )
+    cli::cli_abort(c(
+      "Input file must be a .qmd file.",
+      x = "Got {.file {fs::path_file(input_path)}}.",
+      i = "mariner is Quarto-only as of 0.2.0."
+    ))
   }
 
+  theme <- check_theme(theme)
+  include <- rlang::arg_match(include, INCLUDE_KINDS, multiple = TRUE)
+
+  # Defaults into zip_files/, not beside the source. The bundles are a
+  # deliverable and belong together; scattering them through reports/ meant
+  # hunting for them, and meant `reports/` held both inputs and outputs.
+  #
+  # The root is resolved from the INPUT FILE's directory, not from getwd().
+  # `reports/ch1.qmd` belongs to the project containing `reports/`, whatever
+  # directory R happens to be sitting in -- and a parallel worker's working
+  # directory is not the caller's at all.
   output_path <- if (is.null(output_zip)) {
-    fs::path_ext_set(input_path, ".zip")
+    file.path(
+      mariner_dirs(mariner_project_root(dirname(input_path)))$zips,
+      paste0(tools::file_path_sans_ext(fs::path_file(input_path)), ".zip")
+    )
   } else {
     fs::path_abs(output_zip)
   }
+  fs::dir_create(dirname(output_path))
 
-  temp_dir <- tempfile(pattern = "doc-bundle-")
-  fs::dir_create(temp_dir)
-  on.exit(fs::dir_delete(temp_dir), add = TRUE)
+  # path_real() AFTER creating it, because path_real() requires the path to
+  # exist. What it buys is the one form of the path that every tool agrees on:
+  # it resolves symlinks -- on macOS tempdir() is /var/..., a link to
+  # /private/var/... -- and on Windows expands an 8.3 short name back to the
+  # long one. The Quarto CLI is a separate process that resolves paths itself,
+  # so handing it a directory whose name we only half know is how "it rendered
+  # but the outputs are not where I looked" happens.
+  #
+  # Spaces need no special handling here and must not get any: `Personal R
+  # Projects` is in this package's own checkout path, quarto_render() quotes its
+  # arguments, and the document is passed as a bare filename relative to this
+  # directory. Quoting it again would create the bug it was meant to prevent.
+  scratch <- fs::path_real(fs::dir_create(tempfile(pattern = "doc-bundle-")))
+  unstage <- stage_extension(scratch, theme, assets_dir)
+  on.exit({
+    unstage()
+    fs::dir_delete(scratch)
+  }, add = TRUE)
 
-  fs::file_copy(input_path, temp_dir)
+  fs::file_copy(input_path, scratch)
+  doc_file_name <- fs::path_file(input_path)
+  stem <- tools::file_path_sans_ext(doc_file_name)
 
-  withr::with_dir(temp_dir, {
-    doc_file_name <- fs::path_file(input_path)
-
+  withr::with_dir(scratch, {
     tryCatch(
       {
         knitr::purl(doc_file_name)
         quarto::quarto_render(doc_file_name, quiet = TRUE)
       },
-      error = \(e) {
-        stop("Failed during file processing: ", e$message, call. = FALSE)
+      error = function(e) {
+        cli::cli_abort(
+          c("Failed while processing {.file {doc_file_name}}.", x = e$message),
+          parent = e
+        )
       }
     )
 
-    # Bundle everything the render left behind.
+    # Explicit, not fs::dir_ls(): that is non-recursive, so it listed
+    # `<stem>_files` as a bare name and zip::zip() stored an empty directory
+    # entry for it. `recurse = TRUE` below is what reaches inside; this decides
+    # WHAT to reach into.
     #
-    # zip::zip(), not utils::zip(): the latter shells out to an external `zip`
-    # binary that a stock Windows install does not have, so a student without
-    # Rtools on PATH got a nonzero status this code never checked and an empty
-    # or missing archive. It also ADDS to an existing archive rather than
-    # replacing it, so re-running a batch left yesterday's stale entries inside
-    # today's bundle. zip::zip is pure C, needs no system tool, and replaces.
-    #
-    # `recurse = TRUE` reaches into the `_files/` directory Quarto writes beside
-    # the output; `root` makes every archive path relative to the scratch
-    # directory, so the zip has no absolute paths in it.
-    files_to_zip <- fs::path_file(fs::dir_ls())
+    # _extensions is excluded by construction rather than by filter -- it is
+    # staged, not produced, and on a symlinking platform zipping it would
+    # dereference into the project's assets/.
+    entries <- setdiff(
+      list.files(".", all.files = FALSE, no.. = TRUE),
+      c("_extensions", ".quarto")
+    )
+    by_kind <- classify_artefacts(entries, stem)
+    files_to_zip <- unlist(by_kind[include], use.names = FALSE)
+
+    if (!length(files_to_zip)) {
+      cli::cli_abort(c(
+        "Nothing to bundle for {.file {doc_file_name}}.",
+        i = "{.arg include} was {.val {include}}, and the render produced \\
+             nothing in {?that category/those categories}."
+      ))
+    }
+
     zip::zip(
       zipfile = output_path,
       files = files_to_zip,
@@ -105,9 +253,9 @@ process_file <- \(input_file, output_zip = NULL) {
   })
 
   if (!file.exists(output_path)) {
-    stop("Bundling failed: no archive at ", output_path, call. = FALSE)
+    cli::cli_abort("Bundling failed: no archive at {.file {output_path}}.")
   }
 
-  message("Successfully created bundle: ", fs::path_file(output_path))
+  cli::cli_alert_success("Bundled {.file {fs::path_file(output_path)}}")
   invisible(output_path)
 }

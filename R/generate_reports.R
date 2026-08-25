@@ -1,35 +1,170 @@
+# Generating parameterized .qmd sources from a template.
+#
+# The front matter is parsed, modified and re-emitted as YAML. The version this
+# replaced walked lines looking for `^params:` and gsub()ed
+# `(\s*name:\s*).+` over the block that followed, which broke on:
+#
+#   * a param whose default is empty or null    -- `.+` matches nothing
+#   * a list- or multi-line value                -- only the first line rewritten
+#   * a column absent from the template          -- silently dropped
+#   * a `---` inside a code chunk                -- mistaken for the closing fence
+#
+# All four are structural, not edge cases: the first two are ordinary YAML, and
+# the fourth happens in any document that shows a horizontal rule.
+
+# Split a document into front matter and body.
+#
+# Returns NULL when there is no front matter, which is not an error -- a
+# template without a YAML header is written through unchanged.
+#
+# The opening fence must be line 1. That is what makes a `---` inside a code
+# chunk harmless: only the FIRST fence after line 1 closes the block, so a rule
+# 40 lines down is body text, not a delimiter. The closing fence may be `...`,
+# which YAML allows and Pandoc accepts.
+split_front_matter <- function(lines) {
+  if (!length(lines) || !grepl("^---\\s*$", lines[[1]])) return(NULL)
+
+  fences <- which(grepl("^(---|\\.\\.\\.)\\s*$", lines))
+  fences <- fences[fences > 1L]
+  if (!length(fences)) return(NULL)
+
+  close <- fences[[1]]
+  list(
+    header = if (close > 2L) lines[2:(close - 1L)] else character(),
+    body   = if (close < length(lines)) lines[(close + 1L):length(lines)] else character()
+  )
+}
+
+# Force inline-R values to emit in DOUBLE-quoted YAML style.
+#
+# This is not cosmetic. knitr pulls `` `r ... ` `` out of the front matter by
+# reading the RAW LINE, before any YAML unescaping happens. yaml::as.yaml()
+# defaults to single-quoted style, where an inner quote is escaped by doubling
+# it, so
+#
+#   title: "`r paste('Report', params$chapter)`"
+#
+# came back as
+#
+#   title: '`r paste(''Report'', params$chapter)`'
+#
+# which is a correct YAML round trip -- yaml.load() returns the identical
+# string -- and a broken document: knitr evaluates `paste(''Report''` and dies
+# with "unexpected symbol". Verifying the YAML round trip is not enough; the
+# quoting STYLE is part of the contract with knitr.
+#
+# Double-quoted style leaves inner single quotes untouched, which is what the
+# templates use. An inline-R value containing a literal double quote cannot be
+# expressed this way -- it would have to be escaped as \" and knitr would read
+# the backslash -- but neither can it be expressed in single-quoted style, so
+# there is no representation to lose.
+# Done in two phases, with a sentinel, rather than by handing as.yaml a
+# pre-quoted string. The yaml package's `verbatim` class looks like the right
+# tool and is not: it suppresses quoting only for content the emitter considers
+# plain, and a string starting with `"` is not plain, so a pre-quoted value
+# comes back single-quoted around its own quotes. Substituting a bare token and
+# swapping the real value in afterwards sidesteps the emitter's style choice
+# entirely, and never parses the YAML it produced with a regex.
+INLINE_R_PATTERN <- "`r[ #]"
+
+hide_inline_r <- function(x) {
+  found <- new.env(parent = emptyenv())
+  found$values <- character()
+
+  walk <- function(v) {
+    if (is.list(v)) return(lapply(v, walk))
+    if (is.character(v) && length(v) == 1L && !is.na(v) &&
+        grepl(INLINE_R_PATTERN, v)) {
+      # Plain alphanumerics and underscores, so the emitter writes it bare.
+      token <- sprintf("mariner_inline_r_%d_sentinel", length(found$values) + 1L)
+      found$values[[token]] <- v
+      return(token)
+    }
+    v
+  }
+
+  list(header = walk(x), values = found$values)
+}
+
+# Swap the sentinels back, double-quoted.
+#
+# Double-quoted style leaves inner single quotes untouched, which is what
+# templates use. A value containing a literal double quote cannot be expressed
+# for knitr in either style -- the escape it needs is a backslash, which knitr
+# reads as part of the R code -- so it is left as the sentinel's plain form
+# rather than silently producing a document that fails to render.
+restore_inline_r <- function(text, values) {
+  for (token in names(values)) {
+    value <- values[[token]]
+    replacement <- if (grepl("[\"\\\\]", value)) value else paste0("\"", value, "\"")
+    text <- sub(token, replacement, text, fixed = TRUE)
+  }
+  text
+}
+
+# Coerce one params_df cell into something yaml::as.yaml emits sensibly.
+#
+# Two conversions, both of which are visible in the rendered report if skipped:
+#
+#   * A whole-number DOUBLE emits as `3.0`. R's default numeric type is double,
+#     so `expand_grid(chapter = 1)` gives 1, not 1L, and the template's
+#     `paste('Report', params$chapter, ...)` title then renders "Report.3.0.7".
+#   * A FACTOR emits as its integer code. data.frame() no longer creates factors
+#     by default, but a params_df built by other means still can.
+as_param_value <- function(x) {
+  if (is.factor(x)) return(as.character(x))
+  if (is.double(x) && length(x) == 1L && !is.na(x) &&
+      x == trunc(x) && abs(x) < .Machine$integer.max) {
+    return(as.integer(x))
+  }
+  x
+}
+
 #' Create Quarto Source Files from a Template
 #'
 #' @description
-#' Creates multiple Quarto (.qmd) source files from a parameterized template.
-#' The template can be located within a package or provided as a direct file
-#' path.
+#' Creates multiple Quarto (`.qmd`) source files from a parameterized template,
+#' one per row of `params_df`. Each file gets that row's values spliced into its
+#' YAML `params:` block.
 #'
-#' @param params_df A data frame where each row represents a report to be
-#'   created. Column names must match the parameter names in the template's
-#'   YAML header (e.g., "chapter", "problem_numbers", "author").
-#' @param template_name The name of the template directory inside
-#'   `inst/rmarkdown/templates`. This is ignored if `template_path` is provided.
-#' @param template_package The name of the installed package where the template
-#'   is located. Defaults to "mariner".
-#' @param output_dir The directory where the final .qmd files will be saved.
-#' @param template_path An optional path to a single `.qmd` template file. If
-#'   provided, this template will be used instead of one from a package.
+#' The template can be one shipped by a package or a `.qmd` file path.
 #'
-#' @return Invisibly returns a character vector of the output file paths for
-#'   the newly created .qmd files.
+#' @details
+#' Values are substituted by parsing the template's front matter as YAML,
+#' merging the row into its `params` entry, and re-emitting it. Only the
+#' `params` block changes -- `title`, `format` and everything else are carried
+#' across untouched, including inline R such as
+#' `` title: "`r paste('Report', params$chapter)`" ``.
+#'
+#' A column in `params_df` with no counterpart in the template's `params` block
+#' is *not* substituted, and raises a warning naming it. This is almost always a
+#' typo or a template mismatch, and the previous behaviour -- dropping it in
+#' silence -- produced reports that were wrong in a way nothing announced.
+#'
+#' @param params_df A data frame where each row describes one report. Column
+#'   names are matched against the parameter names in the template's YAML
+#'   `params:` block.
+#' @param template_name Name of a template directory shipped by
+#'   `template_package`. Ignored when `template_path` is given.
+#' @param template_package Installed package to look for `template_name` in.
+#' @param output_dir Directory the `.qmd` files are written to. Defaults to the
+#'   project's `reports/` folder -- see [mariner_dirs()]. Created if needed.
+#' @param template_path Path to a `.qmd` file to use instead of a packaged
+#'   template.
+#' @param file_name A [glue::glue()] template for the output file names,
+#'   evaluated against each row of `params_df`. The `.qmd` extension is added
+#'   automatically and must not be included here.
+#'
+#' @return Invisibly, a character vector of the paths actually written.
 #' @export
-#' @importFrom purrr pwalk
+#' @importFrom purrr pmap_chr
 #' @importFrom fs dir_create
 #' @importFrom tools file_ext
 #'
 #' @examples
-#' \dontrun{
-#' # --- Example 1: Using the default package template ---
-#' temp_dir_pkg <- tempfile("pkg-example-")
-#' dir.create(temp_dir_pkg)
+#' temp_dir <- tempfile("mariner-example-")
 #'
-#' report_params <- tidyr::expand_grid(
+#' report_params <- data.frame(
 #'   chapter = 1,
 #'   problem_numbers = 1:2,
 #'   author = "Firstname Lastname"
@@ -38,171 +173,174 @@
 #' qmd_files <- generate_reports(
 #'   params_df = report_params,
 #'   template_name = "simple_report",
-#'   output_dir = temp_dir_pkg
+#'   output_dir = temp_dir
 #' )
 #'
-#' list.files(temp_dir_pkg)
+#' basename(qmd_files)
 #'
-#' # --- Example 2: Using an external .qmd template file ---
-#' temp_dir_ext <- tempfile("ext-example-")
-#' dir.create(temp_dir_ext)
-#'
-#' # Create a custom template on the fly
-#' custom_template_path <- file.path(temp_dir_ext, "custom.qmd")
-#' writeLines(
-#'   c(
-#'     "---",
-#'     "title: Custom Report",
-#'     "params:",
-#'     "  region: Midwest",
-#'     "---",
-#'     "This report is for the `r params$region` region."
-#'   ),
-#'   custom_template_path
-#' )
-#'
-#' custom_params <- data.frame(
-#'   chapter = 1,
-#'   problem_numbers = 1,
-#'   region = c("East", "West")
-#' )
-#'
+#' # A different naming scheme:
 #' generate_reports(
-#'   params_df = custom_params,
-#'   template_path = custom_template_path,
-#'   output_dir = temp_dir_ext
-#' )
+#'   params_df = report_params,
+#'   output_dir = temp_dir,
+#'   file_name = "ch{chapter}-prob{problem_numbers}"
+#' ) |> basename()
 #'
-#' list.files(temp_dir_ext)
-#'
-#' # --- Cleanup ---
-#' unlink(temp_dir_pkg, recursive = TRUE)
-#' unlink(temp_dir_ext, recursive = TRUE)
-#' }
+#' unlink(temp_dir, recursive = TRUE)
 generate_reports <- function(
   params_df,
   template_name = "simple_report",
   template_package = "mariner",
-  output_dir = ".",
-  template_path = NULL
+  output_dir = mariner_dirs()$reports,
+  template_path = NULL,
+  file_name = "Report-{chapter}_{problem_numbers}"
 ) {
-  # --- 1. Find and read the template file ---
-  local_template_path <- ""
+  template_file <- resolve_template(
+    template_name, template_package, template_path
+  )
 
-  if (!is.null(template_path)) {
-    if (!file.exists(template_path)) {
-      stop("Template file not found at: ", template_path, call. = FALSE)
-    }
-    if (!identical(tolower(tools::file_ext(template_path)), "qmd")) {
-      stop(
-        "Template must be a .qmd file. Got: ",
-        basename(template_path),
-        call. = FALSE
-      )
-    }
-    local_template_path <- template_path
-  } else {
-    qmd_path <- system.file(
-      "rmarkdown",
-      "templates",
-      template_name,
-      "skeleton",
-      "skeleton.qmd",
-      package = template_package
-    )
+  lines <- readLines(template_file, warn = FALSE)
+  parts <- split_front_matter(lines)
 
-    if (qmd_path == "") {
-      stop(
-        "No 'skeleton.qmd' found for template: ",
-        template_name,
-        call. = FALSE
-      )
-    }
-    local_template_path <- qmd_path
+  # A template with no front matter has no params to splice. It is still copied
+  # once per row, because the file names differ and the caller asked for n
+  # files -- but there is nothing to warn about beyond that.
+  header <- if (is.null(parts)) NULL else {
+    yaml::yaml.load(paste(parts$header, collapse = "\n"))
   }
+  template_params <- header$params
 
-  template_content <- readLines(local_template_path)
+  # Warned once, listing every offender, rather than once per row. A 50-row
+  # params_df with a mistyped column would otherwise emit 50 identical warnings
+  # and bury whatever else the call had to say.
+  unmatched <- setdiff(names(params_df), names(template_params))
+  if (length(unmatched)) {
+    cli::cli_warn(c(
+      "{length(unmatched)} column{?s} in {.arg params_df} {?has/have} no matching \\
+       parameter in the template: {.val {unmatched}}.",
+      i = "The template's {.code params:} block declares: \\
+           {.val {names(template_params)}}.",
+      # qty() supplies the count for the plurals in this bullet. cli resolves
+      # {?a/b} against a quantity in the SAME string, and there is no
+      # interpolated vector here to infer one from.
+      i = "{cli::qty(length(unmatched))}{?This value was/These values were} \\
+           not substituted."
+    ))
+  }
+  matched <- intersect(names(params_df), names(template_params))
 
   fs::dir_create(output_dir)
 
-  # --- 2. Define a helper function to create one file ---
-  create_one_file <- function(...) {
-    current_params <- list(...)
-    output_filename <- file.path(
-      output_dir,
-      paste0(
-        "Report-",
-        current_params$chapter,
-        "_",
-        current_params$problem_numbers,
-        ".qmd"
+  write_one <- function(...) {
+    row <- list(...)
+
+    # glue over the row, not over params_df, so `file_name` can reference any
+    # column -- including one the template has no parameter for, which is a
+    # perfectly good thing to name a file after.
+    stem <- as.character(glue::glue_data(row, file_name, .na = "NA"))
+    if (!nzchar(stem) || grepl("^\\s+$", stem)) {
+      cli::cli_abort(c(
+        "{.arg file_name} produced an empty file name.",
+        i = "Template: {.val {file_name}}.",
+        i = "Available columns: {.val {names(params_df)}}."
+      ))
+    }
+    target <- file.path(output_dir, paste0(stem, ".qmd"))
+
+    if (is.null(parts)) {
+      writeLines(lines, target)
+      return(target)
+    }
+
+    out_header <- header
+    if (length(matched)) {
+      out_header$params <- utils::modifyList(
+        template_params,
+        lapply(row[matched], as_param_value)
       )
+    }
+
+    writeLines(
+      c(
+        "---",
+        # verbatim_logical, or every logical in the header emits as `yes`/`no`.
+        # Those are booleans under YAML 1.1 but plain STRINGS under the 1.2
+        # spec Pandoc follows, so `keep-tex: yes` would silently stop keeping
+        # the .tex -- a setting that fails by doing nothing.
+        {
+          hidden <- hide_inline_r(out_header)
+          emitted <- yaml::as.yaml(
+            hidden$header,
+            handlers = list(logical = yaml::verbatim_logical)
+          )
+          sub("\n$", "", restore_inline_r(emitted, hidden$values))
+        },
+        "---",
+        parts$body
+      ),
+      target
     )
-
-    modified_content <- template_content
-
-    # Identify the YAML front matter block
-    yaml_delimiters <- which(grepl("^---$", modified_content))
-    if (length(yaml_delimiters) < 2) {
-      writeLines(modified_content, output_filename)
-      return()
-    }
-    yaml_header_indices <- (yaml_delimiters[1] + 1):(yaml_delimiters[2] - 1)
-    yaml_header <- modified_content[yaml_header_indices]
-
-    params_start_in_yaml <- which(grepl("^params:", yaml_header))
-
-    if (length(params_start_in_yaml) > 0) {
-      following_lines <- yaml_header[
-        (params_start_in_yaml + 1):length(yaml_header)
-      ]
-      next_unindented_line <- which(!grepl("^\\s+", following_lines))
-
-      params_end_in_yaml <- if (length(next_unindented_line) > 0) {
-        params_start_in_yaml + next_unindented_line[1] - 1
-      } else {
-        length(yaml_header)
-      }
-
-      param_lines_indices <- (params_start_in_yaml + 1):params_end_in_yaml
-
-      for (param_name in names(current_params)) {
-        param_value <- current_params[[param_name]]
-        pattern <- paste0("(\\s*", param_name, ":\\s*).+")
-        replacement_value <- ifelse(
-          is.character(param_value),
-          paste0('"', param_value, '"'),
-          param_value
-        )
-        replacement <- paste0("\\1", replacement_value)
-        yaml_header[param_lines_indices] <- gsub(
-          pattern,
-          replacement,
-          yaml_header[param_lines_indices]
-        )
-      }
-      modified_content[yaml_header_indices] <- yaml_header
-    }
-
-    writeLines(modified_content, output_filename)
+    target
   }
 
-  # --- 3. Iterate over the parameter data frame ---
-  message("Generating ", nrow(params_df), " qmd files...")
-  purrr::pwalk(params_df, create_one_file)
+  cli::cli_alert_info("Generating {nrow(params_df)} qmd file{?s}...")
 
-  # --- 4. Return the expected output paths ---
-  output_paths <- file.path(
-    output_dir,
-    paste0(
-      "Report-",
-      params_df$chapter,
-      "_",
-      params_df$problem_numbers,
-      ".qmd"
-    )
+  # pmap_chr, not pwalk plus a recomputed vector of expected names. The old
+  # version built the return value a second time from the same two hardcoded
+  # columns, so a change to either naming site drifted from the other and the
+  # function returned paths that did not exist.
+  output_paths <- purrr::pmap_chr(params_df, write_one)
+
+  cli::cli_alert_success(
+    "Wrote {length(output_paths)} file{?s} to {.file {output_dir}}"
   )
-
-  message("qmd file generation complete.")
   invisible(output_paths)
+}
+
+# Find the template to generate from, as a path to a .qmd file.
+#
+# P6 replaces the inst/rmarkdown/templates/ lookup with a registry
+# (mariner_templates(), mariner_template_path()). Both callers -- this and
+# mariner_setup_project() -- go through one function each so that is one edit.
+resolve_template <- function(template_name, template_package, template_path,
+                             call = rlang::caller_env()) {
+  if (!is.null(template_path)) {
+    if (!file.exists(template_path)) {
+      cli::cli_abort("Template file not found: {.file {template_path}}.", call = call)
+    }
+    if (!identical(tolower(tools::file_ext(template_path)), "qmd")) {
+      cli::cli_abort(
+        c(
+          "Template must be a .qmd file.",
+          x = "Got {.file {basename(template_path)}}.",
+          i = "mariner is Quarto-only as of 0.2.0."
+        ),
+        call = call
+      )
+    }
+    return(template_path)
+  }
+
+  path <- system.file(
+    "rmarkdown", "templates", template_name, "skeleton", "skeleton.qmd",
+    package = template_package
+  )
+  if (identical(path, "")) {
+    available <- list.dirs(
+      system.file("rmarkdown", "templates", package = template_package),
+      recursive = FALSE, full.names = FALSE
+    )
+    cli::cli_abort(
+      c(
+        "No template named {.val {template_name}} in package \\
+         {.pkg {template_package}}.",
+        i = if (length(available)) {
+          "Available: {.val {available}}."
+        } else {
+          "That package ships no mariner templates."
+        }
+      ),
+      call = call
+    )
+  }
+  path
 }

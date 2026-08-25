@@ -4,45 +4,75 @@
 \alias{process_file}
 \title{Bundle a Quarto File and its Outputs}
 \usage{
-process_file(input_file, output_zip = NULL)
+process_file(
+  input_file,
+  output_zip = NULL,
+  theme = mariner_themes,
+  assets_dir = mariner_dirs()$assets,
+  include = INCLUDE_KINDS
+)
 }
 \arguments{
 \item{input_file}{Path to the input \code{.qmd} file.}
 
-\item{output_zip}{Path for the output \code{.zip} file.}
+\item{output_zip}{Path for the output \code{.zip}. Defaults to the project's
+\verb{zip_files/} folder -- see \code{\link[=mariner_dirs]{mariner_dirs()}} -- under the source's name.}
+
+\item{theme}{One of \link{mariner_themes}.}
+
+\item{assets_dir}{Directory holding an already-built extension, as
+\code{\link[=mariner_setup_project]{mariner_setup_project()}} leaves in \verb{assets/}. Pass \code{NULL} to assemble one
+from the installed package for this render instead.}
+
+\item{include}{Which categories of file to bundle. Any of \code{"source"},
+\code{"script"}, \code{"output"}, \code{"intermediates"}.}
 }
 \value{
-Invisibly returns the path to the created zip file.
+Invisibly, the path to the created zip file.
 }
 \description{
-Renders a Quarto (.qmd) file and bundles the source file, the purled R
-script, and all rendering outputs into a single zip archive.
+Renders a Quarto (\code{.qmd}) file in a scratch directory and bundles the source,
+the purled R script, the rendered document and the render's intermediates
+into a single zip archive.
+}
+\details{
+The render happens in a temporary directory with the theme staged beside the
+document, not in place, so nothing is written next to the source and parallel
+callers cannot collide on a shared cache.
+
+\code{include} selects what reaches the archive:
+
+\describe{
+\item{\code{source}}{the \code{.qmd} itself}
+\item{\code{script}}{the purled \code{.R}}
+\item{\code{output}}{the rendered document, and its \verb{_files/} directory --
+which an HTML document is broken without}
+\item{\code{intermediates}}{everything else the render left behind, such as the
+\code{.tex} when \code{keep-tex} is set}
+}
+
+The Quarto extension is never bundled. Reports are rendered inside a project
+that already has it, and a copy per archive would add ~1.3 MB to each.
 }
 \examples{
 \dontrun{
-# --- Setup: Create a temporary directory and generate one file ---
 temp_dir <- tempfile("example-")
-dir.create(temp_dir)
 
-report_params <- data.frame(chapter = 1, problem_numbers = 1, author = "Firstname Lastname")
-
-# `generate_reports` returns the path to the created .qmd file
-doc_file_path <- generate_reports(
-  params_df = report_params,
-  template_name = "simple_report",
-  template_package = "mariner",
+doc <- generate_reports(
+  params_df = data.frame(chapter = 1, problem_numbers = 1, author = "A. Name"),
   output_dir = temp_dir
 )
 
-# --- Example: Bundle the newly created file ---
-# This will create 'Report-1_1.zip' in the temp directory.
-process_file(doc_file_path)
+# Everything, into zip_files/:
+process_file(doc)
 
-# --- View the created files ---
-# The directory contains the source file and the bundled .zip.
-list.files(temp_dir)
+# Just the source and the PDF, somewhere explicit:
+process_file(
+  doc,
+  output_zip = file.path(temp_dir, "handout.zip"),
+  include = c("source", "output")
+)
 
-# --- Cleanup ---
 unlink(temp_dir, recursive = TRUE)
 }
 }

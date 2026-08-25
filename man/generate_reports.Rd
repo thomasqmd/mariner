@@ -8,42 +8,57 @@ generate_reports(
   params_df,
   template_name = "simple_report",
   template_package = "mariner",
-  output_dir = ".",
-  template_path = NULL
+  output_dir = mariner_dirs()$reports,
+  template_path = NULL,
+  file_name = "Report-{chapter}_{problem_numbers}"
 )
 }
 \arguments{
-\item{params_df}{A data frame where each row represents a report to be
-created. Column names must match the parameter names in the template's
-YAML header (e.g., "chapter", "problem_numbers", "author").}
+\item{params_df}{A data frame where each row describes one report. Column
+names are matched against the parameter names in the template's YAML
+\verb{params:} block.}
 
-\item{template_name}{The name of the template directory inside
-\code{inst/rmarkdown/templates}. This is ignored if \code{template_path} is provided.}
+\item{template_name}{Name of a template directory shipped by
+\code{template_package}. Ignored when \code{template_path} is given.}
 
-\item{template_package}{The name of the installed package where the template
-is located. Defaults to "mariner".}
+\item{template_package}{Installed package to look for \code{template_name} in.}
 
-\item{output_dir}{The directory where the final .qmd files will be saved.}
+\item{output_dir}{Directory the \code{.qmd} files are written to. Defaults to the
+project's \verb{reports/} folder -- see \code{\link[=mariner_dirs]{mariner_dirs()}}. Created if needed.}
 
-\item{template_path}{An optional path to a single \code{.qmd} template file. If
-provided, this template will be used instead of one from a package.}
+\item{template_path}{Path to a \code{.qmd} file to use instead of a packaged
+template.}
+
+\item{file_name}{A \code{\link[glue:glue]{glue::glue()}} template for the output file names,
+evaluated against each row of \code{params_df}. The \code{.qmd} extension is added
+automatically and must not be included here.}
 }
 \value{
-Invisibly returns a character vector of the output file paths for
-the newly created .qmd files.
+Invisibly, a character vector of the paths actually written.
 }
 \description{
-Creates multiple Quarto (.qmd) source files from a parameterized template.
-The template can be located within a package or provided as a direct file
-path.
+Creates multiple Quarto (\code{.qmd}) source files from a parameterized template,
+one per row of \code{params_df}. Each file gets that row's values spliced into its
+YAML \verb{params:} block.
+
+The template can be one shipped by a package or a \code{.qmd} file path.
+}
+\details{
+Values are substituted by parsing the template's front matter as YAML,
+merging the row into its \code{params} entry, and re-emitting it. Only the
+\code{params} block changes -- \code{title}, \code{format} and everything else are carried
+across untouched, including inline R such as
+\code{title: "`r paste('Report', params$chapter)`"}.
+
+A column in \code{params_df} with no counterpart in the template's \code{params} block
+is \emph{not} substituted, and raises a warning naming it. This is almost always a
+typo or a template mismatch, and the previous behaviour -- dropping it in
+silence -- produced reports that were wrong in a way nothing announced.
 }
 \examples{
-\dontrun{
-# --- Example 1: Using the default package template ---
-temp_dir_pkg <- tempfile("pkg-example-")
-dir.create(temp_dir_pkg)
+temp_dir <- tempfile("mariner-example-")
 
-report_params <- tidyr::expand_grid(
+report_params <- data.frame(
   chapter = 1,
   problem_numbers = 1:2,
   author = "Firstname Lastname"
@@ -52,45 +67,17 @@ report_params <- tidyr::expand_grid(
 qmd_files <- generate_reports(
   params_df = report_params,
   template_name = "simple_report",
-  output_dir = temp_dir_pkg
+  output_dir = temp_dir
 )
 
-list.files(temp_dir_pkg)
+basename(qmd_files)
 
-# --- Example 2: Using an external .qmd template file ---
-temp_dir_ext <- tempfile("ext-example-")
-dir.create(temp_dir_ext)
-
-# Create a custom template on the fly
-custom_template_path <- file.path(temp_dir_ext, "custom.qmd")
-writeLines(
-  c(
-    "---",
-    "title: Custom Report",
-    "params:",
-    "  region: Midwest",
-    "---",
-    "This report is for the `r params$region` region."
-  ),
-  custom_template_path
-)
-
-custom_params <- data.frame(
-  chapter = 1,
-  problem_numbers = 1,
-  region = c("East", "West")
-)
-
+# A different naming scheme:
 generate_reports(
-  params_df = custom_params,
-  template_path = custom_template_path,
-  output_dir = temp_dir_ext
-)
+  params_df = report_params,
+  output_dir = temp_dir,
+  file_name = "ch{chapter}-prob{problem_numbers}"
+) |> basename()
 
-list.files(temp_dir_ext)
-
-# --- Cleanup ---
-unlink(temp_dir_pkg, recursive = TRUE)
-unlink(temp_dir_ext, recursive = TRUE)
-}
+unlink(temp_dir, recursive = TRUE)
 }

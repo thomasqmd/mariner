@@ -1,162 +1,224 @@
-# tests/testthat/test-process_file.R
+# process_file(): render in a scratch directory, then bundle what came out.
 
-# Test Case 1: Successful bundling using a .qmd file from generate_reports
-test_that("process_file correctly bundles a valid .qmd from generate_reports", {
-  # --- 1. Setup: Use generate_reports to create a source .qmd file ---
-  temp_dir <- tempfile("test-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+zip_names <- function(path) utils::unzip(path, list = TRUE)$Name
 
-  # This will now generate a .qmd file
-  doc_file_path <- generate_reports(
-    params_df = data.frame(
-      chapter = 1,
-      problem_numbers = 1,
-      author = "Test Author"
-    ),
-    template_name = "simple_report",
-    template_package = "mariner",
-    output_dir = temp_dir
-  )
-
-  expect_equal(tools::file_ext(doc_file_path), "qmd") # Verify it's a .qmd
-
-  # --- 2. Execute ---
-  output_zip_path <- file.path(temp_dir, "output_bundle.zip")
-  suppressMessages({
-    result_path <- process_file(doc_file_path, output_zip_path)
-  })
-
-  # --- 3. Assertions ---
-  expect_equal(fs::path_norm(result_path), fs::path_norm(output_zip_path))
-  expect_true(file.exists(output_zip_path))
-
-  zip_contents <- utils::unzip(output_zip_path, list = TRUE)$Name
-  # Check for the core files in the bundle
-  expect_true(any(grepl("\\.qmd$", zip_contents)))
-  expect_true(any(grepl("\\.R$", zip_contents)))
-  expect_true(any(grepl("\\.pdf$", zip_contents)))
-})
-
-# Test Case 2: Default output path behavior (with .qmd)
-test_that("process_file uses the default output path when output_zip is NULL", {
-  temp_dir <- tempfile("test-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  # Use generate_reports for setup (creates .qmd)
-  doc_file_path <- generate_reports(
-    params_df = data.frame(
-      chapter = 1,
-      problem_numbers = 1,
-      author = "Test Author"
-    ),
-    template_name = "simple_report",
-    output_dir = temp_dir
-  )
-
-  suppressMessages({
-    result_path <- process_file(doc_file_path, output_zip = NULL)
-  })
-
-  expected_zip_path <- fs::path_ext_set(doc_file_path, ".zip")
-  expect_equal(fs::path_norm(result_path), fs::path_norm(expected_zip_path))
-  expect_true(file.exists(expected_zip_path))
-})
-
-# Test Case 3: Bundling .qmd with plot outputs
-test_that("process_file bundles .qmd output dependencies (e.g., _files directory)", {
-  temp_dir <- tempfile()
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  test_qmd_path <- file.path(temp_dir, "report_with_plot.qmd")
+# A .qmd written by hand, so a test does not depend on the packaged template.
+write_qmd <- function(dir, name, format = "pdf", body = "Hello world.") {
+  path <- file.path(dir, paste0(name, ".qmd"))
   writeLines(
-    c(
-      "---",
-      "title: 'Report with Plot'",
-      "format: html",
-      "---",
-      "```{r}",
-      "plot(1:10)",
-      "```"
-    ),
-    test_qmd_path
+    c("---", paste0("title: '", name, "'"), paste0("format: ", format),
+      "---", body),
+    path
   )
+  path
+}
 
-  output_zip_path <- file.path(temp_dir, "plot_bundle.zip")
-  suppressMessages({
-    process_file(test_qmd_path, output_zip_path)
-  })
+local_dir <- function(env = parent.frame()) {
+  withr::local_tempdir(.local_envir = env)
+}
 
-  zip_contents <- utils::unzip(output_zip_path, list = TRUE)$Name
-  expect_true("report_with_plot.qmd" %in% zip_contents)
-  expect_true("report_with_plot.html" %in% zip_contents)
-  expect_true(any(grepl("report_with_plot_files", zip_contents)))
+# --- bundling ----------------------------------------------------------------
+
+test_that("process_file bundles source, script and output", {
+  dir <- local_dir()
+  doc <- suppressMessages(generate_reports(
+    params_df = data.frame(chapter = 1, problem_numbers = 1, author = "Test"),
+    template_name = "simple_report",
+    output_dir = dir
+  ))
+  expect_equal(tools::file_ext(doc), "qmd")
+
+  out <- file.path(dir, "output_bundle.zip")
+  result <- suppressMessages(process_file(doc, out))
+
+  expect_equal(fs::path_norm(result), fs::path_norm(out))
+  contents <- zip_names(out)
+  expect_true(any(grepl("\\.qmd$", contents)))
+  expect_true(any(grepl("\\.R$", contents)))
+  expect_true(any(grepl("\\.pdf$", contents)))
 })
 
+test_that("the staged extension is never bundled", {
+  # It is staged beside the document so xelatex can resolve the fonts, and on a
+  # symlinking platform zipping it would dereference into the project's assets/.
+  dir <- local_dir()
+  doc <- write_qmd(dir, "simple")
+  out <- file.path(dir, "b.zip")
+  suppressMessages(process_file(doc, out))
 
-# Test Case 4: Graceful failure with invalid inputs
-test_that("process_file errors correctly with bad inputs", {
-  # Test non-existent file
-  expect_error(process_file("non_existent_file.qmd"))
+  expect_false(any(grepl("_extensions", zip_names(out), fixed = TRUE)))
+})
 
-  # Test .qmd that will fail to render
-  temp_dir <- tempfile()
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+test_that("output_zip defaults into zip_files/", {
+  dir <- local_dir()
+  file.create(file.path(dir, "Thing.Rproj"))
+  doc <- write_qmd(dir, "simple")
 
-  invalid_qmd_path <- file.path(temp_dir, "invalid.qmd")
+  result <- suppressMessages(process_file(doc, output_zip = NULL))
+
+  expect_equal(fs::path_norm(dirname(result)), fs::path_norm(mariner_dirs(dir)$zips))
+  expect_true(file.exists(result))
+})
+
+test_that("a document's _files directory travels with the output", {
+  dir <- local_dir()
+  doc <- write_qmd(
+    dir, "report_with_plot", format = "html",
+    body = c("```{r}", "plot(1:10)", "```")
+  )
+  out <- file.path(dir, "plot_bundle.zip")
+  suppressMessages(process_file(doc, out))
+
+  contents <- zip_names(out)
+  expect_true("report_with_plot.qmd" %in% contents)
+  expect_true("report_with_plot.html" %in% contents)
+  expect_true(any(grepl("report_with_plot_files", contents)))
+})
+
+test_that("an html document keeps its _files when intermediates are dropped", {
+  # _files/ is classed as OUTPUT, not intermediates: an html document without
+  # it is broken, whereas for pdf it is merely redundant.
+  dir <- local_dir()
+  doc <- write_qmd(
+    dir, "plotted", format = "html", body = c("```{r}", "plot(1:10)", "```")
+  )
+  out <- file.path(dir, "b.zip")
+  suppressMessages(process_file(doc, out, include = c("source", "output")))
+
+  contents <- zip_names(out)
+  expect_true(any(grepl("plotted_files", contents)))
+  expect_true("plotted.html" %in% contents)
+})
+
+# --- include -----------------------------------------------------------------
+
+test_that("include selects what reaches the archive", {
+  dir <- local_dir()
+  doc <- write_qmd(dir, "simple")
+
+  only_source <- file.path(dir, "src.zip")
+  suppressMessages(process_file(doc, only_source, include = "source"))
+  expect_equal(zip_names(only_source), "simple.qmd")
+
+  no_script <- file.path(dir, "noscript.zip")
+  suppressMessages(process_file(doc, no_script, include = c("source", "output")))
+  expect_false(any(grepl("\\.R$", zip_names(no_script))))
+  expect_true("simple.pdf" %in% zip_names(no_script))
+})
+
+test_that("include rejects an unknown category", {
+  dir <- local_dir()
+  doc <- write_qmd(dir, "simple")
+  expect_error(process_file(doc, include = "everything"))
+})
+
+test_that("classify_artefacts sorts a render's leftovers", {
+  # Unit-level, so the classification can be checked without a 7-second render.
+  got <- classify_artefacts(
+    c("r.qmd", "r.R", "r.pdf", "r.tex", "r_files", "r.log", "mystery.dat"),
+    stem = "r"
+  )
+
+  expect_equal(got$source, "r.qmd")
+  expect_equal(got$script, "r.R")
+  expect_setequal(got$output, c("r.pdf", "r_files"))
+  # Anything unrecognised travels rather than going missing in silence.
+  expect_setequal(got$intermediates, c("r.tex", "r.log", "mystery.dat"))
+})
+
+# --- the staged extension (§0.4) ---------------------------------------------
+
+test_that("a document using the branded format renders", {
+  # The reason stage_extension() exists. brand-preamble.tex reaches the bundled
+  # fonts through Path=_extensions/mariner-baylor/fonts/, which xelatex resolves
+  # against the directory holding the .tex -- the document's own. Without the
+  # extension staged beside the document this render finds its *format* and then
+  # dies with "The font Lora-Regular cannot be found".
+  #
+  # This is the only test that proves the theme is reachable at render time, so
+  # it renders for real rather than inspecting the scratch directory.
+  skip_on_cran()
+  skip_if_not(nzchar(Sys.which("quarto")), "quarto CLI not available")
+
+  dir <- local_dir()
+  mariner_build_extension(dir, "baylor", quiet = TRUE)
+
+  doc <- write_qmd(dir, "branded", format = "mariner-baylor-pdf")
+  out <- file.path(dir, "branded.zip")
+
+  expect_no_error(
+    suppressMessages(process_file(doc, out, assets_dir = dir))
+  )
+  expect_true("branded.pdf" %in% zip_names(out))
+})
+
+test_that("stage_extension serves from assets_dir when one is built", {
+  dir <- local_dir()
+  assets <- file.path(dir, "assets")
+  mariner_build_extension(assets, "baylor", quiet = TRUE)
+
+  scratch <- file.path(dir, "scratch")
+  dir.create(scratch)
+  unstage <- stage_extension(scratch, "baylor", assets)
+
+  staged <- file.path(scratch, "_extensions", "mariner-baylor")
+  expect_true(file.exists(file.path(staged, "brand-preamble.tex")))
+
+  # Undoing the stage must not reach into the project's assets/.
+  unstage()
+  expect_true(file.exists(mariner_ext_dir(assets, "baylor")))
+  expect_true(file.exists(
+    file.path(mariner_ext_dir(assets, "baylor"), "brand-preamble.tex")
+  ))
+})
+
+test_that("stage_extension builds into the scratch dir when there is no assets_dir", {
+  dir <- local_dir()
+  unstage <- stage_extension(dir, "baylor", assets_dir = NULL)
+
+  staged <- file.path(dir, "_extensions", "mariner-baylor")
+  expect_true(file.exists(file.path(staged, "brand-preamble.tex")))
+  expect_true(file.exists(file.path(staged, "_extension.yml")))
+  unstage()
+})
+
+# --- refusals ----------------------------------------------------------------
+
+test_that("process_file errors on bad inputs", {
+  expect_error(process_file("non_existent_file.qmd"), "does not exist")
+
+  dir <- local_dir()
+  invalid <- file.path(dir, "invalid.qmd")
   writeLines(
     c("---", "title: 'Invalid'", "---", "```{r}", "stop('error')", "```"),
-    invalid_qmd_path
+    invalid
   )
-  expect_error(process_file(invalid_qmd_path))
+  expect_error(suppressMessages(process_file(invalid, file.path(dir, "x.zip"))))
 
-  # Test invalid file type
-  invalid_txt_path <- file.path(temp_dir, "invalid.txt")
-  writeLines("hello", invalid_txt_path)
-  expect_error(process_file(invalid_txt_path), "must be a .qmd file", fixed = TRUE)
+  txt <- file.path(dir, "invalid.txt")
+  writeLines("hello", txt)
+  expect_error(process_file(txt), "must be a .qmd file", fixed = TRUE)
 })
 
-# Test Case 5: .Rmd is no longer accepted
-#
-# The package is Quarto-only as of 0.2.0. A student handed a .Rmd from an older
-# course gets a clear refusal, not a rendering attempt -- and the assertion is on
-# the MESSAGE, so this cannot start passing for the wrong reason if the file
-# simply goes missing.
 test_that("process_file rejects .Rmd input", {
-  temp_dir <- tempfile()
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+  # The package is Quarto-only as of 0.2.0. The assertion is on the MESSAGE, so
+  # it cannot start passing for the wrong reason if the file simply goes missing.
+  dir <- local_dir()
+  rmd <- file.path(dir, "legacy.Rmd")
+  writeLines(c("---", "title: 'Legacy'", "---", "Hello."), rmd)
 
-  rmd_path <- file.path(temp_dir, "legacy.Rmd")
-  writeLines(
-    c("---", "title: 'Legacy'", "---", "Hello."),
-    rmd_path
-  )
-
-  expect_error(process_file(rmd_path), "must be a .qmd file", fixed = TRUE)
+  expect_error(process_file(rmd), "must be a .qmd file", fixed = TRUE)
 })
 
-# Test Case 6: Bundling a simple, non-parameterized .qmd
-test_that("process_file bundles a simple .qmd file", {
-  temp_dir <- tempfile()
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  simple_qmd_path <- file.path(temp_dir, "simple.qmd")
+test_that("a failed render leaves no scratch directory behind", {
+  dir <- local_dir()
+  invalid <- file.path(dir, "invalid.qmd")
   writeLines(
-    c("---", "title: 'Simple'", "format: pdf", "---", "Hello world."),
-    simple_qmd_path
+    c("---", "title: 'Invalid'", "---", "```{r}", "stop('error')", "```"),
+    invalid
   )
+  before <- list.files(tempdir(), pattern = "^doc-bundle-")
+  try(suppressMessages(process_file(invalid, file.path(dir, "x.zip"))), silent = TRUE)
 
-  suppressMessages({
-    result_path <- process_file(simple_qmd_path, output_zip = NULL)
-  })
-
-  expect_true(file.exists(result_path))
-  zip_contents <- utils::unzip(result_path, list = TRUE)$Name
-  expect_true("simple.qmd" %in% zip_contents)
-  expect_true("simple.pdf" %in% zip_contents)
+  expect_equal(list.files(tempdir(), pattern = "^doc-bundle-"), before)
 })

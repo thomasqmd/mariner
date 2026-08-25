@@ -230,6 +230,35 @@ mariner_fonts_available <- function(format = NULL) {
 # or by mariner_setup_project() only when that is asked to.
 # ---------------------------------------------------------------------------
 
+# The name Windows expects a font's registry value to carry.
+#
+# Windows writes `<Full Font Name> (TrueType)` -- "Lora Regular (TrueType)" --
+# where the full name comes from the font's own name table, NOT from its
+# filename. Ours are named `Lora-Regular.ttf`, so deriving the value from the
+# filename gives "Lora-Regular (TrueType)": close enough to look right in the
+# registry and wrong enough to leave a duplicate entry behind when the user
+# later installs the same face through Explorer.
+#
+# systemfonts reads the name table, so the family and style are asked for rather
+# than guessed. The filename stem is the fallback for the case where the file
+# cannot be read at all -- at which point the copy has already failed and this
+# value will never be used.
+windows_font_value_name <- function(path) {
+  info <- tryCatch(
+    systemfonts::font_info(path = path, index = 0),
+    error = function(e) NULL
+  )
+
+  label <- if (!is.null(info) && nzchar(info$family[[1]])) {
+    style <- info$style[[1]]
+    if (nzchar(style)) paste(info$family[[1]], style) else info$family[[1]]
+  } else {
+    tools::file_path_sans_ext(basename(path))
+  }
+
+  paste0(label, " (TrueType)")
+}
+
 # Where a per-user font install goes on each platform.
 user_font_dir <- function() {
   if (Sys.info()[["sysname"]] == "Darwin") {
@@ -330,11 +359,19 @@ mariner_install_fonts <- function(overwrite = FALSE, quiet = FALSE) {
   if (.Platform$OS.type == "windows" && length(installed)) {
     key <- "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"
     for (dest in installed) {
-      value <- paste0(tools::file_path_sans_ext(basename(dest)), " (TrueType)")
+      # type = "cmd", NOT the default. shQuote()'s default is POSIX quoting --
+      # single quotes -- and cmd.exe does not strip those: reg.exe would receive
+      # 'HKCU\Software\...' with the quotes as part of the key name and refuse
+      # every write. system2() on Windows goes through cmd, so the quoting has
+      # to be cmd's. Registry paths contain backslashes and the destination
+      # contains spaces (%LOCALAPPDATA% is under C:\Users\<name>\), so dropping
+      # the quoting altogether is not the alternative.
       status <- suppressWarnings(system2(
         "reg",
-        c("add", shQuote(key), "/v", shQuote(value), "/t", "REG_SZ",
-          "/d", shQuote(dest), "/f"),
+        c("add", shQuote(key, type = "cmd"),
+          "/v", shQuote(windows_font_value_name(dest), type = "cmd"),
+          "/t", "REG_SZ",
+          "/d", shQuote(dest, type = "cmd"), "/f"),
         stdout = FALSE, stderr = FALSE
       ))
       if (!identical(status, 0L)) registry_failed <- c(registry_failed, basename(dest))
@@ -343,10 +380,23 @@ mariner_install_fonts <- function(overwrite = FALSE, quiet = FALSE) {
 
   # fontconfig caches aggressively; without this the faces are on disk and still
   # not found until the cache happens to be rebuilt.
+  #
+  # A bare container often has no fc-cache -- fontconfig's binaries are a
+  # separate package from its library on most distributions. The install still
+  # works: the files are in a directory fontconfig scans, and it rebuilds its
+  # own cache when it next finds the directory newer than the cache. What it is
+  # not is IMMEDIATE, so the absence is reported rather than passed over. A
+  # student told "installed, restart R" who then finds the fonts still missing
+  # has no way to get from there to "your image has no fontconfig tools".
+  fc_cache_missing <- FALSE
   if (.Platform$OS.type == "unix" && Sys.info()[["sysname"]] != "Darwin" &&
-      length(installed) && nzchar(Sys.which("fc-cache"))) {
-    suppressWarnings(system2("fc-cache", c("-f", shQuote(dest_dir)),
-                             stdout = FALSE, stderr = FALSE))
+      length(installed)) {
+    if (nzchar(Sys.which("fc-cache"))) {
+      suppressWarnings(system2("fc-cache", c("-f", shQuote(dest_dir)),
+                               stdout = FALSE, stderr = FALSE))
+    } else {
+      fc_cache_missing <- TRUE
+    }
   }
 
   if (!quiet) {
@@ -362,6 +412,14 @@ mariner_install_fonts <- function(overwrite = FALSE, quiet = FALSE) {
     }
     if (length(failed)) {
       cli::cli_warn("Could not copy: {.file {failed}}")
+    }
+    if (fc_cache_missing) {
+      cli::cli_alert_info(c(
+        "{.code fc-cache} is not on this machine, so the font cache was not ",
+        "rebuilt. The fonts are installed and will be picked up once ",
+        "fontconfig next refreshes; install {.pkg fontconfig}'s tools to make ",
+        "that happen now."
+      ))
     }
     if (length(registry_failed)) {
       cli::cli_warn(c(

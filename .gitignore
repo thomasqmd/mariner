@@ -53,6 +53,13 @@ rsconnect/
 
 /.quarto/
 
+# mariner's own folders, if library(mariner) is attached from the package root.
+# The repo root has a DESCRIPTION and a .git, so it passes the .onAttach guard
+# and gets scaffolded like any other project.
+/assets/
+/reports/
+/zip_files/
+
 **/*.quarto_ipynb
 inst/doc
 

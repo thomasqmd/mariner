@@ -21,7 +21,6 @@ Description: Provides a set of functions to simplify and automate the
     from the same colours as the page without anything to install separately.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 SystemRequirements: Quarto (>= 1.4), a LaTeX distribution providing xelatex
@@ -31,14 +30,16 @@ Imports:
     furrr,
     future,
     ggplot2,
+    glue,
     grDevices,
     knitr,
     purrr,
     quarto,
     rlang,
     stats,
-    systemfonts,
+    systemfonts (>= 1.1.0),
     tools,
+    utils,
     withr,
     yaml,
     zip
@@ -46,6 +47,10 @@ Suggests:
     testthat (>= 3.0.0),
     pkgload,
     tidyr,
-    patchwork
+    progressr,
+    tinytex,
+    conflicted,
+    patchwork,
+    tidyverse
 Config/testthat/edition: 3
 VignetteBuilder: knitr

@@ -4,53 +4,60 @@
 \alias{process_files}
 \title{Bundle Multiple Quarto Files Sequentially or in Parallel}
 \usage{
-process_files(input_files, output_dir = NULL)
+process_files(
+  input_files,
+  output_dir = NULL,
+  theme = mariner_themes,
+  assets_dir = mariner_dirs()$assets,
+  include = INCLUDE_KINDS
+)
 }
 \arguments{
-\item{input_files}{A character vector of paths to the \code{.qmd} files.}
+\item{input_files}{A character vector of paths to \code{.qmd} files.}
 
-\item{output_dir}{An optional path to a directory where the output zip
-archives will be saved. If \code{NULL} (the default), each zip is created in
-the same directory as its corresponding input file.}
+\item{output_dir}{Directory for the zip archives. Defaults to the project's
+\verb{zip_files/} folder -- see \code{\link[=mariner_dirs]{mariner_dirs()}}.}
+
+\item{theme}{One of \link{mariner_themes}.}
+
+\item{assets_dir}{Directory holding an already-built extension. Resolved once
+here and passed to every worker, so a batch of fifty reports stages the
+theme from one place rather than assembling it fifty times.}
+
+\item{include}{Which categories of file to bundle -- see \code{\link[=process_file]{process_file()}}.}
 }
 \value{
-Invisibly returns a character vector of paths to the successfully
-created zip archives. Any file that fails to process will be represented
-by an \code{NA} in the output vector.
+Invisibly, a character vector of paths to the archives created, with
+\code{NA} in the position of any file that failed.
 }
 \description{
-A wrapper around \code{process_file()} to process a list of Quarto (.qmd) files.
-Execution is sequential by default but can be run in parallel by setting a
-\code{future} plan (e.g., \code{future::plan(future::multisession)}).
+A wrapper around \code{\link[=process_file]{process_file()}} for a vector of Quarto (\code{.qmd}) files.
+Execution is sequential by default and parallel under a \code{future} plan, e.g.
+\code{future::plan(future::multisession)}.
+}
+\details{
+A file that fails to render does not stop the batch: it comes back as \code{NA}
+and its error message is reported at the end, named. Each render owns a
+scratch directory, so parallel workers cannot collide.
 }
 \examples{
 \dontrun{
-# --- Setup: Create a temporary directory and generate document files ---
 temp_dir <- tempfile("example-")
-dir.create(temp_dir)
-
-report_params <- tidyr::expand_grid(
-  chapter = 1,
-  problem_numbers = 1:2,
-  author = "Firstname Lastname"
-)
 
 doc_files <- generate_reports(
-  params_df = report_params,
-  template_name = "simple_report",
+  params_df = data.frame(
+    chapter = 1, problem_numbers = 1:2, author = "A. Name"
+  ),
   output_dir = temp_dir
 )
 
-# --- Example 1: Default behavior (zips next to source files) ---
-process_files(doc_files)
-list.files(temp_dir)
+process_files(doc_files, output_dir = file.path(temp_dir, "zips"))
 
-# --- Example 2: Specifying an output directory ---
-zip_output_dir <- file.path(temp_dir, "zips")
-process_files(doc_files, output_dir = zip_output_dir)
-list.files(zip_output_dir)
+# In parallel:
+future::plan(future::multisession, workers = 2)
+process_files(doc_files, output_dir = file.path(temp_dir, "zips"))
+future::plan(future::sequential)
 
-# --- Cleanup ---
 unlink(temp_dir, recursive = TRUE)
 }
 }

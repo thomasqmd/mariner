@@ -7,3 +7,6 @@ docs
 ^_pkgdown\.yml$
 ^data-raw$
 ^plan\.md$
+^assets$
+^reports$
+^zip_files$

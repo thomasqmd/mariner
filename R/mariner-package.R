@@ -14,13 +14,33 @@
 #'
 #' @section Core Workflow:
 #' \enumerate{
-#'   \item Use \code{mariner_setup_project()} once to create the project
+#'   \item Run \code{\link{mariner_check_setup}} to confirm this machine has
+#'     everything a branded report needs -- Quarto, a LaTeX engine, the fonts.
+#'     It reports and prints the fix; it changes nothing.
+#'   \item Use \code{\link{mariner_setup_project}} once to create the project
 #'     folders and install the theme assets into them.
 #'   \item Use \code{\link{generate_reports}} to create multiple, parameterized
-#'     `.qmd` source files from a template.
+#'     `.qmd` source files from a template, into `reports/`.
 #'   \item Use \code{\link{process_files}} to render each source file and bundle
-#'     the source, R script, and all outputs into a zip archive.
+#'     the source, R script, and all outputs into a zip archive, into
+#'     `zip_files/`.
 #' }
+#'
+#' @section Project Folders:
+#' mariner works in three directories beneath the project root, returned by
+#' \code{\link{mariner_dirs}}:
+#'
+#' \describe{
+#'   \item{`assets/`}{The built Quarto extension, assembled once.}
+#'   \item{`reports/`}{Generated `.qmd` sources, their rendered PDFs, and a copy
+#'     of the extension beside them.}
+#'   \item{`zip_files/`}{The bundles handed to students.}
+#' }
+#'
+#' Attaching the package with `library(mariner)` creates the three folders if
+#' the working directory looks like a project root -- see
+#' \code{\link{mariner_looks_like_project}}. Set
+#' `options(mariner.auto_setup = FALSE)` to turn that off.
 #'
 #' @keywords internal
 "_PACKAGE"
@@ -94,6 +114,17 @@ mariner_ext_name <- function(theme = mariner_themes) {
 # from a parent -- see R/extension.R.
 mariner_ext_rel <- function(theme = mariner_themes) {
   paste0("_extensions/", mariner_ext_name(theme))
+}
+
+# The extension directory beneath a given directory, as the FILESYSTEM sees it.
+#
+# mariner_ext_rel() is what goes into generated LaTeX, where the separator must
+# be "/" whatever the platform. This is what goes into file.copy() and
+# dir.exists(), where it must be the platform's own. Two callers compose this
+# path -- the builder and the project scaffolder -- and they must not each
+# assemble it from parts.
+mariner_ext_dir <- function(dir, theme = mariner_themes) {
+  file.path(dir, "_extensions", mariner_ext_name(theme))
 }
 
 # Validate a theme name, with a spell-checked error.
