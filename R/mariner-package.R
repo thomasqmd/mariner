@@ -1,28 +1,25 @@
-#' mariner: Streamline R Markdown and Quarto Report Generation
+#' mariner: Streamline Quarto Report Generation and Bundling
 #'
 #' @description
 #' The `mariner` package simplifies and automates the process of creating and
-#' packaging R Markdown (.Rmd) and Quarto (.qmd) documents. It provides a
-#' cohesive workflow for first generating multiple document source files from
-#' a single parameterized template, and then bundling those source files
-#' along with all their rendered outputs (e.g., PDFs, scripts, and
-#' dependency files) into easily shareable zip archives.
+#' packaging Quarto (.qmd) documents. It provides a cohesive workflow for first
+#' generating multiple document source files from a single parameterized
+#' template, and then bundling those source files along with all their rendered
+#' outputs (e.g., PDFs, scripts, and dependency files) into easily shareable zip
+#' archives.
+#'
+#' It also carries a complete Baylor-branded Quarto theme, so a generated report
+#' or slide deck is styled, typeset in bundled fonts, and has figures drawn from
+#' the same palette as the page, without anything to install separately.
 #'
 #' @section Core Workflow:
-#' The typical workflow involves two main steps:
 #' \enumerate{
-#'   \item Use \code{\link{generate_reports}} to create multiple,
-#'     parameterized `.Rmd` or `.qmd` source files from a template.
-#'   \item Use \code{\link{process_files}} to render each source file
-#'     and bundle the source, R script, and all outputs into a zip archive.
-#' }
-#'
-#' @seealso
-#' Useful functions:
-#' \itemize{
-#'   \item \code{\link{generate_reports}}
-#'   \item \code{\link{process_files}}
-#'   \item \code{\link{process_file}}
+#'   \item Use \code{mariner_setup_project()} once to create the project
+#'     folders and install the theme assets into them.
+#'   \item Use \code{\link{generate_reports}} to create multiple, parameterized
+#'     `.qmd` source files from a template.
+#'   \item Use \code{\link{process_files}} to render each source file and bundle
+#'     the source, R script, and all outputs into a zip archive.
 #' }
 #'
 #' @keywords internal
@@ -31,3 +28,76 @@
 ## usethis namespace: start
 ## usethis namespace: end
 NULL
+
+# Locate a file inside the installed package.
+#
+# Every path the package hands out goes through here rather than through
+# system.file() at the call site, so a moved directory is one edit. Errors
+# rather than returning "" -- system.file()'s empty-string-on-miss is the
+# classic way a broken install turns into a confusing downstream error, and this
+# package ships 19 font files that a partial install can silently drop.
+mariner_path <- function(...) {
+  path <- system.file(..., package = "mariner")
+  if (identical(path, "")) {
+    cli::cli_abort(c(
+      "Could not find {.file {file.path(...)}} in the installed package.",
+      i = "The install may be incomplete; try reinstalling mariner."
+    ))
+  }
+  path
+}
+
+#' Themes shipped by mariner
+#'
+#' The brand identities available to `mariner_setup_project()` and the
+#' templates. Every function that takes a `theme` argument validates against
+#' this vector.
+#'
+#' There is one theme today. It stays a vector, and `theme` stays a named
+#' argument everywhere rather than being dropped, so adding a second identity
+#' later is a new entry here rather than a signature change across the package.
+#'
+#' @format A character vector.
+#' @export
+mariner_themes <- c("baylor")
+
+#' Formats shipped by mariner
+#'
+#' The Quarto formats the vendored extension contributes.
+#'
+#' `pdf` and `revealjs` are the two that ship document templates. `html` and
+#' `typst` are contributed and fully styled -- a document that names them by
+#' hand renders correctly and gets correct figures -- they simply have no
+#' starter template yet.
+#'
+#' @format A character vector of length 4.
+#' @export
+mariner_formats <- c("html", "revealjs", "pdf", "typst")
+
+# The Quarto extension directory name for a theme.
+#
+# Derived, never typed. It appears inside asset paths that Quarto, xelatex and
+# Typst each resolve at render time -- the logo, the font directory, the SCSS
+# $qmd-ext-dir -- and every one of those is GENERATED from this function. A
+# rename is therefore this line plus a rebuild, rather than a search across five
+# file formats where a miss fails silently (Quarto simply does not find the
+# logo; xelatex simply substitutes a font).
+mariner_ext_name <- function(theme = mariner_themes) {
+  paste0("mariner-", check_theme(theme))
+}
+
+# The extension directory as the RENDERED DOCUMENT sees it: relative to the
+# project root, which is where Quarto writes the .tex and .typ it hands to the
+# engines.
+mariner_ext_rel <- function(theme = mariner_themes) {
+  paste0("_extensions/", mariner_ext_name(theme))
+}
+
+# Validate a theme name, with a spell-checked error.
+check_theme <- function(theme, call = rlang::caller_env()) {
+  rlang::arg_match(theme, mariner_themes, error_call = call)
+}
+
+check_format <- function(format, call = rlang::caller_env()) {
+  rlang::arg_match(format, mariner_formats, error_call = call)
+}

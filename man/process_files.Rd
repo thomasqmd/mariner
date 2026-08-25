@@ -7,21 +7,21 @@
 process_files(input_files, output_dir = NULL)
 }
 \arguments{
-\item{input_files}{A character vector of paths to the `.Rmd` or `.qmd` files.}
+\item{input_files}{A character vector of paths to the \code{.Rmd} or \code{.qmd} files.}
 
 \item{output_dir}{An optional path to a directory where the output zip
-archives will be saved. If `NULL` (the default), each zip is created in
+archives will be saved. If \code{NULL} (the default), each zip is created in
 the same directory as its corresponding input file.}
 }
 \value{
 Invisibly returns a character vector of paths to the successfully
-  created zip archives. Any file that fails to process will be represented
-  by an `NA` in the output vector.
+created zip archives. Any file that fails to process will be represented
+by an \code{NA} in the output vector.
 }
 \description{
-A wrapper around `process_file()` to process a list of R Markdown (.Rmd) or
+A wrapper around \code{process_file()} to process a list of R Markdown (.Rmd) or
 Quarto (.qmd) files. Execution is sequential by default but can be run in
-parallel by setting a `future` plan (e.g., `future::plan(future::multisession)`).
+parallel by setting a \code{future} plan (e.g., \code{future::plan(future::multisession)}).
 }
 \examples{
 \dontrun{

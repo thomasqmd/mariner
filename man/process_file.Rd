@@ -7,9 +7,9 @@
 process_file(input_file, output_zip = NULL)
 }
 \arguments{
-\item{input_file}{Path to the input `.Rmd` or `.qmd` file.}
+\item{input_file}{Path to the input \code{.Rmd} or \code{.qmd} file.}
 
-\item{output_zip}{Path for the output `.zip` file.}
+\item{output_zip}{Path for the output \code{.zip} file.}
 }
 \value{
 Invisibly returns the path to the created zip file.

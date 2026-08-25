@@ -18,19 +18,19 @@ created. Column names must match the parameter names in the template's
 YAML header (e.g., "chapter", "problem_numbers", "author").}
 
 \item{template_name}{The name of the template directory inside
-`inst/rmarkdown/templates`. This is ignored if `template_path` is provided.}
+\code{inst/rmarkdown/templates}. This is ignored if \code{template_path} is provided.}
 
 \item{template_package}{The name of the installed package where the template
 is located. Defaults to "mariner".}
 
 \item{output_dir}{The directory where the final .Rmd or .qmd files will be saved.}
 
-\item{template_path}{An optional path to a single `.Rmd` or `.qmd` template
+\item{template_path}{An optional path to a single \code{.Rmd} or \code{.qmd} template
 file. If provided, this template will be used instead of one from a package.}
 }
 \value{
 Invisibly returns a character vector of the output file paths for
-  the newly created .Rmd or .qmd files.
+the newly created .Rmd or .qmd files.
 }
 \description{
 Creates multiple R Markdown (.Rmd) or Quarto (.qmd) source files from a

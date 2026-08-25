@@ -1,0 +1,190 @@
+# Baylor theme -- THE source of truth.
+#
+# This is the only file in the package where a colour is typed. The SCSS
+# variables, the CSS custom properties, the LaTeX preamble, the Typst tokens and
+# the R palette objects are all GENERATED from it by data-raw/build-tokens.R.
+# Edit here, run that, and every downstream artefact follows. A test fails if
+# they drift (tests/testthat/test-no-drift.R).
+#
+# Every value below was derived and measured, not chosen. The derivation is
+# data-raw/derive-palettes.mjs; the recorded numbers are
+# data-raw/palette-validation.md. Validation is against the dataviz skill's
+# validate_palette.js on the surface named below.
+#
+# ---------------------------------------------------------------------------
+# CHROME vs DATA -- the one thing to understand before editing
+# ---------------------------------------------------------------------------
+# Baylor green and University Gold ARE the theme. They dress every visible
+# surface: heading bars, section rules, links, table rules, the logo. That is
+# where the identity lives and they appear there exactly as the university
+# specifies them.
+#
+# Neither can carry a DATA SERIES, and that is measured rather than a matter of
+# taste (surface #fefefe, light mode):
+#
+#   #154734  OKLCH L 0.359, C 0.063  -- below the 0.43 lightness band AND below
+#            the 0.10 chroma floor. It reads near-black in a plot, and what
+#            chroma it has reads as grey rather than as a hue.
+#   #FFB81C  OKLCH L 0.828, contrast 1.72:1 -- above the band, and far under the
+#            3:1 a mark needs against the slide.
+#
+# So the series slots below are those same two hues MOVED into the plottable
+# band -- hue held, lightness and chroma changed. Slot 1 is Baylor green at
+# hue 164.6 against the source's 164.4; slot 2 is University Gold at 79.3
+# against 79.6. They are the brand colours, not lookalikes.
+#
+# One limit worth knowing before trying to "fix" slot 1: at Baylor green's hue,
+# sRGB cannot reach the 0.10 chroma floor below L = 0.50 (max chroma at L 0.44
+# is 0.092). #017553 is therefore the DARKEST possible Baylor-green-hue that can
+# function as a data colour at all. It is a gamut wall, not a preference.
+
+meta:
+  # Quarto's brand spec allows `name` to be a short/full pair, and both are used
+  # here. `full` is the ALT TEXT on the wordmark in brand-header.html: the mark
+  # reads "Baylor University", so alt text of "Baylor" would describe it
+  # incompletely to the one group of readers who cannot see it.
+  name:
+    short: Baylor
+    full: Baylor University
+  link: https://www.baylor.edu
+
+color:
+  palette:
+    # -- Official, chrome only ------------------------------------------------
+    baylor-green: "#154734"   # PMS 3435 C. Heading bars, section rules, links.
+    university-gold: "#FFB81C" # PMS 1235 C. Accents and rules ONLY -- see inks.
+
+    # -- Gold that can carry text --------------------------------------------
+    # University Gold is 1.72:1 on the slide, so gold TEXT is illegible and gold
+    # UI chrome is invisible. These two are the gold darkened along its own hue
+    # to the two thresholds that matter, so nothing gold is ever set by eye.
+    gold-ink: "#9b6e06"       # 4.50:1 -- WCAG AA for body text
+    gold-rule: "#c28a01"      # 3.00:1 -- large text, borders, UI chrome
+
+    # -- Categorical, 8 slots, FIXED ORDER -----------------------------------
+    # The order is the safety mechanism, not a preference: assign in this
+    # sequence and never cycle it. Slots 1-2 are the university pair, and they
+    # are also the deck's primary A/B comparison.
+    #
+    # Measured (adjacent pairs, light, #fefefe):
+    #   worst CVD dE 13.7 (protan)  target >= 8
+    #   worst normal-vision dE 23.5  floor  >= 15
+    #   all 8 slots >= 3:1 contrast, all inside the band, all above chroma floor
+    # First THREE slots also clear the ALL-PAIRS test (CVD dE 9.8, normal 23.5),
+    # which is what scatter / bubble / choropleth need.
+    series-1-green: "#017553"   # Baylor green, lifted into the band
+    series-2-gold: "#c08802"    # University Gold, darkened into the band
+    series-3-purple: "#aa4499"  # Tol muted purple
+    series-4-olive: "#979731"   # Tol muted olive
+    series-5-sky: "#0178bc"     # Tol vibrant blue
+    series-6-orange: "#e8712a"  # Tol vibrant orange
+    series-7-indigo: "#493fa6"  # Tol muted indigo
+    series-8-rose: "#cc6677"    # Tol muted rose
+
+    # -- Sequential: magnitude on an unbroken scale --------------------------
+    # One hue, light to dark, anchored on the TRUE #154734 at the dark end --
+    # this is where Baylor green appears in the data unmodified. Monotone
+    # lightness, every adjacent step dL >= 0.06, hue spread 3 degrees.
+    #
+    # The lightest step is 1.09:1 and is meant to be: on a continuous scale
+    # "almost invisible" correctly reads as "near zero". Do not darken it to
+    # satisfy the ordinal light-end check -- that check is for the ramp below.
+    seq-1: "#eaf7f1"
+    seq-2: "#c5d7ce"
+    seq-3: "#a0b9ad"
+    seq-4: "#7d9b8c"
+    seq-5: "#5b7e6d"
+    seq-6: "#396250"
+    seq-7: "#154734"
+
+    # -- Ordinal: ordered but DISCRETE steps ---------------------------------
+    # Same hue, but the light end starts darker than the sequential ramp's,
+    # because every step here is a mark someone has to see. Light end 2.12:1,
+    # clearing the 2:1 floor. (At the sequential ramp's starting lightness this
+    # failed at 1.84:1 -- the two ramps are genuinely different, not a
+    # truncation of one another.)
+    ord-1: "#a8b4ae"
+    ord-2: "#83988e"
+    ord-3: "#5f7c6e"
+    ord-4: "#3b6150"
+    ord-5: "#154734"
+
+    # -- Diverging: a meaningful middle, two directions ----------------------
+    # The university pair as the two poles, with a NEUTRAL midpoint and equal
+    # steps per arm. The midpoint must stay neutral: a hue there reads as a
+    # third category rather than as "no difference".
+    div-1: "#017553"
+    div-2: "#649c83"
+    div-3: "#a8c3b6"
+    div-4: "#e9ecea"   # neutral midpoint
+    div-5: "#decaac"
+    div-6: "#cfaa6b"
+    div-7: "#c08802"
+
+    # -- Chart chrome ---------------------------------------------------------
+    # Text wears these, never a series colour -- a coloured mark beside a label
+    # is what carries identity. Contrast vs #fefefe in comments.
+    ink: "#222222"        # 15.78:1
+    ink-secondary: "#4a4f4b" #  8.29:1
+    ink-muted: "#6f7671"  #  4.62:1 -- still AA for body text
+    rule-grid: "#dfe3e0"  #  1.29:1 -- grid lines, never text
+    rule-axis: "#c2c8c4"  #  1.69:1 -- axis lines, never text
+
+  background: "#fefefe"
+  foreground: "#222222"
+  primary: baylor-green
+  secondary: gold-rule
+
+# The three official marks, in Baylor green on transparency.
+#
+# This is the ONLY place a logo filename is written down. The pdf corner mark,
+# the revealjs corner, the html header and the Typst corner are all generated
+# from these three entries -- see R/logos.R and R/generate.R.
+#
+# The slots are Quarto's own brand vocabulary (small / medium / large), chosen
+# by SHAPE rather than by file size:
+#
+#   small   the interlock alone, 288x324 (0.89:1). Nothing wires it by default;
+#           it is here for a favicon or a tight square corner.
+#   medium  the horizontal wordmark, 949x169 (5.62:1). The default mark
+#           everywhere: slide corner, pdf title page, html header, typst.
+#   large   the stacked lockup, 742x336 (2.21:1). For title slides and covers,
+#           where there is vertical room for the full lockup.
+#
+# No WIDTHS here, deliberately. Each placement states a target height and
+# R/logos.R derives the width from the file's own pixel dimensions, so the three
+# marks carry matching visual weight across a 6x range of aspect ratio and a
+# fourth mark can be added without a number being typed anywhere.
+logo:
+  small: BU_Green.png
+  medium: BU_BrandMark_Horz_Green.png
+  large: BU_BrandMark_Stacked_Green.png
+
+typography:
+  # There is deliberately no `fonts:` block here, and it is not an omission.
+  #
+  # Quarto emits brand's font declarations into the user `uses` SCSS layer --
+  # `@import url(...)` for `source: google`, `@font-face` for `source: file` --
+  # which lands a non-@use rule ahead of the `@use "sass:color"` in
+  # _qmd-functions.scss. Dart Sass then rejects the entire stylesheet with
+  # "@use rules must be written before any other rules" and every format fails to
+  # render. Verified against Quarto 1.10.18 with QUARTO_SAVE_SCSS.
+  #
+  # The families are still named below, which is what Quarto's brand support
+  # needs. The faces themselves are loaded by @font-face in
+  # inst/scss/_qmd-typography.scss, from the copies vendored into each extension.
+  #
+  # One type system, shared with the personal theme -- the two themes are
+  # differentiated by colour and structure, not by typeface. See
+  # inst/assets/fonts/README.md for why this pairing and why not Outfit.
+  base:
+    family: Lora            # long-form body, html + pdf
+    size: 1.05rem
+    line-height: 1.6
+  headings:
+    family: Atkinson Hyperlegible Next
+    weight: 600
+  monospace: JetBrains Mono
+  link:
+    color: baylor-green
+    decoration: underline

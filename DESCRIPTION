@@ -1,8 +1,8 @@
 Package: mariner
 Type: Package
-Title: Streamline Quarto and R Markdown Report Generation and Bundling for Dr. Seaman's Classes
-Version: 0.1.3
-Depends: R (>= 4.1.0)
+Title: Streamline Quarto Report Generation and Bundling for Dr. Seaman's Classes
+Version: 0.2.0
+Depends: R (>= 4.2.0)
 Authors@R: c(
     person(
       "Thomas", "Reinke",
@@ -11,30 +11,44 @@ Authors@R: c(
     )
   )
 Description: Provides a set of functions to simplify and automate the
-    process of rendering and packaging Quarto and R Markdown documents. The package
+    process of rendering and packaging Quarto documents. The package
     allows users to generate multiple reports from a single parameterized
-    template and to bundle Quarto and R Markdown files along with their outputs, such
+    template and to bundle Quarto files along with their outputs, such
     as PDFs, TeX files, and purled R scripts, into a single, easily
-    shareable zip archive.
+    shareable zip archive. It also carries a complete Baylor-branded Quarto
+    theme, with bundled fonts and a palette validated for contrast and
+    colour-vision separation, so reports and slide decks are styled and their
+    figures drawn from the same colours as the page without anything to
+    install separately.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Imports: 
+SystemRequirements: Quarto (>= 1.4), a LaTeX distribution providing xelatex
+Imports:
+    cli,
     fs,
     furrr,
     future,
+    ggplot2,
+    grDevices,
     knitr,
     purrr,
     quarto,
-    rmarkdown,
+    rlang,
+    stats,
+    systemfonts,
+    tools,
     utils,
-    withr
-Suggests: 
+    withr,
+    yaml
+Suggests:
     testthat (>= 3.0.0),
+    pkgload,
+    svglite,
+    plotly,
     tidyr,
-    tidyverse,
-    conflicted,
     patchwork
 Config/testthat/edition: 3
 VignetteBuilder: knitr

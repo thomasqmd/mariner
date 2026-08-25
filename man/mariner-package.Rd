@@ -4,34 +4,31 @@
 \name{mariner-package}
 \alias{mariner}
 \alias{mariner-package}
-\title{mariner: Streamline R Markdown and Quarto Report Generation}
+\title{mariner: Streamline Quarto Report Generation and Bundling}
 \description{
-The `mariner` package simplifies and automates the process of creating and
-packaging R Markdown (.Rmd) and Quarto (.qmd) documents. It provides a
-cohesive workflow for first generating multiple document source files from
-a single parameterized template, and then bundling those source files
-along with all their rendered outputs (e.g., PDFs, scripts, and
-dependency files) into easily shareable zip archives.
+The \code{mariner} package simplifies and automates the process of creating and
+packaging Quarto (.qmd) documents. It provides a cohesive workflow for first
+generating multiple document source files from a single parameterized
+template, and then bundling those source files along with all their rendered
+outputs (e.g., PDFs, scripts, and dependency files) into easily shareable zip
+archives.
+
+It also carries a complete Baylor-branded Quarto theme, so a generated report
+or slide deck is styled, typeset in bundled fonts, and has figures drawn from
+the same palette as the page, without anything to install separately.
 }
 \section{Core Workflow}{
 
-The typical workflow involves two main steps:
 \enumerate{
-  \item Use \code{\link{generate_reports}} to create multiple,
-    parameterized `.Rmd` or `.qmd` source files from a template.
-  \item Use \code{\link{process_files}} to render each source file
-    and bundle the source, R script, and all outputs into a zip archive.
+\item Use \code{mariner_setup_project()} once to create the project
+folders and install the theme assets into them.
+\item Use \code{\link{generate_reports}} to create multiple, parameterized
+\code{.qmd} source files from a template.
+\item Use \code{\link{process_files}} to render each source file and bundle
+the source, R script, and all outputs into a zip archive.
 }
 }
 
-\seealso{
-Useful functions:
-\itemize{
-  \item \code{\link{generate_reports}}
-  \item \code{\link{process_files}}
-  \item \code{\link{process_file}}
-}
-}
 \author{
 \strong{Maintainer}: Thomas Reinke \email{thomas_reinke1@baylor.edu}
 
