@@ -24,28 +24,27 @@ A named list of three absolute paths: `assets`, `reports`, `zips`.
 
 - `assets`:
 
-  `assets/` – holds the built Quarto extension, assembled once by
+  `assets/` – the Quarto extension, assembled once by
   [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md).
-  This is the copy renders are served from, so a batch of fifty reports
-  unpacks the theme once rather than fifty times.
+  Every render stages the theme from here, so a batch of fifty reports
+  unpacks it once.
 
 - `reports`:
 
-  `reports/` – the generated `.qmd` sources, their rendered PDFs, and a
-  copy of `_extensions/`. The extension has to sit *beside* the
-  documents: `brand-preamble.tex` reaches the bundled fonts through a
-  relative path that xelatex resolves against the directory holding the
-  `.tex`, so an extension one level up gives a document that finds its
-  format and then dies with "the font Lora-Regular cannot be found".
+  `reports/` – the `.qmd` sources, their PDFs, and a copy of
+  `_extensions/`. The extension has to sit *beside* the documents:
+  xelatex resolves the font paths in `brand-preamble.tex` against the
+  directory that holds the `.tex`. An extension one level up gives a
+  document that finds its format and then dies with "the font
+  Lora-Regular cannot be found".
 
 - `zips`:
 
-  `zip_files/` – the bundles handed to students.
+  `zip_files/` – the bundles you hand out.
 
-The paths are returned whether or not the directories exist. Creating
-them is
-[`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)'s
-job, and `.onAttach()`'s.
+The paths come back whether or not the directories exist.
+[`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
+and `.onAttach()` create them.
 
 ## See also
 
@@ -57,16 +56,16 @@ job, and `.onAttach()`'s.
 ``` r
 mariner_dirs(root = tempdir())
 #> $assets
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH/assets"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief/assets"
 #> 
 #> $reports
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH/reports"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief/reports"
 #> 
 #> $zips
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH/zip_files"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief/zip_files"
 #> 
 
 # Every default path in the package is composed from this:
 mariner_dirs(root = tempdir())$reports
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH/reports"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief/reports"
 ```

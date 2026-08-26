@@ -2,12 +2,12 @@
 
 | File | Pixels | Aspect | Brand slot | Used by |
 |---|---|---|---|---|
-| `BU_BrandMark_Horz_Green.png` | 949×169 | 5.62:1 | `medium` | revealjs corner, pdf title page, html header, typst corner |
+| `BU_BrandMark_Horz_Green.png` | 949×169 | 5.62:1 | `medium` | pdf title page and corner |
 | `BU_BrandMark_Stacked_Green.png` | 742×336 | 2.21:1 | `large` | title slides and covers, opt-in |
 | `BU_Green.png` | 288×324 | 0.89:1 | `small` | available; nothing wires it by default |
 
-All three are the official marks in Baylor green with transparent backgrounds.
-The filenames are typed once, in `inst/brand/baylor/_brand.yml` under `logo:`,
+All three are the official marks in the brand green with transparent backgrounds.
+The filenames are typed once, in `inst/brand/mariner/_brand.yml` under `logo:`,
 and every placement reads them from there.
 
 ## Placement is by height, not by width

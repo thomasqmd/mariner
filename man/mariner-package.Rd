@@ -6,48 +6,41 @@
 \alias{mariner-package}
 \title{mariner: Streamline Quarto Report Generation and Bundling}
 \description{
-The \code{mariner} package simplifies and automates the process of creating and
-packaging Quarto (.qmd) documents. It provides a cohesive workflow for first
-generating multiple document source files from a single parameterized
-template, and then bundling those source files along with all their rendered
-outputs (e.g., PDFs, scripts, and dependency files) into easily shareable zip
-archives.
+mariner turns one parameterized Quarto template into a set of \code{.qmd} reports,
+renders them, and bundles each source, R script and PDF into a zip archive.
 
-It also carries a complete Baylor-branded Quarto theme, so a generated report
-is styled, typeset in bundled fonts, and has its figures drawn from the same
-palette as the page, without anything to install separately.
+The package carries its own Quarto PDF theme. A report is typeset in the
+bundled fonts, and its figures use the palette the page does.
 }
 \section{Core Workflow}{
 
 \enumerate{
-\item Run \code{\link{mariner_check_setup}} to confirm this machine has
-everything a branded report needs -- Quarto, a LaTeX engine, the fonts.
-It reports and prints the fix; it changes nothing.
-\item Use \code{\link{mariner_setup_project}} once to create the project
-folders and install the theme assets into them.
-\item Use \code{\link{generate_reports}} to create multiple, parameterized
-\code{.qmd} source files from a template, into \verb{reports/}.
-\item Use \code{\link{process_files}} to render each source file and bundle
-the source, R script, and all outputs into a zip archive, into
-\verb{zip_files/}.
+\item \code{\link{mariner_check_setup}} confirms this machine has what a
+report needs: Quarto, a LaTeX engine, the fonts. It changes nothing and
+prints the fix for whatever is missing.
+\item \code{\link{mariner_setup_project}} creates the project folders and
+installs the theme into them. Run it once.
+\item \code{\link{generate_reports}} writes one \code{.qmd} per row of a
+parameter data frame into \verb{reports/}.
+\item \code{\link{process_files}} renders each one and bundles the source,
+the R script and the outputs into \verb{zip_files/}.
 }
 }
 
 \section{Project Folders}{
 
-mariner works in three directories beneath the project root, returned by
-\code{\link{mariner_dirs}}:
+mariner works in three directories beneath the project root. See
+\code{\link{mariner_dirs}}.
 
 \describe{
-\item{\verb{assets/}}{The built Quarto extension, assembled once.}
-\item{\verb{reports/}}{Generated \code{.qmd} sources, their rendered PDFs, and a copy
-of the extension beside them.}
-\item{\verb{zip_files/}}{The bundles handed to students.}
+\item{\verb{assets/}}{The Quarto extension, assembled once.}
+\item{\verb{reports/}}{The \code{.qmd} sources, their PDFs, and a copy of the
+extension beside them.}
+\item{\verb{zip_files/}}{The bundles you hand out.}
 }
 
-Attaching the package with \code{library(mariner)} creates the three folders if
-the working directory looks like a project root -- see
-\code{\link{mariner_looks_like_project}}. Set
+\code{library(mariner)} creates the three folders when the working directory looks
+like a project root. See \code{\link{mariner_looks_like_project}}. Set
 \code{options(mariner.auto_setup = FALSE)} to turn that off.
 }
 

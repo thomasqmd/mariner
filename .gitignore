@@ -63,4 +63,9 @@ rsconnect/
 **/*.quarto_ipynb
 inst/doc
 
-plan.md
+dev/plan.md
+# Quarto scratch state beside the vignettes
+vignettes/.quarto/
+
+# The example gallery renders against an extension assembled on demand.
+inst/examples/*/_extensions/

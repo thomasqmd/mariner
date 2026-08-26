@@ -1,8 +1,8 @@
 # Set up a mariner project
 
-Creates the folder structure a mariner workflow expects, installs the
-Quarto theme into it, and drops in a starter report. Safe to run twice:
-nothing already present is replaced unless `overwrite = TRUE`.
+Creates the folders a mariner workflow uses, installs the Quarto theme
+into them, and drops in a starter report. Run it twice and nothing
+changes: a file that exists is left alone unless `overwrite = TRUE`.
 
 ## Usage
 
@@ -21,8 +21,8 @@ mariner_setup_project(
 
   Project root. `NULL` (the default) resolves it with
   [`mariner_project_root()`](https://thomasqmd.github.io/mariner/reference/mariner_project_root.md),
-  so running this from a subdirectory scaffolds the project rather than
-  the subdirectory. Pass a path to override.
+  so a call from a subdirectory scaffolds the project rather than the
+  subdirectory. Pass a path to override.
 
 - theme:
 
@@ -31,8 +31,8 @@ mariner_setup_project(
 
 - template:
 
-  Name of the starter template to copy into `reports/`. Pass `NULL` for
-  no starter document.
+  Starter template to copy into `reports/`. `NULL` for no starter
+  document.
 
 - overwrite:
 
@@ -47,20 +47,18 @@ invisibly.
 
 ## Details
 
-What it creates, beneath `root`:
+Beneath `root`:
 
     assets/
-      _extensions/mariner-baylor/   the theme, assembled once
+      _extensions/mariner/          the theme, assembled once
     reports/
-      _extensions/mariner-baylor/   a copy, beside the documents that use it
+      _extensions/mariner/          a copy, beside the documents that use it
       report.qmd                    a starter document
-    zip_files/                      the bundles handed to students
+    zip_files/                      the bundles you hand out
 
-`zip_files/`, `assets/_extensions/` and `reports/_extensions/` are
-appended to the project `.gitignore`. All three are build outputs: the
-archives are rebuilt from the sources beside them, and the extension is
-assembled from the installed package, so committing either means
-committing a copy that can go stale against what it was built from.
+`zip_files/`, `assets/_extensions/` and `reports/_extensions/` go into
+the project `.gitignore`. All three are build outputs, and a committed
+copy goes stale against what it was built from.
 
 ## See also
 

@@ -7,51 +7,46 @@
 mariner_install_fonts(overwrite = FALSE, quiet = FALSE)
 }
 \arguments{
-\item{overwrite}{Replace font files that are already installed. Defaults to
-\code{FALSE}, so re-running is cheap and safe.}
+\item{overwrite}{Replace font files that are already installed.}
 
 \item{quiet}{Suppress the summary.}
 }
 \value{
-Invisibly, a character vector of the files installed (those actually
-copied; already-present files are not listed unless \code{overwrite = TRUE}).
+Invisibly, the files copied. A file already in place is listed only
+under \code{overwrite = TRUE}.
 }
 \description{
-Copies the theme's font files into the current user's font directory, so that
-Atkinson Hyperlegible, Lora and JetBrains Mono are available to every program
-on the machine -- including the graphics devices that draw figures for PDF
-output.
+Copies the theme's font files into your user font directory. Atkinson
+Hyperlegible, Lora and JetBrains Mono then reach every program on the
+machine, the graphics devices that draw PDF figures included.
 }
 \section{Why you may want this}{
 
-mariner bundles its fonts and registers them with R at load time, which is
-enough for all PDF \emph{body text}, which xelatex reads from the bundled files by
-path. It is not enough for PDF \emph{figures}: those are drawn by \code{cairo_pdf()},
-which reads the system font configuration and cannot see a font that is
-merely bundled. Until
-the faces are installed, figures in a PDF report fall back to the device's
-default typeface while the surrounding text does not.
+mariner bundles its fonts and registers them with R at load time. That covers
+PDF \emph{body text}, which xelatex reads from the bundled files by path. It does
+not cover PDF \emph{figures}: \code{cairo_pdf()} draws those, and it reads the system
+font configuration, where a bundled font does not appear. Until you install
+the faces, the figures in a report fall back to the device's default typeface
+and the text around them does not.
 
-Check with \code{mariner_check_setup()} (or \code{mariner_fonts_available("pdf")})
-whether this applies to your machine.
+\code{mariner_check_setup()} says whether this applies to your machine.
 }
 
 \section{Platform notes}{
 
-Nothing here needs administrator rights -- the fonts go into your own user
-font directory, not the system one.
+None of this needs administrator rights. The fonts go into your own font
+directory, not the system one.
 \itemize{
-\item \strong{macOS} copies to \verb{~/Library/Fonts}; available immediately.
-\item \strong{Linux} copies to \verb{~/.local/share/fonts} and runs \code{fc-cache} if present.
+\item \strong{macOS} copies to \verb{~/Library/Fonts}. Available at once.
+\item \strong{Linux} copies to \verb{~/.local/share/fonts} and runs \code{fc-cache} if it exists.
 \item \strong{Windows} copies to \verb{\%LOCALAPPDATA\%\\\\Microsoft\\\\Windows\\\\Fonts} and
-registers each face under \code{HKEY_CURRENT_USER}. Copying alone is not enough
-on Windows -- an unregistered file in that directory is ignored -- so if the
-registry step fails, the function says so rather than reporting success.
+registers each face under \code{HKEY_CURRENT_USER}. Windows ignores a font file
+the registry does not name, so a failed registry write is reported as a
+failure.
 }
 
-\strong{Restart R afterwards.} Graphics devices read the font configuration once
-per session, so a face installed mid-session is not picked up until R is
-restarted.
+\strong{Restart R afterwards.} A graphics device reads the font configuration once
+per session.
 }
 
 \examples{

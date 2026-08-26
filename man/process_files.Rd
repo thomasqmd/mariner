@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_files.R
 \name{process_files}
 \alias{process_files}
-\title{Bundle Multiple Quarto Files Sequentially or in Parallel}
+\title{Bundle many Quarto files, in sequence or in parallel}
 \usage{
 process_files(
   input_files,
@@ -13,32 +13,32 @@ process_files(
 )
 }
 \arguments{
-\item{input_files}{A character vector of paths to \code{.qmd} files.}
+\item{input_files}{A character vector of \code{.qmd} paths.}
 
-\item{output_dir}{Directory for the zip archives. Defaults to the project's
-\verb{zip_files/} folder -- see \code{\link[=mariner_dirs]{mariner_dirs()}}.}
+\item{output_dir}{Where the archives go. Defaults to the project's
+\verb{zip_files/} folder. See \code{\link[=mariner_dirs]{mariner_dirs()}}.}
 
 \item{theme}{One of \link{mariner_themes}.}
 
-\item{assets_dir}{Directory holding an already-built extension. Resolved once
-here and passed to every worker, so a batch of fifty reports stages the
-theme from one place rather than assembling it fifty times.}
+\item{assets_dir}{Directory that holds a built extension. Resolved once here
+and handed to every worker, so a batch of fifty reports stages the theme
+from one place.}
 
-\item{include}{Which categories of file to bundle -- see \code{\link[=process_file]{process_file()}}.}
+\item{include}{Which categories to bundle. See \code{\link[=process_file]{process_file()}}.}
 }
 \value{
-Invisibly, a character vector of paths to the archives created, with
-\code{NA} in the position of any file that failed.
+Invisibly, a character vector of the archives created, with \code{NA} in
+the position of any file that failed.
 }
 \description{
-A wrapper around \code{\link[=process_file]{process_file()}} for a vector of Quarto (\code{.qmd}) files.
-Execution is sequential by default and parallel under a \code{future} plan, e.g.
+\code{\link[=process_file]{process_file()}} over a vector of Quarto (\code{.qmd}) files. The batch runs
+sequentially by default, and in parallel under a \code{future} plan such as
 \code{future::plan(future::multisession)}.
 }
 \details{
-A file that fails to render does not stop the batch: it comes back as \code{NA}
-and its error message is reported at the end, named. Each render owns a
-scratch directory, so parallel workers cannot collide.
+A file that fails to render does not stop the batch. It comes back as \code{NA},
+and its error message is named in the summary. Each render owns a scratch
+directory, so parallel workers cannot collide.
 }
 \examples{
 \dontrun{

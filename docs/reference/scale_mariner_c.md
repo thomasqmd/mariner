@@ -1,6 +1,6 @@
 # Continuous colour and fill scales for mariner
 
-Continuous colour and fill scales for mariner
+Magnitude on one hue, as a smooth gradient.
 
 ## Usage
 
@@ -16,11 +16,11 @@ scale_fill_mariner_c(reverse = FALSE, ...)
 
 - reverse:
 
-  Logical; if `TRUE`, reverses the color gradient.
+  Logical; if `TRUE`, reverse the gradient.
 
 - ...:
 
-  Arguments passed to
+  Further arguments for
   [`ggplot2::scale_colour_gradientn()`](https://ggplot2.tidyverse.org/reference/scale_gradient.html)
   or
   [`ggplot2::scale_fill_gradientn()`](https://ggplot2.tidyverse.org/reference/scale_gradient.html).
@@ -28,3 +28,12 @@ scale_fill_mariner_c(reverse = FALSE, ...)
 ## Value
 
 A ggplot2 continuous scale object.
+
+## Examples
+
+``` r
+library(ggplot2)
+ggplot(mpg, aes(displ, hwy, colour = cty)) +
+  geom_point() +
+  scale_colour_mariner_c()
+```

@@ -113,7 +113,7 @@ test_that("the project scaffolding works under a spaced root", {
   dirs <- suppressMessages(mariner_setup_project(root = dir))
 
   expect_true(all(dir.exists(unlist(dirs, use.names = FALSE))))
-  expect_equal(extension_missing(mariner_ext_dir(dirs$reports, "baylor")), character())
+  expect_equal(extension_missing(mariner_ext_dir(dirs$reports, "mariner")), character())
   expect_true(file.exists(file.path(dirs$reports, "report.qmd")))
 })
 

@@ -33,6 +33,7 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/get-started.html">Get Started</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/theming.html">Theming &amp; Scales</a></li>
+<li class="nav-item"><a class="nav-link" href="../mariner-gallery.pdf">Gallery (PDF)</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
@@ -61,10 +62,10 @@
 
 
 
-    <p><code>mariner</code> simplifies parameterized Quarto report generation and bundling.</p>
+    <p>mariner writes one Quarto report per row of a parameter table, renders each one, and bundles it into a zip archive.</p>
 <section class="level2"><h2 id="system-preflight-check">1. System Preflight Check<a class="anchor" aria-label="anchor" href="#system-preflight-check"></a>
 </h2>
-<p>Check that your machine has the required tools (Quarto, LaTeX, and theme fonts):</p>
+<p>Check the machine first: Quarto, LaTeX, the fonts.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thomasqmd.github.io/mariner/">mariner</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/mariner_check_setup.html">mariner_check_setup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -79,37 +80,38 @@
 ✔ Figure theme: theme_mariner() builds
 ✔ Template packages: all 1 installed
 ✔ Setup check complete: ready to render reports.</code></pre>
-<p>If fonts are missing for PDF device figures, install them with:</p>
+<p>A <code>warn</code> on the fonts means the figures in a PDF will come out in the device’s default typeface while the page text does not. Fix it with:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_install_fonts.html">mariner_install_fonts</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </section><section class="level2"><h2 id="project-scaffolding">2. Project Scaffolding<a class="anchor" aria-label="anchor" href="#project-scaffolding"></a>
 </h2>
-<p>Initialize the folder structure and install the Baylor Quarto theme:</p>
+<p>Create the folders and install the Quarto theme:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_setup_project.html">mariner_setup_project</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>This creates:</p>
+<p>You get three directories:</p>
 <ul>
 <li>
-<code>assets/</code>: Theme files source cache.</li>
+<code>assets/</code>: the theme, assembled once.</li>
 <li>
-<code>reports/</code>: Document directory containing <code>_extensions/</code> and starter <code>report.qmd</code>.</li>
+<code>reports/</code>: the documents, a copy of <code>_extensions/</code>, and a starter <code>report.qmd</code>.</li>
 <li>
-<code>zip_files/</code>: Output folder for student bundles.</li>
+<code>zip_files/</code>: the bundles you hand out.</li>
 </ul></section><section class="level2"><h2 id="define-parameters">3. Define Parameters<a class="anchor" aria-label="anchor" href="#define-parameters"></a>
 </h2>
-<p>Create a data frame where each row specifies parameters for one report:</p>
+<p>One row per report:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">report_params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html" class="external-link">expand_grid</a></span><span class="op">(</span></span>
 <span>  chapter <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  problem_numbers <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span>
-<span>  author <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice Smith"</span>, <span class="st">"Bob Jones"</span><span class="op">)</span></span>
+<span>  author <span class="op">=</span> <span class="st">"Alice Smith"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">report_params</span></span></code></pre></div>
+<p><code>author</code> is constant. One person runs the batch, and it is their name on every report. It is a parameter rather than a hard-coded string so the template can print it.</p>
 </section><section class="level2"><h2 id="generate-report-sources">4. Generate Report Sources<a class="anchor" aria-label="anchor" href="#generate-report-sources"></a>
 </h2>
-<p>Generate <code>.qmd</code> files from the built-in template:</p>
+<p>Write the <code>.qmd</code> files from the built-in template:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qmd_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_reports.html">generate_reports</a></span><span class="op">(</span></span>
 <span>  params_df <span class="op">=</span> <span class="va">report_params</span>,</span>
@@ -117,20 +119,26 @@
 <span><span class="op">)</span></span>
 <span><span class="va">qmd_files</span></span></code></pre></div>
 <p>Output:</p>
-<pre><code>[1] "reports/Report-1_1.qmd" "reports/Report-1_2.qmd"
-[3] "reports/Report-1_1.qmd" "reports/Report-1_2.qmd"</code></pre>
+<pre><code>[1] "reports/Report-1_1.qmd" "reports/Report-1_2.qmd"</code></pre>
+<p>The names come from <code>file_name</code>, a <a href="https://glue.tidyverse.org" class="external-link">glue</a> template over the columns of <code>params_df</code>. It defaults to <code>"Report-{chapter}_{problem_numbers}"</code>. <strong>Every column that varies has to appear in it.</strong> Otherwise two rows resolve to one name and the second overwrites the first. That is why the grid above holds <code>author</code> constant: it does not tell one report from another.</p>
 </section><section class="level2"><h2 id="render-and-bundle-reports">5. Render and Bundle Reports<a class="anchor" aria-label="anchor" href="#render-and-bundle-reports"></a>
 </h2>
-<p>Render each document to PDF and bundle source files, purled R scripts, and PDFs into zip archives:</p>
+<p>Render each document and bundle it:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Sequential execution:</span></span>
+<code class="sourceCode R"><span><span class="co"># Sequential:</span></span>
 <span><span class="va">zip_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_files.html">process_files</a></span><span class="op">(</span><span class="va">qmd_files</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Parallel execution across background workers:</span></span>
+<span><span class="co"># Parallel, across background workers:</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://future.futureverse.org" class="external-link">future</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="va">multisession</span>, workers <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">zip_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_files.html">process_files</a></span><span class="op">(</span><span class="va">qmd_files</span><span class="op">)</span></span></code></pre></div>
-<p>Each archive in <code>zip_files/</code> contains: * The <code>.qmd</code> source document. * The extracted <code>.R</code> code script. * The rendered <code>.pdf</code> output.</p>
+<p>Each archive in <code>zip_files/</code> holds:</p>
+<ul>
+<li>the <code>.qmd</code> source,</li>
+<li>the purled <code>.R</code> script,</li>
+<li>the rendered <code>.pdf</code>.</li>
+</ul>
+<p>A file that fails to render does not stop the batch. It comes back as <code>NA</code> and its error message is named in the summary.</p>
 </section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);

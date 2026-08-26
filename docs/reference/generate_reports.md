@@ -1,10 +1,9 @@
-# Create Quarto Source Files from a Template
+# Create Quarto sources from a template
 
-Creates multiple Quarto (`.qmd`) source files from a parameterized
-template, one per row of `params_df`. Each file gets that row's values
-spliced into its YAML `params:` block.
+Writes one Quarto (`.qmd`) source file per row of `params_df`. Each file
+gets that row's values in its YAML `params:` block.
 
-The template can be one shipped by a package or a `.qmd` file path.
+The template is either one a package ships or a `.qmd` path.
 
 ## Usage
 
@@ -23,14 +22,13 @@ generate_reports(
 
 - params_df:
 
-  A data frame where each row describes one report. Column names are
-  matched against the parameter names in the template's YAML `params:`
-  block.
+  A data frame, one row per report. Column names match the parameter
+  names in the template's `params:` block.
 
 - template_name:
 
-  Name of a template directory shipped by `template_package`. Ignored
-  when `template_path` is given.
+  A template directory that `template_package` ships. Ignored when
+  `template_path` is given.
 
 - template_package:
 
@@ -38,39 +36,37 @@ generate_reports(
 
 - output_dir:
 
-  Directory the `.qmd` files are written to. Defaults to the project's
-  `reports/` folder – see
+  Where the `.qmd` files go. Defaults to the project's `reports/`
+  folder. See
   [`mariner_dirs()`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md).
-  Created if needed.
+  Created if it is missing.
 
 - template_path:
 
-  Path to a `.qmd` file to use instead of a packaged template.
+  A `.qmd` path to use instead of a packaged template.
 
 - file_name:
 
   A [`glue::glue()`](https://glue.tidyverse.org/reference/glue.html)
-  template for the output file names, evaluated against each row of
-  `params_df`. The `.qmd` extension is added automatically and must not
-  be included here.
+  template for the output names, evaluated against each row of
+  `params_df`. Leave off the `.qmd` extension; mariner adds it. Every
+  column that varies has to appear here, or two rows resolve to one name
+  and the second overwrites the first.
 
 ## Value
 
-Invisibly, a character vector of the paths actually written.
+Invisibly, a character vector of the paths written.
 
 ## Details
 
-Values are substituted by parsing the template's front matter as YAML,
-merging the row into its `params` entry, and re-emitting it. Only the
-`params` block changes – `title`, `format` and everything else are
-carried across untouched, including inline R such as
+mariner parses the template front matter as YAML, merges the row into
+its `params` entry, and re-emits it. Only `params` changes. `title`,
+`format` and the rest come across untouched, inline R included:
 `` title: "`r paste('Report', params$chapter)`" ``.
 
-A column in `params_df` with no counterpart in the template's `params`
-block is *not* substituted, and raises a warning naming it. This is
-almost always a typo or a template mismatch, and the previous behaviour
-– dropping it in silence – produced reports that were wrong in a way
-nothing announced.
+A column of `params_df` with no counterpart in the template's `params`
+block is not substituted, and warns. That case is a typo or a template
+mismatch, and the old behaviour dropped it in silence.
 
 ## Examples
 
@@ -89,7 +85,7 @@ qmd_files <- generate_reports(
   output_dir = temp_dir
 )
 #> ℹ Generating 2 qmd files...
-#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//RtmpzQHXJH/mariner-example-11e9c41b757e0
+#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//Rtmpuujief/mariner-example-8262f8f7d4d
 
 basename(qmd_files)
 #> [1] "Report-1_1.qmd" "Report-1_2.qmd"
@@ -101,7 +97,7 @@ generate_reports(
   file_name = "ch{chapter}-prob{problem_numbers}"
 ) |> basename()
 #> ℹ Generating 2 qmd files...
-#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//RtmpzQHXJH/mariner-example-11e9c41b757e0
+#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//Rtmpuujief/mariner-example-8262f8f7d4d
 #> [1] "ch1-prob1.qmd" "ch1-prob2.qmd"
 
 unlink(temp_dir, recursive = TRUE)

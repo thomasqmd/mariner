@@ -14,17 +14,20 @@ mariner_pal(
 \arguments{
 \item{theme}{Theme name. Defaults to the built-in mariner theme.}
 
-\item{family}{Palette family: \code{"discrete"}, \code{"sequential"}, \code{"ordinal"}, or \code{"diverging"}.}
+\item{family}{Palette family: \code{"discrete"}, \code{"sequential"}, \code{"ordinal"}, or
+\code{"diverging"}.}
 
-\item{n}{Optional integer number of colors. If \code{NULL} (default), returns a palette function \verb{function(n)}.}
+\item{n}{Number of colours. \code{NULL} (the default) returns a palette function
+\verb{function(n)} instead.}
 
-\item{reverse}{Logical; if \code{TRUE}, reverses the color vector.}
+\item{reverse}{Logical; if \code{TRUE}, reverse the colour vector.}
 }
 \value{
-A character vector of hex colors if \code{n} is supplied, or a palette function if \code{n} is \code{NULL}.
+A character vector of hex colours, or a palette function when \code{n} is
+\code{NULL}.
 }
 \description{
-Constructs discrete, sequential, ordinal, or diverging color palettes for a theme.
+Builds a discrete, sequential, ordinal, or diverging palette for a theme.
 }
 \examples{
 mariner_pal(family = "discrete", n = 4)

@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Streamline Quarto Report Generation and Bundling for Dr. Seaman's Classes">
-<meta name="description" content="Provides a set of functions to simplify and automate the process of rendering and packaging Quarto documents. The package allows users to generate multiple reports from a single parameterized template and to bundle Quarto files along with their outputs, such as PDFs, TeX files, and purled R scripts, into a single, easily shareable zip archive. It also carries a complete Quarto pdf theme, with bundled fonts and a palette validated for contrast and colour-vision separation, so reports are styled and their figures drawn from the same colours as the page without anything to install separately.">
-<meta property="og:description" content="Provides a set of functions to simplify and automate the process of rendering and packaging Quarto documents. The package allows users to generate multiple reports from a single parameterized template and to bundle Quarto files along with their outputs, such as PDFs, TeX files, and purled R scripts, into a single, easily shareable zip archive. It also carries a complete Quarto pdf theme, with bundled fonts and a palette validated for contrast and colour-vision separation, so reports are styled and their figures drawn from the same colours as the page without anything to install separately.">
+<meta name="description" content="Turns one parameterized Quarto template into a set of reports, renders them, and bundles each source, PDF, TeX file and purled R script into a zip archive. The package carries its own Quarto PDF theme, with bundled fonts and a palette tested for contrast and for separation under colour vision deficiency, so a report and its figures use one set of colours and there is nothing else to install.">
+<meta property="og:description" content="Turns one parameterized Quarto template into a set of reports, renders them, and bundles each source, PDF, TeX file and purled R script into a zip archive. The package carries its own Quarto PDF theme, with bundled fonts and a palette tested for contrast and for separation under colour vision deficiency, so a report and its figures use one set of colours and there is nothing else to install.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,6 +33,7 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="articles/get-started.html">Get Started</a></li>
 <li class="nav-item"><a class="nav-link" href="articles/theming.html">Theming &amp; Scales</a></li>
+<li class="nav-item"><a class="nav-link" href="mariner-gallery.pdf">Gallery (PDF)</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
@@ -49,12 +50,12 @@
 <div class="page-header"><h1 id="mariner">mariner<a class="anchor" aria-label="anchor" href="#mariner"></a>
 </h1></div>
 <p><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/thomasqmd/mariner/actions/workflows/r.yml" class="external-link"><img src="https://github.com/thomasqmd/mariner/actions/workflows/r.yml/badge.svg" alt="R-CMD-check"></a> <a href="https://codecov.io/github/thomasqmd/mariner" class="external-link"><img src="https://codecov.io/github/thomasqmd/mariner/graph/badge.svg?token=A4PDZWC3IL" alt="codecov"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
-<p>The <strong>mariner</strong> package automates the generation, rendering, and bundling of parameterized Quarto reports. It includes a built-in Baylor Quarto PDF theme with typography, colors, and <code>ggplot2</code> scales.</p>
-<p>Visit the documentation site at <a href="https://thomasqmd.github.io/mariner/">https://thomasqmd.github.io/mariner/</a>.</p>
+<p><strong>mariner</strong> turns one parameterized Quarto template into a set of reports, renders them, and bundles each one into a zip archive. It carries its own Quarto PDF theme: typography, brand colours, and matching <code>ggplot2</code> scales.</p>
+<p>Documentation: <a href="https://thomasqmd.github.io/mariner/">https://thomasqmd.github.io/mariner/</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install the development version from GitHub:</p>
+<p>The development version, from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"thomasqmd/mariner"</span><span class="op">)</span></span></code></pre></div>
@@ -62,11 +63,11 @@
 <div class="section level2">
 <h2 id="folder-structure">Folder Structure<a class="anchor" aria-label="anchor" href="#folder-structure"></a>
 </h2>
-<p><code>mariner</code> organizes files into three project directories:</p>
+<p>mariner works in three project directories:</p>
 <pre><code>your-project/
-├── assets/          # Theme cache and font assets
-├── reports/         # Quarto source files (.qmd) and staged _extensions/
-└── zip_files/       # Output zip archives containing PDF, source, and R script</code></pre>
+├── assets/          # the Quarto theme, assembled once
+├── reports/         # the .qmd sources, their PDFs, and _extensions/
+└── zip_files/       # one archive per report: PDF, source, R script</code></pre>
 </div>
 <div class="section level2">
 <h2 id="quickstart">Quickstart<a class="anchor" aria-label="anchor" href="#quickstart"></a>
@@ -75,26 +76,27 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thomasqmd.github.io/mariner/">mariner</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 1. Initialize project folders and Quarto theme</span></span>
+<span><span class="co"># 1. Create the folders and install the Quarto theme</span></span>
 <span><span class="fu"><a href="reference/mariner_setup_project.html">mariner_setup_project</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 2. Define report parameters</span></span>
+<span><span class="co"># 2. One row per report</span></span>
 <span><span class="va">report_params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html" class="external-link">expand_grid</a></span><span class="op">(</span></span>
 <span>  chapter <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  problem_numbers <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span>
-<span>  author <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice Smith"</span>, <span class="st">"Bob Jones"</span><span class="op">)</span></span>
+<span>  author <span class="op">=</span> <span class="st">"Alice Smith"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 3. Generate .qmd files in reports/</span></span>
+<span><span class="co"># 3. Write the .qmd files into reports/</span></span>
 <span><span class="va">qmd_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/generate_reports.html">generate_reports</a></span><span class="op">(</span><span class="va">report_params</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 4. Render and bundle into zip_files/</span></span>
 <span><span class="va">zip_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_files.html">process_files</a></span><span class="op">(</span><span class="va">qmd_files</span><span class="op">)</span></span></code></pre></div>
+<p>Every column that varies has to appear in the file name template, which defaults to <code>"Report-{chapter}_{problem_numbers}"</code>. Otherwise two rows resolve to one name and the second overwrites the first.</p>
 </div>
 <div class="section level2">
-<h2 id="theming-and-visualization">Theming and Visualization<a class="anchor" aria-label="anchor" href="#theming-and-visualization"></a>
+<h2 id="theming">Theming<a class="anchor" aria-label="anchor" href="#theming"></a>
 </h2>
-<p><code>mariner</code> exports <code><a href="reference/theme_mariner.html">theme_mariner()</a></code> and custom scale functions:</p>
+<p><code><a href="reference/theme_mariner.html">theme_mariner()</a></code> and the <code>scale_*_mariner_*()</code> families draw a figure in the same colours as the page:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
@@ -110,12 +112,12 @@
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="system-verification-and-troubleshooting">System Verification and Troubleshooting<a class="anchor" aria-label="anchor" href="#system-verification-and-troubleshooting"></a>
+<h2 id="if-it-does-not-work">If It Does Not Work<a class="anchor" aria-label="anchor" href="#if-it-does-not-work"></a>
 </h2>
-<p>To verify your system environment (Quarto CLI, LaTeX, and theme fonts):</p>
+<p><code><a href="reference/mariner_check_setup.html">mariner_check_setup()</a></code> reports on Quarto, LaTeX, the fonts, the folders and the theme, and prints the fix for anything missing:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/mariner_check_setup.html">mariner_check_setup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>If fonts are missing on your operating system:</p>
+<p>If the fonts are missing:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/mariner_install_fonts.html">mariner_install_fonts</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -123,9 +125,10 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://www.bioconductor.org/packages/mariner" class="external-link">View on Bioconductor</a></li>
-<li><a href="https://github.com/thomasqmd/mariner/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/thomasqmd/mariner/issues" class="external-link">Report a bug</a></li>
+<li>
+<p><a href="https://github.com/thomasqmd/mariner" class="external-link">Browse source code</a></p>
+<p><a href="https://github.com/thomasqmd/mariner/issues" class="external-link">Report a bug</a></p>
+</li>
 </ul>
 </div>
 
@@ -136,7 +139,6 @@
 <li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
-
 
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>

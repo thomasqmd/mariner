@@ -1,61 +1,50 @@
 # mariner: Streamline Quarto Report Generation and Bundling
 
-The `mariner` package simplifies and automates the process of creating
-and packaging Quarto (.qmd) documents. It provides a cohesive workflow
-for first generating multiple document source files from a single
-parameterized template, and then bundling those source files along with
-all their rendered outputs (e.g., PDFs, scripts, and dependency files)
-into easily shareable zip archives.
+mariner turns one parameterized Quarto template into a set of `.qmd`
+reports, renders them, and bundles each source, R script and PDF into a
+zip archive.
 
-It also carries a complete Baylor-branded Quarto theme, so a generated
-report is styled, typeset in bundled fonts, and has its figures drawn
-from the same palette as the page, without anything to install
-separately.
+The package carries its own Quarto PDF theme. A report is typeset in the
+bundled fonts, and its figures use the palette the page does.
 
 ## Core Workflow
 
-1.  Run
-    [`mariner_check_setup`](https://thomasqmd.github.io/mariner/reference/mariner_check_setup.md)
-    to confirm this machine has everything a branded report needs –
-    Quarto, a LaTeX engine, the fonts. It reports and prints the fix; it
-    changes nothing.
+1.  [`mariner_check_setup`](https://thomasqmd.github.io/mariner/reference/mariner_check_setup.md)
+    confirms this machine has what a report needs: Quarto, a LaTeX
+    engine, the fonts. It changes nothing and prints the fix for
+    whatever is missing.
 
-2.  Use
-    [`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
-    once to create the project folders and install the theme assets into
-    them.
+2.  [`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
+    creates the project folders and installs the theme into them. Run it
+    once.
 
-3.  Use
-    [`generate_reports`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)
-    to create multiple, parameterized `.qmd` source files from a
-    template, into `reports/`.
+3.  [`generate_reports`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)
+    writes one `.qmd` per row of a parameter data frame into `reports/`.
 
-4.  Use
-    [`process_files`](https://thomasqmd.github.io/mariner/reference/process_files.md)
-    to render each source file and bundle the source, R script, and all
-    outputs into a zip archive, into `zip_files/`.
+4.  [`process_files`](https://thomasqmd.github.io/mariner/reference/process_files.md)
+    renders each one and bundles the source, the R script and the
+    outputs into `zip_files/`.
 
 ## Project Folders
 
-mariner works in three directories beneath the project root, returned by
-[`mariner_dirs`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md):
+mariner works in three directories beneath the project root. See
+[`mariner_dirs`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md).
 
 - `assets/`:
 
-  The built Quarto extension, assembled once.
+  The Quarto extension, assembled once.
 
 - `reports/`:
 
-  Generated `.qmd` sources, their rendered PDFs, and a copy of the
-  extension beside them.
+  The `.qmd` sources, their PDFs, and a copy of the extension beside
+  them.
 
 - `zip_files/`:
 
-  The bundles handed to students.
+  The bundles you hand out.
 
-Attaching the package with
 [`library(mariner)`](https://thomasqmd.github.io/mariner/) creates the
-three folders if the working directory looks like a project root – see
+three folders when the working directory looks like a project root. See
 [`mariner_looks_like_project`](https://thomasqmd.github.io/mariner/reference/mariner_looks_like_project.md).
 Set `options(mariner.auto_setup = FALSE)` to turn that off.
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_file.R
 \name{process_file}
 \alias{process_file}
-\title{Bundle a Quarto File and its Outputs}
+\title{Bundle a Quarto file and its outputs}
 \usage{
 process_file(
   input_file,
@@ -13,46 +13,44 @@ process_file(
 )
 }
 \arguments{
-\item{input_file}{Path to the input \code{.qmd} file.}
+\item{input_file}{Path to the input \code{.qmd}.}
 
-\item{output_zip}{Path for the output \code{.zip}. Defaults to the project's
-\verb{zip_files/} folder -- see \code{\link[=mariner_dirs]{mariner_dirs()}} -- under the source's name.}
+\item{output_zip}{Path for the output \code{.zip}. Defaults to the source's name
+in the project's \verb{zip_files/} folder. See \code{\link[=mariner_dirs]{mariner_dirs()}}.}
 
 \item{theme}{One of \link{mariner_themes}.}
 
-\item{assets_dir}{Directory holding an already-built extension, as
-\code{\link[=mariner_setup_project]{mariner_setup_project()}} leaves in \verb{assets/}. Pass \code{NULL} to assemble one
-from the installed package for this render instead.}
+\item{assets_dir}{Directory that holds a built extension, as
+\code{\link[=mariner_setup_project]{mariner_setup_project()}} leaves in \verb{assets/}. \code{NULL} assembles one from the
+installed package for this render.}
 
-\item{include}{Which categories of file to bundle. Any of \code{"source"},
-\code{"script"}, \code{"output"}, \code{"intermediates"}.}
+\item{include}{Which categories to bundle. Any of \code{"source"}, \code{"script"},
+\code{"output"}, \code{"intermediates"}.}
 }
 \value{
-Invisibly, the path to the created zip file.
+Invisibly, the path to the zip file.
 }
 \description{
-Renders a Quarto (\code{.qmd}) file in a scratch directory and bundles the source,
-the purled R script, the rendered document and the render's intermediates
-into a single zip archive.
+Renders a Quarto (\code{.qmd}) file and bundles the source, the purled R script,
+the rendered document and the render's intermediates into one zip archive.
 }
 \details{
-The render happens in a temporary directory with the theme staged beside the
-document, not in place, so nothing is written next to the source and parallel
-callers cannot collide on a shared cache.
+The render runs in a temporary directory, with the theme staged next to the
+document. Nothing lands beside the source, and parallel callers cannot
+collide on a shared cache.
 
 \code{include} selects what reaches the archive:
 
 \describe{
 \item{\code{source}}{the \code{.qmd} itself}
 \item{\code{script}}{the purled \code{.R}}
-\item{\code{output}}{the rendered document, and its \verb{_files/} directory --
-which an HTML document is broken without}
-\item{\code{intermediates}}{everything else the render left behind, such as the
-\code{.tex} when \code{keep-tex} is set}
+\item{\code{output}}{the rendered document and its \verb{_files/} directory}
+\item{\code{intermediates}}{whatever else the render left behind, such as the
+\code{.tex} under \code{keep-tex}}
 }
 
-The Quarto extension is never bundled. Reports are rendered inside a project
-that already has it, and a copy per archive would add ~1.3 MB to each.
+The Quarto extension is never bundled. A report renders inside a project that
+has one, and a copy per archive costs ~1.3 MB.
 }
 \examples{
 \dontrun{

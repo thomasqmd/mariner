@@ -7,7 +7,7 @@ params:
   problem_numbers: 1
   author: "Default Author Name"
 format:
-  mariner-baylor-pdf:
+  mariner-pdf:
     keep-tex: true
 ---
 

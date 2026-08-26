@@ -28,7 +28,7 @@ test_that("mariner_fig_dims() fits the page geometry in _extension.yml", {
   # manifest sets. A figure wider than this overflows into the margin, so the
   # two numbers are checked against each other rather than merely written down.
   geometry <- yaml::read_yaml(
-    mariner_path("generated", "baylor", "_extension.yml")
+    mariner_path("generated", "mariner", "_extension.yml")
   )$contributes$formats$pdf$geometry
   margin_in <- function(side) {
     as.numeric(sub("in$", "", sub(paste0("^", side, "="), "",
@@ -41,7 +41,7 @@ test_that("mariner_fig_dims() fits the page geometry in _extension.yml", {
 
 test_that("mariner_knitr_setup() configures knitr chunk options", {
   skip_if_not_installed("knitr")
-  old_opts <- mariner_knitr_setup("pdf", theme = "baylor")
+  old_opts <- mariner_knitr_setup("pdf")
 
   opts <- knitr::opts_chunk$get()
   expect_equal(opts$fig.width, mariner_fig_dims("pdf")$width)

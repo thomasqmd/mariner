@@ -13,13 +13,13 @@ mariner_setup_project(
 }
 \arguments{
 \item{root}{Project root. \code{NULL} (the default) resolves it with
-\code{\link[=mariner_project_root]{mariner_project_root()}}, so running this from a subdirectory scaffolds the
+\code{\link[=mariner_project_root]{mariner_project_root()}}, so a call from a subdirectory scaffolds the
 project rather than the subdirectory. Pass a path to override.}
 
 \item{theme}{One of \link{mariner_themes}.}
 
-\item{template}{Name of the starter template to copy into \verb{reports/}. Pass
-\code{NULL} for no starter document.}
+\item{template}{Starter template to copy into \verb{reports/}. \code{NULL} for no
+starter document.}
 
 \item{overwrite}{Replace files that already exist. The folders themselves are
 never removed.}
@@ -28,25 +28,23 @@ never removed.}
 The named list from \code{\link[=mariner_dirs]{mariner_dirs()}}, invisibly.
 }
 \description{
-Creates the folder structure a mariner workflow expects, installs the Quarto
-theme into it, and drops in a starter report. Safe to run twice: nothing
-already present is replaced unless \code{overwrite = TRUE}.
+Creates the folders a mariner workflow uses, installs the Quarto theme into
+them, and drops in a starter report. Run it twice and nothing changes:
+a file that exists is left alone unless \code{overwrite = TRUE}.
 }
 \details{
-What it creates, beneath \code{root}:
+Beneath \code{root}:
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{assets/
-  _extensions/mariner-baylor/   the theme, assembled once
+  _extensions/mariner/          the theme, assembled once
 reports/
-  _extensions/mariner-baylor/   a copy, beside the documents that use it
+  _extensions/mariner/          a copy, beside the documents that use it
   report.qmd                    a starter document
-zip_files/                      the bundles handed to students
+zip_files/                      the bundles you hand out
 }\if{html}{\out{</div>}}
 
-\verb{zip_files/}, \verb{assets/_extensions/} and \verb{reports/_extensions/} are appended
-to the project \code{.gitignore}. All three are build outputs: the archives are
-rebuilt from the sources beside them, and the extension is assembled from the
-installed package, so committing either means committing a copy that can go
+\verb{zip_files/}, \verb{assets/_extensions/} and \verb{reports/_extensions/} go into the
+project \code{.gitignore}. All three are build outputs, and a committed copy goes
 stale against what it was built from.
 }
 \examples{

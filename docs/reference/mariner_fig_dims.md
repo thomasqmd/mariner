@@ -1,9 +1,9 @@
 # Figure dimensions for a branded report
 
-The drawing area a figure gets on the page: the geometry in
+The drawing area a figure gets on the page. The geometry in
 `_extension.yml` (US Letter, 1in left and right, 0.75in top and bottom)
-leaves 6.5in of text width, and 4.5in tall is a little under the 3:2
-that leaves room for a caption and surrounding prose.
+leaves 6.5in of text width. The 4.5in height sits under 3:2, which
+leaves room for a caption and the prose around it.
 
 ## Usage
 

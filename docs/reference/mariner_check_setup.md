@@ -1,9 +1,8 @@
 # Check that this machine can render a mariner report
 
-Runs through everything a branded PDF needs – Quarto, a LaTeX engine,
-the fonts, the project folders, the theme, the packages the template
-loads – and prints one line per check with a copy-pasteable fix for
-anything that is wrong.
+Checks what a report needs: Quarto, a LaTeX engine, the fonts, the
+project folders, the theme, and the packages the template loads. One
+line per check, with the fix to paste for anything that is wrong.
 
 ## Usage
 
@@ -43,7 +42,7 @@ Invisibly, a data frame with one row per check and the columns `check`,
 
 ## Details
 
-Nothing is installed or changed. Every remedy is printed for you to run.
+Nothing is installed or changed. You run the remedies.
 
 ## What the statuses mean
 
@@ -53,9 +52,8 @@ Nothing is installed or changed. Every remedy is printed for you to run.
 
 - warn:
 
-  The report will render, but not as intended – most often figures drawn
-  in the device's default typeface while the page text is in the
-  theme's, which is the failure nobody notices.
+  The report renders, but not as intended. Usually the figures come out
+  in the device's default typeface while the page text does not.
 
 - fail:
 

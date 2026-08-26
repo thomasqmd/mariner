@@ -2,7 +2,7 @@
 
 ## Setup and Scaffolding
 
-Project initialization and environment verification.
+Create the project folders and check the machine.
 
 - [`mariner_check_setup()`](https://thomasqmd.github.io/mariner/reference/mariner_check_setup.md)
   : Check that this machine can render a mariner report
@@ -19,10 +19,10 @@ Project initialization and environment verification.
 
 ## Template and Generation
 
-Quarto report source generation from templates.
+Write .qmd sources from a template.
 
 - [`generate_reports()`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)
-  : Create Quarto Source Files from a Template
+  : Create Quarto sources from a template
 - [`mariner_templates()`](https://thomasqmd.github.io/mariner/reference/mariner_templates.md)
   : Available mariner templates
 - [`mariner_template_path()`](https://thomasqmd.github.io/mariner/reference/mariner_template_path.md)
@@ -30,16 +30,16 @@ Quarto report source generation from templates.
 
 ## Rendering and Bundling
 
-Render documents and package into zip archives.
+Render the documents and bundle them.
 
 - [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md)
-  : Bundle a Quarto File and its Outputs
+  : Bundle a Quarto file and its outputs
 - [`process_files()`](https://thomasqmd.github.io/mariner/reference/process_files.md)
-  : Bundle Multiple Quarto Files Sequentially or in Parallel
+  : Bundle many Quarto files, in sequence or in parallel
 
 ## Theming and Palettes
 
-Brand theme, colors, and knitr chunk options.
+Brand colours, the ggplot2 theme, and chunk options.
 
 - [`theme_mariner()`](https://thomasqmd.github.io/mariner/reference/theme_mariner.md)
   : Branded ggplot2 theme for mariner
@@ -60,7 +60,7 @@ Brand theme, colors, and knitr chunk options.
 
 ## Scales
 
-ggplot2 scale functions for brand palettes.
+ggplot2 scales over the brand palettes.
 
 - [`scale_colour_mariner_b()`](https://thomasqmd.github.io/mariner/reference/scale_mariner_b.md)
   [`scale_color_mariner_b()`](https://thomasqmd.github.io/mariner/reference/scale_mariner_b.md)

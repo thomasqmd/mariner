@@ -11,15 +11,17 @@ mariner_set_theme(theme = mariner_themes, format = mariner_formats, ...)
 
 \item{format}{One of \link{mariner_formats}.}
 
-\item{...}{Arguments passed to \code{\link[=theme_mariner]{theme_mariner()}}.}
+\item{...}{Further arguments for \code{\link[=theme_mariner]{theme_mariner()}}.}
 }
 \value{
-Invisibly returns the previous theme.
+Invisibly, the previous theme.
 }
 \description{
-Sets \code{\link[=theme_mariner]{theme_mariner()}} as the global default theme and configures default discrete and
-continuous scales so subsequent plots use the brand palette automatically.
+Makes \code{\link[=theme_mariner]{theme_mariner()}} the global ggplot2 theme and the brand palettes the
+default discrete and continuous scales. Later plots need no scale call.
 }
 \examples{
-mariner_set_theme()
+# This changes global ggplot2 state. The return value puts it back.
+old <- mariner_set_theme()
+ggplot2::theme_set(old)
 }

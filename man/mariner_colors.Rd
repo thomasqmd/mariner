@@ -13,7 +13,7 @@ mariner_colors(theme = mariner_themes)
 A named character vector of hex codes.
 }
 \description{
-Extracts all named colours and semantic roles defined in the theme's \verb{_brand.yml}.
+Reads every named colour and role from the theme's \verb{_brand.yml}.
 }
 \examples{
 mariner_colors()

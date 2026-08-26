@@ -14,15 +14,15 @@ mariner_template_path(
 \item{template}{Name of the template directory under \verb{inst/templates/}.
 Defaults to \code{"report"}.}
 
-\item{package}{Package shipping the template. Defaults to \code{"mariner"}.}
+\item{package}{Package that ships the template. Defaults to \code{"mariner"}.}
 
 \item{call}{Caller environment for error reporting.}
 }
 \value{
-An absolute file path to the template's \code{skeleton.qmd}.
+An absolute path to the template's \code{skeleton.qmd}.
 }
 \description{
-Resolves the path to a template's \code{skeleton.qmd} file.
+Resolves a template name to its \code{skeleton.qmd}.
 }
 \examples{
 mariner_template_path("report")

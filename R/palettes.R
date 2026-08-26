@@ -5,7 +5,7 @@
 
 #' Named colour vector for a theme
 #'
-#' Extracts all named colours and semantic roles defined in the theme's `_brand.yml`.
+#' Reads every named colour and role from the theme's `_brand.yml`.
 #'
 #' @param theme Theme name. Defaults to the built-in mariner theme.
 #' @return A named character vector of hex codes.
@@ -23,13 +23,16 @@ mariner_colors <- function(theme = mariner_themes) {
 
 #' Brand palette generator
 #'
-#' Constructs discrete, sequential, ordinal, or diverging color palettes for a theme.
+#' Builds a discrete, sequential, ordinal, or diverging palette for a theme.
 #'
 #' @param theme Theme name. Defaults to the built-in mariner theme.
-#' @param family Palette family: `"discrete"`, `"sequential"`, `"ordinal"`, or `"diverging"`.
-#' @param n Optional integer number of colors. If `NULL` (default), returns a palette function `function(n)`.
-#' @param reverse Logical; if `TRUE`, reverses the color vector.
-#' @return A character vector of hex colors if `n` is supplied, or a palette function if `n` is `NULL`.
+#' @param family Palette family: `"discrete"`, `"sequential"`, `"ordinal"`, or
+#'   `"diverging"`.
+#' @param n Number of colours. `NULL` (the default) returns a palette function
+#'   `function(n)` instead.
+#' @param reverse Logical; if `TRUE`, reverse the colour vector.
+#' @return A character vector of hex colours, or a palette function when `n` is
+#'   `NULL`.
 #' @export
 #' @examples
 #' mariner_pal(family = "discrete", n = 4)

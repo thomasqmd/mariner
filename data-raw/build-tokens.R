@@ -5,16 +5,15 @@
 #   inst/brand/<theme>/_brand.yml   the colours, the type families, the logo files
 #   inst/assets/logos/              the marks themselves -- a mark whose pixel
 #                                   dimensions change moves every derived width
-#   R/slides.R                      the slide box, and everything measured on it
-#   R/scss.R                        the stylesheet layer order
+#   R/generate.R                    the preamble and manifest generators
 #   R/logos.R                       the per-placement target heights
 #
 #   Rscript data-raw/build-tokens.R
 #
-# The hand-written partials in inst/scss/, inst/tex/, inst/typst/ and inst/js/
-# are NOT touched by this script and are not copied anywhere: the extension
-# Quarto reads is assembled from them on demand by mariner_build_extension(), so
-# editing one needs no rebuild at all.
+# The hand-written files in inst/tex/ and inst/lua/ are NOT touched by this
+# script and are not copied anywhere: the extension Quarto reads is assembled
+# from them on demand by mariner_build_extension(), so editing one needs no
+# rebuild at all.
 #
 # tests/testthat/test-no-drift.R re-runs the same generators into a temporary
 # directory and diffs against what is committed, so forgetting this step fails

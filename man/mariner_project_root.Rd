@@ -7,31 +7,30 @@
 mariner_project_root(path = ".")
 }
 \arguments{
-\item{path}{Directory to start the upward search from. Defaults to the
-working directory.}
+\item{path}{Directory to search upward from. Defaults to the working
+directory.}
 }
 \value{
 A normalised absolute path.
 }
 \description{
-Resolves the directory that \verb{reports/}, \verb{zip_files/} and \verb{assets/} are
-created beneath, in this order:
+Resolves the directory that \verb{assets/}, \verb{reports/} and \verb{zip_files/} sit
+beneath, in this order:
 }
 \details{
 \enumerate{
-\item \code{getOption("mariner.project_root")}, if set. The escape hatch, for a
+\item \code{getOption("mariner.project_root")}, if set. The escape hatch for a
 session whose working directory is not where the reports belong.
-\item The nearest ancestor of \code{path} -- starting with \code{path} itself -- that
-contains an \code{.Rproj} file, a \verb{_quarto.yml}, or a \code{DESCRIPTION}.
+\item The nearest ancestor of \code{path}, \code{path} included, that holds an \code{.Rproj}
+file, a \verb{_quarto.yml}, or a \code{DESCRIPTION}.
 \item \code{path} itself, normalised.
 }
 
-Note that \code{.git} is \emph{not} a marker here, though it is one for
+\code{.git} is not a marker here, though it is one for
 \code{\link[=mariner_looks_like_project]{mariner_looks_like_project()}}. See the comment in \code{R/setup.R} for why.
 
-An explicit \verb{root =} argument to \code{\link[=mariner_dirs]{mariner_dirs()}} or
-\code{\link[=mariner_setup_project]{mariner_setup_project()}} beats all three -- those functions only consult
-this one when \code{root} is \code{NULL}.
+A \code{root} argument to \code{\link[=mariner_dirs]{mariner_dirs()}} or \code{\link[=mariner_setup_project]{mariner_setup_project()}} beats all
+three. Those functions call this one only when \code{root} is \code{NULL}.
 }
 \examples{
 mariner_project_root()

@@ -1,8 +1,8 @@
 # Colour maths, in R.
 #
 # These mirror the dataviz skill's validate_palette.js, which is what produced
-# the measured numbers recorded in the comments of inst/brand/baylor/_brand.yml
-# -- the contrast ratios, the CVD separations, and the gamut wall at Baylor
+# the measured numbers recorded in the comments of inst/brand/mariner/_brand.yml
+# -- the contrast ratios, the CVD separations, and the gamut wall at mariner
 # green's hue. They exist in R as well so the gates run in testthat: a palette
 # regression fails `R CMD check` rather than waiting for someone to re-run a
 # script by hand.
@@ -82,7 +82,7 @@ linear_to_oklab <- function(rgb) {
 #' @return A named numeric vector.
 #' @noRd
 #' @examples
-#' # Baylor green is both too dark and too grey to carry a data series
+#' # Mariner green is both too dark and too grey to carry a data series
 #' hex_to_oklch("#154734")
 hex_to_oklab <- function(hex) {
   stats::setNames(linear_to_oklab(hex_to_linear(hex)), c("L", "a", "b"))
@@ -138,7 +138,7 @@ cvd_simulate <- function(hex, type = c("protan", "deutan", "tritan")) {
 #' @return A single number.
 #' @noRd
 #' @examples
-#' # Two Baylor series slots, as a full-colour reader and as a protanope
+#' # Two Mariner series slots, as a full-colour reader and as a protanope
 #' delta_e("#017553", "#c08802")
 #' cvd_delta_e("#017553", "#c08802")
 delta_e <- function(a, b) {
@@ -148,7 +148,7 @@ delta_e <- function(a, b) {
 # Simulate in LINEAR light, CLAMP each channel to [0, 1], then go to OKLab.
 #
 # All three steps matter and the middle one is easy to get wrong. Simulation
-# routinely pushes a channel out of gamut -- Baylor's gold under protanopia
+# routinely pushes a channel out of gamut -- Mariner's gold under protanopia
 # lands at blue -0.013 -- and what a real display does with that is clip it, so
 # the clamp is part of the model rather than defensive tidying. Skipping it
 # reads the green/gold pair at 14.4; round-tripping through an 8-bit hex instead
@@ -216,7 +216,7 @@ mix_linear <- function(a, b, t) {
 #' @return A hex string, not necessarily one of `candidates`.
 #' @noRd
 #' @examples
-#' # White reads on Baylor green; on University Gold it does not
+#' # White reads on Mariner green; on University Gold it does not
 #' best_ink("#154734", c("#fefefe", "#222222"))
 #' best_ink("#FFB81C", c("#fefefe", "#222222"))
 best_ink <- function(bg, candidates, target = 4.5) {

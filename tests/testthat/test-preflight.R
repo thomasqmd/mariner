@@ -115,12 +115,12 @@ test_that("check_extension fails when the theme is not beside the documents", {
   dir <- local_dir()
   dir.create(mariner_dirs(dir)$reports, recursive = TRUE)
 
-  missing <- check_extension(dir, "baylor")
+  missing <- check_extension(dir, "mariner")
   expect_equal(missing$status, "fail")
   expect_equal(missing$detail, "not assembled")
 
-  mariner_build_extension(mariner_dirs(dir)$reports, "baylor", quiet = TRUE)
-  expect_equal(check_extension(dir, "baylor")$status, "ok")
+  mariner_build_extension(mariner_dirs(dir)$reports, "mariner", quiet = TRUE)
+  expect_equal(check_extension(dir, "mariner")$status, "ok")
 })
 
 test_that("check_extension notices a half-assembled extension", {
@@ -128,10 +128,10 @@ test_that("check_extension notices a half-assembled extension", {
   # font cut is not, and xelatex aborts with "the font Lora-Regular cannot be
   # found" without ever mentioning the extension.
   dir <- local_dir()
-  ext <- mariner_build_extension(mariner_dirs(dir)$reports, "baylor", quiet = TRUE)
+  ext <- mariner_build_extension(mariner_dirs(dir)$reports, "mariner", quiet = TRUE)
   file.remove(file.path(ext, "fonts", "Lora-Regular.ttf"))
 
-  got <- check_extension(dir, "baylor")
+  got <- check_extension(dir, "mariner")
   expect_equal(got$status, "fail")
   expect_match(got$detail, "1 file missing")
 })
@@ -140,16 +140,16 @@ test_that("extension_manifest agrees with what the builder writes", {
   # The point of deriving both from EXTENSION_SOURCES: a checker with its own
   # inventory goes stale the first time a font cut or logo slot is added.
   dir <- local_dir()
-  ext <- mariner_build_extension(dir, "baylor", quiet = TRUE)
+  ext <- mariner_build_extension(dir, "mariner", quiet = TRUE)
 
-  expect_equal(extension_missing(ext, "baylor"), character())
-  expect_true("fonts/Lora-Regular.ttf" %in% extension_manifest("baylor"))
-  expect_true("brand-preamble.tex" %in% extension_manifest("baylor"))
-  expect_true("_extension.yml" %in% extension_manifest("baylor"))
+  expect_equal(extension_missing(ext, "mariner"), character())
+  expect_true("fonts/Lora-Regular.ttf" %in% extension_manifest("mariner"))
+  expect_true("brand-preamble.tex" %in% extension_manifest("mariner"))
+  expect_true("_extension.yml" %in% extension_manifest("mariner"))
 })
 
 test_that("check_ggplot builds the figure theme", {
-  expect_equal(check_ggplot("baylor")$status, "ok")
+  expect_equal(check_ggplot("mariner")$status, "ok")
 })
 
 # --- fonts -------------------------------------------------------------------
@@ -205,13 +205,13 @@ test_that("the fontspec Path= is POSIX, on every platform", {
   # way: a backslash here is a Windows-only render failure that no macOS or
   # Linux run would ever show.
   dir <- local_dir()
-  ext <- mariner_build_extension(dir, "baylor", quiet = TRUE)
+  ext <- mariner_build_extension(dir, "mariner", quiet = TRUE)
   preamble <- readLines(file.path(ext, "brand-preamble.tex"), warn = FALSE)
 
   paths <- grep("^\\s*Path=", preamble, value = TRUE)
   expect_gt(length(paths), 0L)
   expect_false(any(grepl("\\", paths, fixed = TRUE)))
-  expect_true(all(grepl("Path=_extensions/mariner-baylor/fonts/", paths, fixed = TRUE)))
+  expect_true(all(grepl("Path=_extensions/mariner/fonts/", paths, fixed = TRUE)))
 })
 
 # --- the whole report --------------------------------------------------------

@@ -124,11 +124,11 @@ test_that("diverging ramps have equal arms and a neutral midpoint", {
 
 test_that("text inks meet WCAG, and gold is only used where it legally can be", {
   b <- yaml::read_yaml(
-    system.file("brand", "baylor", "_brand.yml", package = "mariner")
+    system.file("brand", "mariner", "_brand.yml", package = "mariner")
   )$color$palette
   expect_gte(contrast_ratio(b[["gold-ink"]], "#fefefe"), 4.5)   # AA body text
   expect_gte(contrast_ratio(b[["gold-rule"]], "#fefefe"), 3.0)  # large / UI
-  expect_lt(contrast_ratio(b[["university-gold"]], "#fefefe"), 3.0)  # neither
+  expect_lt(contrast_ratio(b[["mariner-gold"]], "#fefefe"), 3.0)  # neither
 
   for (theme in mariner_themes) {
     p <- yaml::read_yaml(

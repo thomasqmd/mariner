@@ -130,7 +130,7 @@ test_that("classify_artefacts sorts a render's leftovers", {
 
 test_that("a document using the branded format renders", {
   # The reason stage_extension() exists. brand-preamble.tex reaches the bundled
-  # fonts through Path=_extensions/mariner-baylor/fonts/, which xelatex resolves
+  # fonts through Path=_extensions/mariner/fonts/, which xelatex resolves
   # against the directory holding the .tex -- the document's own. Without the
   # extension staged beside the document this render finds its *format* and then
   # dies with "The font Lora-Regular cannot be found".
@@ -142,9 +142,9 @@ test_that("a document using the branded format renders", {
   skip_if_no_latex()
 
   dir <- local_dir()
-  mariner_build_extension(dir, "baylor", quiet = TRUE)
+  mariner_build_extension(dir, "mariner", quiet = TRUE)
 
-  doc <- write_qmd(dir, "branded", format = "mariner-baylor-pdf")
+  doc <- write_qmd(dir, "branded", format = "mariner-pdf")
   out <- file.path(dir, "branded.zip")
 
   expect_no_error(
@@ -156,28 +156,28 @@ test_that("a document using the branded format renders", {
 test_that("stage_extension serves from assets_dir when one is built", {
   dir <- local_dir()
   assets <- file.path(dir, "assets")
-  mariner_build_extension(assets, "baylor", quiet = TRUE)
+  mariner_build_extension(assets, "mariner", quiet = TRUE)
 
   scratch <- file.path(dir, "scratch")
   dir.create(scratch)
-  unstage <- stage_extension(scratch, "baylor", assets)
+  unstage <- stage_extension(scratch, "mariner", assets)
 
-  staged <- file.path(scratch, "_extensions", "mariner-baylor")
+  staged <- file.path(scratch, "_extensions", "mariner")
   expect_true(file.exists(file.path(staged, "brand-preamble.tex")))
 
   # Undoing the stage must not reach into the project's assets/.
   unstage()
-  expect_true(file.exists(mariner_ext_dir(assets, "baylor")))
+  expect_true(file.exists(mariner_ext_dir(assets, "mariner")))
   expect_true(file.exists(
-    file.path(mariner_ext_dir(assets, "baylor"), "brand-preamble.tex")
+    file.path(mariner_ext_dir(assets, "mariner"), "brand-preamble.tex")
   ))
 })
 
 test_that("stage_extension builds into the scratch dir when there is no assets_dir", {
   dir <- local_dir()
-  unstage <- stage_extension(dir, "baylor", assets_dir = NULL)
+  unstage <- stage_extension(dir, "mariner", assets_dir = NULL)
 
-  staged <- file.path(dir, "_extensions", "mariner-baylor")
+  staged <- file.path(dir, "_extensions", "mariner")
   expect_true(file.exists(file.path(staged, "brand-preamble.tex")))
   expect_true(file.exists(file.path(staged, "_extension.yml")))
   unstage()

@@ -19,21 +19,20 @@ directories mariner works in, as a named list:
 }
 \details{
 \describe{
-\item{\code{assets}}{\verb{assets/} -- holds the built Quarto extension, assembled
-once by \code{\link[=mariner_setup_project]{mariner_setup_project()}}. This is the copy renders are served
-from, so a batch of fifty reports unpacks the theme once rather than
-fifty times.}
-\item{\code{reports}}{\verb{reports/} -- the generated \code{.qmd} sources, their rendered
-PDFs, and a copy of \verb{_extensions/}. The extension has to sit \emph{beside} the
-documents: \code{brand-preamble.tex} reaches the bundled fonts through a
-relative path that xelatex resolves against the directory holding the
-\code{.tex}, so an extension one level up gives a document that finds its
-format and then dies with "the font Lora-Regular cannot be found".}
-\item{\code{zips}}{\verb{zip_files/} -- the bundles handed to students.}
+\item{\code{assets}}{\verb{assets/} -- the Quarto extension, assembled once by
+\code{\link[=mariner_setup_project]{mariner_setup_project()}}. Every render stages the theme from here, so a
+batch of fifty reports unpacks it once.}
+\item{\code{reports}}{\verb{reports/} -- the \code{.qmd} sources, their PDFs, and a copy of
+\verb{_extensions/}. The extension has to sit \emph{beside} the documents:
+xelatex resolves the font paths in \code{brand-preamble.tex} against the
+directory that holds the \code{.tex}. An extension one level up gives a
+document that finds its format and then dies with "the font
+Lora-Regular cannot be found".}
+\item{\code{zips}}{\verb{zip_files/} -- the bundles you hand out.}
 }
 
-The paths are returned whether or not the directories exist. Creating them is
-\code{\link[=mariner_setup_project]{mariner_setup_project()}}'s job, and \code{.onAttach()}'s.
+The paths come back whether or not the directories exist.
+\code{\link[=mariner_setup_project]{mariner_setup_project()}} and \code{.onAttach()} create them.
 }
 \examples{
 mariner_dirs(root = tempdir())

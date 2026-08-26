@@ -1,7 +1,6 @@
 # Named colour vector for a theme
 
-Extracts all named colours and semantic roles defined in the theme's
-`_brand.yml`.
+Reads every named colour and role from the theme's `_brand.yml`.
 
 ## Usage
 
@@ -23,7 +22,7 @@ A named character vector of hex codes.
 
 ``` r
 mariner_colors()
-#>      background      foreground    baylor-green university-gold        gold-ink 
+#>      background      foreground   mariner-green    mariner-gold        gold-ink 
 #>       "#fefefe"       "#222222"       "#154734"       "#FFB81C"       "#9b6e06" 
 #>       gold-rule  series-1-green   series-2-gold series-3-purple  series-4-olive 
 #>       "#c28a01"       "#017553"       "#c08802"       "#aa4499"       "#979731" 

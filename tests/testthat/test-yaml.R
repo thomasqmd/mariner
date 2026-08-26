@@ -29,7 +29,7 @@ test_that("logicals in the header survive as true, not yes", {
   ))
 
   expect_true(any(grepl("keep-tex: true", readLines(file), fixed = TRUE)))
-  expect_identical(front_matter(file)$format$`mariner-baylor-pdf`$`keep-tex`, TRUE)
+  expect_identical(front_matter(file)$format$`mariner-pdf`$`keep-tex`, TRUE)
 })
 
 test_that("inline R in the title survives the round trip", {

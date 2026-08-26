@@ -1,19 +1,18 @@
 # Bundled fonts
 
-One type system, shared by **both** themes — personal and Baylor differ by
-colour and structure, not by typeface.
+One type system, shared by the page and the figures drawn onto it.
 
-| Role | Family | Files | Formats |
+| Role | Family | Files | Used by |
 |---|---|---|---|
-| Titles, headings, all slide text | Atkinson Hyperlegible Next | 2 variable (upright + italic, `[wght]`) | html, revealjs, typst |
-| …the same, in PDF | Atkinson Hyperlegible **v1** | 4 static | pdf |
-| Long-form body copy | Lora | 4 static | html, pdf |
-| Code | JetBrains Mono | 4 static | all |
+| Figure text | Atkinson Hyperlegible Next | 2 variable (upright + italic, `[wght]`) | `theme_mariner()`, through systemfonts |
+| Titles and headings | Atkinson Hyperlegible **v1** | 4 static | the PDF, through fontspec |
+| Long-form body copy | Lora | 4 static | the PDF |
+| Code | JetBrains Mono | 4 static | both |
 
 All three families are SIL Open Font License 1.1; each ships its licence as
 `<Family>-OFL.txt`. Fonts are bundled rather than fetched at render time so a
-PDF can embed them and an HTML document renders offline. The package installs
-from GitHub only, so the ~2 MB is not a concern.
+PDF can embed them and a render works offline. The package installs from GitHub
+only, so the ~2 MB is not a concern.
 
 Downloaded from `github.com/google/fonts/ofl/<family>` on 2026-08-19; Lora and
 JetBrains Mono were copied from `Website/fonts/`, where they were already
@@ -42,9 +41,10 @@ this to matter is a content problem, not a typography one.
 
 ## Static vs variable, and why both Atkinsons are here
 
-Web formats (`html`, `revealjs`) consume variable fonts natively: one file
-covers every weight, and `font-weight: 350` is a real interpolated instance
-rather than a browser fake. Hence Atkinson **Next** in its variable cut.
+The graphics devices behind `theme_mariner()` reach fonts through systemfonts,
+which resolves a variable TTF's named instances: one file covers every weight,
+and a 350-weight axis position is a real interpolated instance. Hence Atkinson
+**Next** in its variable cut, which is the family the ggplot2 layer asks for.
 
 XeLaTeX is the opposite case. `fontspec` can load a variable TTF but reaches
 only its **default instance**, so bold and italic come out synthesised. Hence

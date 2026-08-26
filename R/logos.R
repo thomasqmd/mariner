@@ -2,7 +2,7 @@
 #
 # Two things are typed by hand about a logo, and neither is a size:
 #
-#   inst/brand/baylor/_brand.yml   which FILE fills each of the three slots
+#   inst/brand/mariner/_brand.yml  which FILE fills each of the three slots
 #   LOGO_HEIGHT below              how TALL a mark stands in each placement
 #
 # Widths are read off the files. Every placement asks for a height, and the

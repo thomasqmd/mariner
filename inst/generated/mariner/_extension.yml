@@ -3,7 +3,7 @@
 # Regenerate: Rscript data-raw/build-tokens.R
 # Edit the generator, not this file.
 
-title: Mariner Baylor
+title: Mariner PDF
 author: Thomas Reinke
 version: 0.2.0
 quarto-required: ">=1.4.0"
@@ -33,7 +33,12 @@ contributes:
       include-in-header:
         - file: brand-preamble.tex
         - file: _macros.tex
-        - file: defn.tex
+      # Maps the document markup classes -- .defn, .term, .termref, .emph,
+      # and the .def / .thm blocks -- onto the commands brand-preamble.tex
+      # defines. Pandoc drops unrecognised span and div classes silently, so
+      # without this every one of them renders as unmarked body text.
+      filters:
+        - mariner-markup.lua
       highlight-style: a11y
       toc: true
       toc-depth: 3
@@ -45,7 +50,6 @@ contributes:
       knitr:
         opts_chunk:
           dev: "cairo_pdf"
-          fig-format: pdf
           dpi: 300
           comment: "#>"
           collapse: true

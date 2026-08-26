@@ -1,6 +1,6 @@
 # Available mariner templates
 
-Lists the template names shipped by a package.
+The template names a package ships.
 
 ## Usage
 

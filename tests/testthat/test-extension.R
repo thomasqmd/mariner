@@ -3,7 +3,7 @@
 # directory someone remembered to update.
 #
 # Completeness is not cosmetic. brand-preamble.tex reaches the fonts through
-# `Path=_extensions/mariner-baylor/fonts/`, which xelatex resolves against the
+# `Path=_extensions/mariner/fonts/`, which xelatex resolves against the
 # directory holding the .tex -- the document's own. A missing fonts/ directory
 # does not fall back to a system face: xelatex aborts with "the font
 # Lora-Regular cannot be found".
@@ -11,17 +11,17 @@
 test_that("mariner_build_extension assembles a complete extension", {
   dest <- withr::local_tempdir()
 
-  ext <- mariner_build_extension(dest, "baylor", quiet = TRUE)
+  ext <- mariner_build_extension(dest, "mariner", quiet = TRUE)
 
   expect_true(dir.exists(ext))
-  expect_equal(basename(ext), "mariner-baylor")
+  expect_equal(basename(ext), "mariner")
   # The path the generated artefacts assume, spelled out rather than derived,
   # so a change to mariner_ext_rel() has to be made deliberately here too.
-  expect_true(dir.exists(file.path(dest, "_extensions", "mariner-baylor")))
+  expect_true(dir.exists(file.path(dest, "_extensions", "mariner")))
 
-  # The manifest, and every LaTeX include it names.
+  # The manifest, every LaTeX include it names, and the markup filter.
   expect_true(file.exists(file.path(ext, "_extension.yml")))
-  for (f in c("brand-preamble.tex", "_macros.tex", "defn.tex")) {
+  for (f in c("brand-preamble.tex", "_macros.tex", "mariner-markup.lua")) {
     expect_true(file.exists(file.path(ext, f)), info = paste("missing:", f))
   }
 
@@ -35,6 +35,17 @@ test_that("mariner_build_extension assembles a complete extension", {
   )
   for (f in includes) {
     expect_true(file.exists(file.path(ext, f)), info = paste("named but missing:", f))
+  }
+
+  # Same pairing for the filter. A filter named in the manifest but absent from
+  # the directory is the louder failure of the two -- Quarto stops with "filter
+  # not found" -- but the quiet one is what this really guards: drop the
+  # `filters:` block and every markup class silently stops working, because
+  # pandoc ignores span and div classes it does not recognise.
+  filters <- unlist(manifest$contributes$formats$pdf$filters)
+  expect_setequal(filters, "mariner-markup.lua")
+  for (f in filters) {
+    expect_true(file.exists(file.path(ext, f)), info = paste("filter missing:", f))
   }
 
   # The three faces xelatex loads by file, in the static cuts fontspec needs.
@@ -51,7 +62,7 @@ test_that("mariner_build_extension assembles a complete extension", {
   # Every mark named in _brand.yml, at the path the generated files point at.
   for (slot in c("small", "medium", "large")) {
     expect_true(
-      file.exists(file.path(ext, "logos", mariner_logo_name("baylor", slot))),
+      file.exists(file.path(ext, "logos", mariner_logo_name("mariner", slot))),
       info = paste("missing logo slot:", slot)
     )
   }

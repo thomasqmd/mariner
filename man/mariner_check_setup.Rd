@@ -26,21 +26,19 @@ Invisibly, a data frame with one row per check and the columns
 \code{check}, \code{status} (\code{"ok"}, \code{"warn"} or \code{"fail"}), \code{detail} and \code{remedy}.
 }
 \description{
-Runs through everything a branded PDF needs -- Quarto, a LaTeX engine, the
-fonts, the project folders, the theme, the packages the template loads -- and
-prints one line per check with a copy-pasteable fix for anything that is
-wrong.
+Checks what a report needs: Quarto, a LaTeX engine, the fonts, the project
+folders, the theme, and the packages the template loads. One line per check,
+with the fix to paste for anything that is wrong.
 }
 \details{
-Nothing is installed or changed. Every remedy is printed for you to run.
+Nothing is installed or changed. You run the remedies.
 }
 \section{What the statuses mean}{
 
 \describe{
 \item{ok}{Nothing to do.}
-\item{warn}{The report will render, but not as intended -- most often
-figures drawn in the device's default typeface while the page text is in
-the theme's, which is the failure nobody notices.}
+\item{warn}{The report renders, but not as intended. Usually the figures
+come out in the device's default typeface while the page text does not.}
 \item{fail}{The render will not complete.}
 }
 }

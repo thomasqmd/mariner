@@ -1,8 +1,8 @@
-# Bundle a Quarto File and its Outputs
+# Bundle a Quarto file and its outputs
 
-Renders a Quarto (`.qmd`) file in a scratch directory and bundles the
-source, the purled R script, the rendered document and the render's
-intermediates into a single zip archive.
+Renders a Quarto (`.qmd`) file and bundles the source, the purled R
+script, the rendered document and the render's intermediates into one
+zip archive.
 
 ## Usage
 
@@ -20,14 +20,13 @@ process_file(
 
 - input_file:
 
-  Path to the input `.qmd` file.
+  Path to the input `.qmd`.
 
 - output_zip:
 
-  Path for the output `.zip`. Defaults to the project's `zip_files/`
-  folder – see
-  [`mariner_dirs()`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md)
-  – under the source's name.
+  Path for the output `.zip`. Defaults to the source's name in the
+  project's `zip_files/` folder. See
+  [`mariner_dirs()`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md).
 
 - theme:
 
@@ -36,25 +35,25 @@ process_file(
 
 - assets_dir:
 
-  Directory holding an already-built extension, as
+  Directory that holds a built extension, as
   [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
-  leaves in `assets/`. Pass `NULL` to assemble one from the installed
-  package for this render instead.
+  leaves in `assets/`. `NULL` assembles one from the installed package
+  for this render.
 
 - include:
 
-  Which categories of file to bundle. Any of `"source"`, `"script"`,
-  `"output"`, `"intermediates"`.
+  Which categories to bundle. Any of `"source"`, `"script"`, `"output"`,
+  `"intermediates"`.
 
 ## Value
 
-Invisibly, the path to the created zip file.
+Invisibly, the path to the zip file.
 
 ## Details
 
-The render happens in a temporary directory with the theme staged beside
-the document, not in place, so nothing is written next to the source and
-parallel callers cannot collide on a shared cache.
+The render runs in a temporary directory, with the theme staged next to
+the document. Nothing lands beside the source, and parallel callers
+cannot collide on a shared cache.
 
 `include` selects what reaches the archive:
 
@@ -68,17 +67,15 @@ parallel callers cannot collide on a shared cache.
 
 - `output`:
 
-  the rendered document, and its `_files/` directory – which an HTML
-  document is broken without
+  the rendered document and its `_files/` directory
 
 - `intermediates`:
 
-  everything else the render left behind, such as the `.tex` when
-  `keep-tex` is set
+  whatever else the render left behind, such as the `.tex` under
+  `keep-tex`
 
-The Quarto extension is never bundled. Reports are rendered inside a
-project that already has it, and a copy per archive would add ~1.3 MB to
-each.
+The Quarto extension is never bundled. A report renders inside a project
+that has one, and a copy per archive costs ~1.3 MB.
 
 ## Examples
 

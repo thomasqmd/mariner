@@ -79,43 +79,41 @@ stage_extension <- function(scratch, theme, assets_dir) {
   function() unlink(dest, recursive = FALSE, force = TRUE)
 }
 
-#' Bundle a Quarto File and its Outputs
+#' Bundle a Quarto file and its outputs
 #'
 #' @description
-#' Renders a Quarto (`.qmd`) file in a scratch directory and bundles the source,
-#' the purled R script, the rendered document and the render's intermediates
-#' into a single zip archive.
+#' Renders a Quarto (`.qmd`) file and bundles the source, the purled R script,
+#' the rendered document and the render's intermediates into one zip archive.
 #'
 #' @details
-#' The render happens in a temporary directory with the theme staged beside the
-#' document, not in place, so nothing is written next to the source and parallel
-#' callers cannot collide on a shared cache.
+#' The render runs in a temporary directory, with the theme staged next to the
+#' document. Nothing lands beside the source, and parallel callers cannot
+#' collide on a shared cache.
 #'
 #' `include` selects what reaches the archive:
 #'
 #' \describe{
 #'   \item{`source`}{the `.qmd` itself}
 #'   \item{`script`}{the purled `.R`}
-#'   \item{`output`}{the rendered document, and its `_files/` directory --
-#'     which an HTML document is broken without}
-#'   \item{`intermediates`}{everything else the render left behind, such as the
-#'     `.tex` when `keep-tex` is set}
+#'   \item{`output`}{the rendered document and its `_files/` directory}
+#'   \item{`intermediates`}{whatever else the render left behind, such as the
+#'     `.tex` under `keep-tex`}
 #' }
 #'
-#' The Quarto extension is never bundled. Reports are rendered inside a project
-#' that already has it, and a copy per archive would add ~1.3 MB to each.
+#' The Quarto extension is never bundled. A report renders inside a project that
+#' has one, and a copy per archive costs ~1.3 MB.
 #'
-#' @param input_file Path to the input `.qmd` file.
-#' @param output_zip Path for the output `.zip`. Defaults to the project's
-#'   `zip_files/` folder -- see [mariner_dirs()] -- under the source's name.
+#' @param input_file Path to the input `.qmd`.
+#' @param output_zip Path for the output `.zip`. Defaults to the source's name
+#'   in the project's `zip_files/` folder. See [mariner_dirs()].
 #' @param theme One of [mariner_themes].
-#' @param assets_dir Directory holding an already-built extension, as
-#'   [mariner_setup_project()] leaves in `assets/`. Pass `NULL` to assemble one
-#'   from the installed package for this render instead.
-#' @param include Which categories of file to bundle. Any of `"source"`,
-#'   `"script"`, `"output"`, `"intermediates"`.
+#' @param assets_dir Directory that holds a built extension, as
+#'   [mariner_setup_project()] leaves in `assets/`. `NULL` assembles one from the
+#'   installed package for this render.
+#' @param include Which categories to bundle. Any of `"source"`, `"script"`,
+#'   `"output"`, `"intermediates"`.
 #'
-#' @return Invisibly, the path to the created zip file.
+#' @return Invisibly, the path to the zip file.
 #' @export
 #' @importFrom knitr purl
 #' @importFrom quarto quarto_render

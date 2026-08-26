@@ -54,12 +54,11 @@ has_markers <- function(path, markers) {
 #' Does this directory look like a project root?
 #'
 #' The guard `.onAttach()` uses before it creates anything. A directory counts
-#' as a project root if it contains an `.Rproj` file, a `_quarto.yml`, a
+#' as a project root if it holds an `.Rproj` file, a `_quarto.yml`, a
 #' `DESCRIPTION`, or a `.git` directory.
 #'
-#' This is exported so the attach behaviour is inspectable rather than
-#' mysterious: if `library(mariner)` did not create the folders you expected,
-#' `mariner_looks_like_project(getwd())` says why in one call.
+#' It is exported so the attach behaviour can be checked: if `library(mariner)`
+#' did not create the folders you expected, this says why.
 #'
 #' @param path Directory to test. Defaults to the working directory.
 #' @return `TRUE` or `FALSE`.
@@ -77,24 +76,23 @@ mariner_looks_like_project <- function(path = ".") {
 
 #' Locate the project root
 #'
-#' Resolves the directory that `reports/`, `zip_files/` and `assets/` are
-#' created beneath, in this order:
+#' Resolves the directory that `assets/`, `reports/` and `zip_files/` sit
+#' beneath, in this order:
 #'
-#' 1. `getOption("mariner.project_root")`, if set. The escape hatch, for a
+#' 1. `getOption("mariner.project_root")`, if set. The escape hatch for a
 #'    session whose working directory is not where the reports belong.
-#' 2. The nearest ancestor of `path` -- starting with `path` itself -- that
-#'    contains an `.Rproj` file, a `_quarto.yml`, or a `DESCRIPTION`.
+#' 2. The nearest ancestor of `path`, `path` included, that holds an `.Rproj`
+#'    file, a `_quarto.yml`, or a `DESCRIPTION`.
 #' 3. `path` itself, normalised.
 #'
-#' Note that `.git` is *not* a marker here, though it is one for
+#' `.git` is not a marker here, though it is one for
 #' [mariner_looks_like_project()]. See the comment in `R/setup.R` for why.
 #'
-#' An explicit `root =` argument to [mariner_dirs()] or
-#' [mariner_setup_project()] beats all three -- those functions only consult
-#' this one when `root` is `NULL`.
+#' A `root` argument to [mariner_dirs()] or [mariner_setup_project()] beats all
+#' three. Those functions call this one only when `root` is `NULL`.
 #'
-#' @param path Directory to start the upward search from. Defaults to the
-#'   working directory.
+#' @param path Directory to search upward from. Defaults to the working
+#'   directory.
 #' @return A normalised absolute path.
 #' @seealso [mariner_dirs()], [mariner_looks_like_project()]
 #' @export
@@ -133,21 +131,20 @@ mariner_project_root <- function(path = ".") {
 #' directories mariner works in, as a named list:
 #'
 #' \describe{
-#'   \item{`assets`}{`assets/` -- holds the built Quarto extension, assembled
-#'     once by [mariner_setup_project()]. This is the copy renders are served
-#'     from, so a batch of fifty reports unpacks the theme once rather than
-#'     fifty times.}
-#'   \item{`reports`}{`reports/` -- the generated `.qmd` sources, their rendered
-#'     PDFs, and a copy of `_extensions/`. The extension has to sit *beside* the
-#'     documents: `brand-preamble.tex` reaches the bundled fonts through a
-#'     relative path that xelatex resolves against the directory holding the
-#'     `.tex`, so an extension one level up gives a document that finds its
-#'     format and then dies with "the font Lora-Regular cannot be found".}
-#'   \item{`zips`}{`zip_files/` -- the bundles handed to students.}
+#'   \item{`assets`}{`assets/` -- the Quarto extension, assembled once by
+#'     [mariner_setup_project()]. Every render stages the theme from here, so a
+#'     batch of fifty reports unpacks it once.}
+#'   \item{`reports`}{`reports/` -- the `.qmd` sources, their PDFs, and a copy of
+#'     `_extensions/`. The extension has to sit *beside* the documents:
+#'     xelatex resolves the font paths in `brand-preamble.tex` against the
+#'     directory that holds the `.tex`. An extension one level up gives a
+#'     document that finds its format and then dies with "the font
+#'     Lora-Regular cannot be found".}
+#'   \item{`zips`}{`zip_files/` -- the bundles you hand out.}
 #' }
 #'
-#' The paths are returned whether or not the directories exist. Creating them is
-#' [mariner_setup_project()]'s job, and `.onAttach()`'s.
+#' The paths come back whether or not the directories exist.
+#' [mariner_setup_project()] and `.onAttach()` create them.
 #'
 #' @param root Project root. `NULL` (the default) resolves it with
 #'   [mariner_project_root()].
@@ -169,33 +166,31 @@ mariner_dirs <- function(root = NULL) {
 
 #' Set up a mariner project
 #'
-#' Creates the folder structure a mariner workflow expects, installs the Quarto
-#' theme into it, and drops in a starter report. Safe to run twice: nothing
-#' already present is replaced unless `overwrite = TRUE`.
+#' Creates the folders a mariner workflow uses, installs the Quarto theme into
+#' them, and drops in a starter report. Run it twice and nothing changes:
+#' a file that exists is left alone unless `overwrite = TRUE`.
 #'
-#' What it creates, beneath `root`:
+#' Beneath `root`:
 #'
 #' ```
 #' assets/
-#'   _extensions/mariner-baylor/   the theme, assembled once
+#'   _extensions/mariner/          the theme, assembled once
 #' reports/
-#'   _extensions/mariner-baylor/   a copy, beside the documents that use it
+#'   _extensions/mariner/          a copy, beside the documents that use it
 #'   report.qmd                    a starter document
-#' zip_files/                      the bundles handed to students
+#' zip_files/                      the bundles you hand out
 #' ```
 #'
-#' `zip_files/`, `assets/_extensions/` and `reports/_extensions/` are appended
-#' to the project `.gitignore`. All three are build outputs: the archives are
-#' rebuilt from the sources beside them, and the extension is assembled from the
-#' installed package, so committing either means committing a copy that can go
+#' `zip_files/`, `assets/_extensions/` and `reports/_extensions/` go into the
+#' project `.gitignore`. All three are build outputs, and a committed copy goes
 #' stale against what it was built from.
 #'
 #' @param root Project root. `NULL` (the default) resolves it with
-#'   [mariner_project_root()], so running this from a subdirectory scaffolds the
+#'   [mariner_project_root()], so a call from a subdirectory scaffolds the
 #'   project rather than the subdirectory. Pass a path to override.
 #' @param theme One of [mariner_themes].
-#' @param template Name of the starter template to copy into `reports/`. Pass
-#'   `NULL` for no starter document.
+#' @param template Starter template to copy into `reports/`. `NULL` for no
+#'   starter document.
 #' @param overwrite Replace files that already exist. The folders themselves are
 #'   never removed.
 #' @return The named list from [mariner_dirs()], invisibly.

@@ -13,13 +13,21 @@ scale_color_mariner_b(reverse = FALSE, ...)
 scale_fill_mariner_b(reverse = FALSE, ...)
 }
 \arguments{
-\item{reverse}{Logical; if \code{TRUE}, reverses the color steps.}
+\item{reverse}{Logical; if \code{TRUE}, reverse the steps.}
 
-\item{...}{Arguments passed to \code{\link[ggplot2:scale_steps]{ggplot2::scale_colour_stepsn()}} or \code{\link[ggplot2:scale_steps]{ggplot2::scale_fill_stepsn()}}.}
+\item{...}{Further arguments for \code{\link[ggplot2:scale_steps]{ggplot2::scale_colour_stepsn()}} or
+\code{\link[ggplot2:scale_steps]{ggplot2::scale_fill_stepsn()}}.}
 }
 \value{
 A ggplot2 binned scale object.
 }
 \description{
-Binned colour and fill scales for mariner
+The sequential palette cut into steps. Use it when a reader has to name the
+band a point falls in.
+}
+\examples{
+library(ggplot2)
+ggplot(mpg, aes(displ, hwy, colour = cty)) +
+  geom_point() +
+  scale_colour_mariner_b()
 }

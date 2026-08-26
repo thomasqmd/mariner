@@ -13,7 +13,7 @@ mariner_templates(package = "mariner")
 A character vector of template names.
 }
 \description{
-Lists the template names shipped by a package.
+The template names a package ships.
 }
 \examples{
 mariner_templates()

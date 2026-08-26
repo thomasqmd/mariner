@@ -13,13 +13,21 @@ scale_color_mariner_o(reverse = FALSE, ...)
 scale_fill_mariner_o(reverse = FALSE, ...)
 }
 \arguments{
-\item{reverse}{Logical; if \code{TRUE}, reverses the color ramp.}
+\item{reverse}{Logical; if \code{TRUE}, reverse the ramp.}
 
-\item{...}{Arguments passed to \code{\link[ggplot2:discrete_scale]{ggplot2::discrete_scale()}}.}
+\item{...}{Further arguments for \code{\link[ggplot2:discrete_scale]{ggplot2::discrete_scale()}}.}
 }
 \value{
-A ggplot2 discrete scale object tailored for ordered categories.
+A ggplot2 discrete scale object for ordered categories.
 }
 \description{
-Ordinal colour and fill scales for mariner
+A few ranked levels. The palette ramps rather than contrasts, so the colours
+carry the order.
+}
+\examples{
+library(ggplot2)
+mpg$size <- cut(mpg$displ, 3, labels = c("Small", "Medium", "Large"))
+ggplot(mpg, aes(hwy, fill = size)) +
+  geom_histogram(bins = 20) +
+  scale_fill_mariner_o()
 }

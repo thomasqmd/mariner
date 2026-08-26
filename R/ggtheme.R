@@ -2,23 +2,26 @@
 
 #' Branded ggplot2 theme for mariner
 #'
-#' Provides a consistent ggplot2 theme aligned with the brand typography,
-#' background, rule grids, and primary colors of the document theme.
+#' A ggplot2 theme that matches the page: the brand typeface, background, ink
+#' and grid rules.
 #'
 #' @param theme Theme name. Defaults to the built-in mariner theme.
 #' @param format One of [mariner_formats].
-#' @param base_size Base font size in points. Defaults to `11`, matching the
-#'   report body text set in `_extension.yml`.
-#' @param base_family Font family name. Defaults to `"Atkinson Hyperlegible Next"`.
-#' @param ... Additional arguments passed to [ggplot2::theme()].
+#' @param base_size Base font size in points. Defaults to `11`, the report body
+#'   size set in `_extension.yml`.
+#' @param base_family Font family. Defaults to `"Atkinson Hyperlegible Next"`.
+#' @param ... Further arguments for [ggplot2::theme()].
 #' @return A ggplot2 theme object.
 #' @export
 #' @examples
 #' library(ggplot2)
+#' # base_family = "" keeps the device's own font. The bundled families reach a
+#' # plot through systemfonts, which the base pdf() device does not read. A
+#' # report renders through cairo_pdf and gets the real face.
 #' ggplot(mpg, aes(displ, hwy, colour = class)) +
 #'   geom_point() +
 #'   scale_colour_mariner_d() +
-#'   theme_mariner()
+#'   theme_mariner(base_family = "")
 theme_mariner <- function(theme = mariner_themes,
                       format = mariner_formats,
                       base_size = 11,
@@ -92,16 +95,18 @@ theme_mariner <- function(theme = mariner_themes,
 
 #' Set global ggplot2 theme and scale defaults
 #'
-#' Sets [theme_mariner()] as the global default theme and configures default discrete and
-#' continuous scales so subsequent plots use the brand palette automatically.
+#' Makes [theme_mariner()] the global ggplot2 theme and the brand palettes the
+#' default discrete and continuous scales. Later plots need no scale call.
 #'
 #' @param theme Theme name. Defaults to the built-in mariner theme.
 #' @param format One of [mariner_formats].
-#' @param ... Arguments passed to [theme_mariner()].
-#' @return Invisibly returns the previous theme.
+#' @param ... Further arguments for [theme_mariner()].
+#' @return Invisibly, the previous theme.
 #' @export
 #' @examples
-#' mariner_set_theme()
+#' # This changes global ggplot2 state. The return value puts it back.
+#' old <- mariner_set_theme()
+#' ggplot2::theme_set(old)
 mariner_set_theme <- function(theme = mariner_themes,
                           format = mariner_formats,
                           ...) {

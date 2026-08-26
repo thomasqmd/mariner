@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_reports.R
 \name{generate_reports}
 \alias{generate_reports}
-\title{Create Quarto Source Files from a Template}
+\title{Create Quarto sources from a template}
 \usage{
 generate_reports(
   params_df,
@@ -14,46 +14,42 @@ generate_reports(
 )
 }
 \arguments{
-\item{params_df}{A data frame where each row describes one report. Column
-names are matched against the parameter names in the template's YAML
-\verb{params:} block.}
+\item{params_df}{A data frame, one row per report. Column names match the
+parameter names in the template's \verb{params:} block.}
 
-\item{template_name}{Name of a template directory shipped by
-\code{template_package}. Ignored when \code{template_path} is given.}
+\item{template_name}{A template directory that \code{template_package} ships.
+Ignored when \code{template_path} is given.}
 
 \item{template_package}{Installed package to look for \code{template_name} in.}
 
-\item{output_dir}{Directory the \code{.qmd} files are written to. Defaults to the
-project's \verb{reports/} folder -- see \code{\link[=mariner_dirs]{mariner_dirs()}}. Created if needed.}
+\item{output_dir}{Where the \code{.qmd} files go. Defaults to the project's
+\verb{reports/} folder. See \code{\link[=mariner_dirs]{mariner_dirs()}}. Created if it is missing.}
 
-\item{template_path}{Path to a \code{.qmd} file to use instead of a packaged
-template.}
+\item{template_path}{A \code{.qmd} path to use instead of a packaged template.}
 
-\item{file_name}{A \code{\link[glue:glue]{glue::glue()}} template for the output file names,
-evaluated against each row of \code{params_df}. The \code{.qmd} extension is added
-automatically and must not be included here.}
+\item{file_name}{A \code{\link[glue:glue]{glue::glue()}} template for the output names, evaluated
+against each row of \code{params_df}. Leave off the \code{.qmd} extension; mariner
+adds it. Every column that varies has to appear here, or two rows resolve to
+one name and the second overwrites the first.}
 }
 \value{
-Invisibly, a character vector of the paths actually written.
+Invisibly, a character vector of the paths written.
 }
 \description{
-Creates multiple Quarto (\code{.qmd}) source files from a parameterized template,
-one per row of \code{params_df}. Each file gets that row's values spliced into its
-YAML \verb{params:} block.
+Writes one Quarto (\code{.qmd}) source file per row of \code{params_df}. Each file gets
+that row's values in its YAML \verb{params:} block.
 
-The template can be one shipped by a package or a \code{.qmd} file path.
+The template is either one a package ships or a \code{.qmd} path.
 }
 \details{
-Values are substituted by parsing the template's front matter as YAML,
-merging the row into its \code{params} entry, and re-emitting it. Only the
-\code{params} block changes -- \code{title}, \code{format} and everything else are carried
-across untouched, including inline R such as
+mariner parses the template front matter as YAML, merges the row into its
+\code{params} entry, and re-emits it. Only \code{params} changes. \code{title}, \code{format} and
+the rest come across untouched, inline R included:
 \code{title: "`r paste('Report', params$chapter)`"}.
 
-A column in \code{params_df} with no counterpart in the template's \code{params} block
-is \emph{not} substituted, and raises a warning naming it. This is almost always a
-typo or a template mismatch, and the previous behaviour -- dropping it in
-silence -- produced reports that were wrong in a way nothing announced.
+A column of \code{params_df} with no counterpart in the template's \code{params} block
+is not substituted, and warns. That case is a typo or a template mismatch,
+and the old behaviour dropped it in silence.
 }
 \examples{
 temp_dir <- tempfile("mariner-example-")

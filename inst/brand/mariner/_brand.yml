@@ -1,0 +1,80 @@
+# Mariner theme -- source of truth for brand colors, typography, and logos.
+
+meta:
+  name:
+    short: Mariner
+    full: Mariner
+  link: https://thomasqmd.github.io/mariner/
+
+color:
+  palette:
+    # -- Chrome roles ---------------------------------------------------------
+    mariner-green: "#154734"   # Heading bars, section rules, links.
+    mariner-gold: "#FFB81C"    # Accent rules.
+    gold-ink: "#9b6e06"        # High-contrast text ink
+    gold-rule: "#c28a01"       # Rules and borders
+
+    # -- Categorical, 8 slots -------------------------------------------------
+    series-1-green: "#017553"
+    series-2-gold: "#c08802"
+    series-3-purple: "#aa4499"
+    series-4-olive: "#979731"
+    series-5-sky: "#0178bc"
+    series-6-orange: "#e8712a"
+    series-7-indigo: "#493fa6"
+    series-8-rose: "#cc6677"
+
+    # -- Sequential -----------------------------------------------------------
+    seq-1: "#eaf7f1"
+    seq-2: "#c5d7ce"
+    seq-3: "#a0b9ad"
+    seq-4: "#7d9b8c"
+    seq-5: "#5b7e6d"
+    seq-6: "#396250"
+    seq-7: "#154734"
+
+    # -- Ordinal --------------------------------------------------------------
+    ord-1: "#a8b4ae"
+    ord-2: "#83988e"
+    ord-3: "#5f7c6e"
+    ord-4: "#3b6150"
+    ord-5: "#154734"
+
+    # -- Diverging ------------------------------------------------------------
+    div-1: "#017553"
+    div-2: "#649c83"
+    div-3: "#a8c3b6"
+    div-4: "#e9ecea"   # neutral midpoint
+    div-5: "#decaac"
+    div-6: "#cfaa6b"
+    div-7: "#c08802"
+
+    # -- Chart chrome ---------------------------------------------------------
+    ink: "#222222"
+    ink-secondary: "#4a4f4b"
+    ink-muted: "#6f7671"
+    rule-grid: "#dfe3e0"
+    rule-axis: "#c2c8c4"
+
+  background: "#fefefe"
+  foreground: "#222222"
+  primary: mariner-green
+  secondary: gold-rule
+
+logo:
+  small: BU_Green.png
+  medium: BU_BrandMark_Horz_Green.png
+  large: BU_BrandMark_Stacked_Green.png
+
+typography:
+  base:
+    family: Lora
+    size: 1.05rem
+    line-height: 1.6
+  headings:
+    family: Atkinson Hyperlegible Next
+    weight: 600
+  monospace: JetBrains Mono
+  link:
+    color: mariner-green
+    decoration: underline

@@ -1,45 +1,38 @@
 #' mariner: Streamline Quarto Report Generation and Bundling
 #'
 #' @description
-#' The `mariner` package simplifies and automates the process of creating and
-#' packaging Quarto (.qmd) documents. It provides a cohesive workflow for first
-#' generating multiple document source files from a single parameterized
-#' template, and then bundling those source files along with all their rendered
-#' outputs (e.g., PDFs, scripts, and dependency files) into easily shareable zip
-#' archives.
+#' mariner turns one parameterized Quarto template into a set of `.qmd` reports,
+#' renders them, and bundles each source, R script and PDF into a zip archive.
 #'
-#' It also carries a complete Baylor-branded Quarto theme, so a generated report
-#' is styled, typeset in bundled fonts, and has its figures drawn from the same
-#' palette as the page, without anything to install separately.
+#' The package carries its own Quarto PDF theme. A report is typeset in the
+#' bundled fonts, and its figures use the palette the page does.
 #'
 #' @section Core Workflow:
 #' \enumerate{
-#'   \item Run \code{\link{mariner_check_setup}} to confirm this machine has
-#'     everything a branded report needs -- Quarto, a LaTeX engine, the fonts.
-#'     It reports and prints the fix; it changes nothing.
-#'   \item Use \code{\link{mariner_setup_project}} once to create the project
-#'     folders and install the theme assets into them.
-#'   \item Use \code{\link{generate_reports}} to create multiple, parameterized
-#'     `.qmd` source files from a template, into `reports/`.
-#'   \item Use \code{\link{process_files}} to render each source file and bundle
-#'     the source, R script, and all outputs into a zip archive, into
-#'     `zip_files/`.
+#'   \item \code{\link{mariner_check_setup}} confirms this machine has what a
+#'     report needs: Quarto, a LaTeX engine, the fonts. It changes nothing and
+#'     prints the fix for whatever is missing.
+#'   \item \code{\link{mariner_setup_project}} creates the project folders and
+#'     installs the theme into them. Run it once.
+#'   \item \code{\link{generate_reports}} writes one `.qmd` per row of a
+#'     parameter data frame into `reports/`.
+#'   \item \code{\link{process_files}} renders each one and bundles the source,
+#'     the R script and the outputs into `zip_files/`.
 #' }
 #'
 #' @section Project Folders:
-#' mariner works in three directories beneath the project root, returned by
-#' \code{\link{mariner_dirs}}:
+#' mariner works in three directories beneath the project root. See
+#' \code{\link{mariner_dirs}}.
 #'
 #' \describe{
-#'   \item{`assets/`}{The built Quarto extension, assembled once.}
-#'   \item{`reports/`}{Generated `.qmd` sources, their rendered PDFs, and a copy
-#'     of the extension beside them.}
-#'   \item{`zip_files/`}{The bundles handed to students.}
+#'   \item{`assets/`}{The Quarto extension, assembled once.}
+#'   \item{`reports/`}{The `.qmd` sources, their PDFs, and a copy of the
+#'     extension beside them.}
+#'   \item{`zip_files/`}{The bundles you hand out.}
 #' }
 #'
-#' Attaching the package with `library(mariner)` creates the three folders if
-#' the working directory looks like a project root -- see
-#' \code{\link{mariner_looks_like_project}}. Set
+#' `library(mariner)` creates the three folders when the working directory looks
+#' like a project root. See \code{\link{mariner_looks_like_project}}. Set
 #' `options(mariner.auto_setup = FALSE)` to turn that off.
 #'
 #' @keywords internal
@@ -70,42 +63,32 @@ mariner_path <- function(...) {
 #' Themes shipped by mariner
 #'
 #' The brand identities available to `mariner_setup_project()` and the
-#' templates. Every function that takes a `theme` argument validates against
-#' this vector.
+#' templates. Every function with a `theme` argument validates against this
+#' vector.
 #'
-#' There is one theme today. It stays a vector, and `theme` stays a named
-#' argument everywhere rather than being dropped, so adding a second identity
-#' later is a new entry here rather than a signature change across the package.
+#' There is one theme today. It stays a vector so that a second identity is an
+#' entry here rather than a signature change across the package.
 #'
 #' @format A character vector.
 #' @export
-mariner_themes <- c("baylor")
+mariner_themes <- c("mariner")
 
 #' Formats shipped by mariner
 #'
-#' The Quarto formats the vendored extension contributes.
+#' The Quarto formats the extension contributes.
 #'
-#' There is one: `pdf`, rendered through xelatex. mariner exists to turn a
-#' parameterized `.qmd` into a bundled report, and a report is a PDF.
+#' There is one: `pdf`, through xelatex. mariner turns a parameterized `.qmd`
+#' into a report, and a report is a PDF.
 #'
-#' It stays a vector, and `format` stays a named argument on the functions that
-#' take one, for the same reason [mariner_themes] does: a second target later is
-#' an entry here rather than a signature change across the package.
+#' It stays a vector for the same reason [mariner_themes] does.
 #'
 #' @format A character vector.
 #' @export
 mariner_formats <- c("pdf")
 
 # The Quarto extension directory name for a theme.
-#
-# Derived, never typed. It appears inside asset paths that Quarto and xelatex
-# resolve at render time -- the logo and the font directory -- and both of those
-# are GENERATED from this function. A rename is therefore this line plus a
-# rebuild, rather than a search through a LaTeX preamble where a miss fails
-# silently (Quarto simply does not find the logo; xelatex simply substitutes a
-# font).
 mariner_ext_name <- function(theme = mariner_themes) {
-  paste0("mariner-", check_theme(theme))
+  check_theme(theme)
 }
 
 # The extension directory as the RENDERED DOCUMENT sees it: relative to the

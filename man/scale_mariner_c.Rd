@@ -13,13 +13,20 @@ scale_color_mariner_c(reverse = FALSE, ...)
 scale_fill_mariner_c(reverse = FALSE, ...)
 }
 \arguments{
-\item{reverse}{Logical; if \code{TRUE}, reverses the color gradient.}
+\item{reverse}{Logical; if \code{TRUE}, reverse the gradient.}
 
-\item{...}{Arguments passed to \code{\link[ggplot2:scale_gradient]{ggplot2::scale_colour_gradientn()}} or \code{\link[ggplot2:scale_gradient]{ggplot2::scale_fill_gradientn()}}.}
+\item{...}{Further arguments for \code{\link[ggplot2:scale_gradient]{ggplot2::scale_colour_gradientn()}} or
+\code{\link[ggplot2:scale_gradient]{ggplot2::scale_fill_gradientn()}}.}
 }
 \value{
 A ggplot2 continuous scale object.
 }
 \description{
-Continuous colour and fill scales for mariner
+Magnitude on one hue, as a smooth gradient.
+}
+\examples{
+library(ggplot2)
+ggplot(mpg, aes(displ, hwy, colour = cty)) +
+  geom_point() +
+  scale_colour_mariner_c()
 }

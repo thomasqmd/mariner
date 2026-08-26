@@ -1,6 +1,6 @@
 # Path to a mariner template skeleton
 
-Resolves the path to a template's `skeleton.qmd` file.
+Resolves a template name to its `skeleton.qmd`.
 
 ## Usage
 
@@ -21,7 +21,7 @@ mariner_template_path(
 
 - package:
 
-  Package shipping the template. Defaults to `"mariner"`.
+  Package that ships the template. Defaults to `"mariner"`.
 
 - call:
 
@@ -29,11 +29,11 @@ mariner_template_path(
 
 ## Value
 
-An absolute file path to the template's `skeleton.qmd`.
+An absolute path to the template's `skeleton.qmd`.
 
 ## Examples
 
 ``` r
 mariner_template_path("report")
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpFg9v31/temp_libpath22c63e83e139/mariner/templates/report/skeleton.qmd"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmprXKaFH/temp_libpath1202ca80cff3/mariner/templates/report/skeleton.qmd"
 ```

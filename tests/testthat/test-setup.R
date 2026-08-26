@@ -117,7 +117,7 @@ test_that("setup creates the folders, the theme, and a starter report", {
 
   expect_true(all(dir.exists(unlist(dirs))))
 
-  ext_name <- mariner_ext_name("baylor")
+  ext_name <- mariner_ext_name("mariner")
   assets_ext <- file.path(dirs$assets, "_extensions", ext_name)
   reports_ext <- file.path(dirs$reports, "_extensions", ext_name)
 

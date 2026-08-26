@@ -19,6 +19,7 @@ directories mariner works in, as a named list:"></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/get-started.html">Get Started</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/theming.html">Theming &amp; Scales</a></li>
+<li class="nav-item"><a class="nav-link" href="../mariner-gallery.pdf">Gallery (PDF)</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/thomasqmd/mariner" aria-label="GitHub"><span class="fa fa-github"></span></a></li>
@@ -62,25 +63,24 @@ directories mariner works in, as a named list:</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
 
 <dl><dt><code>assets</code></dt>
-<dd><p><code>assets/</code> – holds the built Quarto extension, assembled
-once by <code><a href="mariner_setup_project.html">mariner_setup_project()</a></code>. This is the copy renders are served
-from, so a batch of fifty reports unpacks the theme once rather than
-fifty times.</p></dd>
+<dd><p><code>assets/</code> – the Quarto extension, assembled once by
+<code><a href="mariner_setup_project.html">mariner_setup_project()</a></code>. Every render stages the theme from here, so a
+batch of fifty reports unpacks it once.</p></dd>
 
 <dt><code>reports</code></dt>
-<dd><p><code>reports/</code> – the generated <code>.qmd</code> sources, their rendered
-PDFs, and a copy of <code>_extensions/</code>. The extension has to sit <em>beside</em> the
-documents: <code>brand-preamble.tex</code> reaches the bundled fonts through a
-relative path that xelatex resolves against the directory holding the
-<code>.tex</code>, so an extension one level up gives a document that finds its
-format and then dies with "the font Lora-Regular cannot be found".</p></dd>
+<dd><p><code>reports/</code> – the <code>.qmd</code> sources, their PDFs, and a copy of
+<code>_extensions/</code>. The extension has to sit <em>beside</em> the documents:
+xelatex resolves the font paths in <code>brand-preamble.tex</code> against the
+directory that holds the <code>.tex</code>. An extension one level up gives a
+document that finds its format and then dies with "the font
+Lora-Regular cannot be found".</p></dd>
 
 <dt><code>zips</code></dt>
-<dd><p><code>zip_files/</code> – the bundles handed to students.</p></dd>
+<dd><p><code>zip_files/</code> – the bundles you hand out.</p></dd>
 
 
-</dl><p>The paths are returned whether or not the directories exist. Creating them is
-<code><a href="mariner_setup_project.html">mariner_setup_project()</a></code>'s job, and <code>.onAttach()</code>'s.</p>
+</dl><p>The paths come back whether or not the directories exist.
+<code><a href="mariner_setup_project.html">mariner_setup_project()</a></code> and <code>.onAttach()</code> create them.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -91,18 +91,18 @@ format and then dies with "the font Lora-Regular cannot be found".</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">mariner_dirs</span><span class="op">(</span>root <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $assets</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH/assets"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief/assets"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $reports</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH/reports"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief/reports"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $zips</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH/zip_files"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief/zip_files"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Every default path in the package is composed from this:</span></span></span>
 <span class="r-in"><span><span class="fu">mariner_dirs</span><span class="op">(</span>root <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">reports</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH/reports"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief/reports"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

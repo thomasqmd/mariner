@@ -13,13 +13,23 @@ scale_color_mariner_div(reverse = FALSE, ...)
 scale_fill_mariner_div(reverse = FALSE, ...)
 }
 \arguments{
-\item{reverse}{Logical; if \code{TRUE}, reverses the color gradient.}
+\item{reverse}{Logical; if \code{TRUE}, reverse the gradient.}
 
-\item{...}{Arguments passed to \code{\link[ggplot2:scale_gradient]{ggplot2::scale_colour_gradientn()}} or \code{\link[ggplot2:scale_gradient]{ggplot2::scale_fill_gradientn()}}.}
+\item{...}{Further arguments for \code{\link[ggplot2:scale_gradient]{ggplot2::scale_colour_gradientn()}} or
+\code{\link[ggplot2:scale_gradient]{ggplot2::scale_fill_gradientn()}}.}
 }
 \value{
 A ggplot2 diverging scale object.
 }
 \description{
-Diverging colour and fill scales for mariner
+A signed quantity, where the neutral step means no difference. Set \code{limits}
+symmetrically, or the neutral step lands wherever the data straddles.
+}
+\examples{
+library(ggplot2)
+mpg$delta <- mpg$hwy - mean(mpg$hwy)
+lim <- max(abs(mpg$delta))
+ggplot(mpg, aes(displ, hwy, colour = delta)) +
+  geom_point() +
+  scale_colour_mariner_div(limits = c(-lim, lim))
 }

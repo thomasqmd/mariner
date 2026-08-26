@@ -1,7 +1,7 @@
 # Brand palette generator
 
-Constructs discrete, sequential, ordinal, or diverging color palettes
-for a theme.
+Builds a discrete, sequential, ordinal, or diverging palette for a
+theme.
 
 ## Usage
 
@@ -27,17 +27,17 @@ mariner_pal(
 
 - n:
 
-  Optional integer number of colors. If `NULL` (default), returns a
-  palette function `function(n)`.
+  Number of colours. `NULL` (the default) returns a palette function
+  `function(n)` instead.
 
 - reverse:
 
-  Logical; if `TRUE`, reverses the color vector.
+  Logical; if `TRUE`, reverse the colour vector.
 
 ## Value
 
-A character vector of hex colors if `n` is supplied, or a palette
-function if `n` is `NULL`.
+A character vector of hex colours, or a palette function when `n` is
+`NULL`.
 
 ## Examples
 

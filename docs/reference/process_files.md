@@ -1,9 +1,8 @@
-# Bundle Multiple Quarto Files Sequentially or in Parallel
+# Bundle many Quarto files, in sequence or in parallel
 
-A wrapper around
 [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md)
-for a vector of Quarto (`.qmd`) files. Execution is sequential by
-default and parallel under a `future` plan, e.g.
+over a vector of Quarto (`.qmd`) files. The batch runs sequentially by
+default, and in parallel under a `future` plan such as
 `future::plan(future::multisession)`.
 
 ## Usage
@@ -22,12 +21,12 @@ process_files(
 
 - input_files:
 
-  A character vector of paths to `.qmd` files.
+  A character vector of `.qmd` paths.
 
 - output_dir:
 
-  Directory for the zip archives. Defaults to the project's `zip_files/`
-  folder – see
+  Where the archives go. Defaults to the project's `zip_files/` folder.
+  See
   [`mariner_dirs()`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md).
 
 - theme:
@@ -37,25 +36,25 @@ process_files(
 
 - assets_dir:
 
-  Directory holding an already-built extension. Resolved once here and
-  passed to every worker, so a batch of fifty reports stages the theme
-  from one place rather than assembling it fifty times.
+  Directory that holds a built extension. Resolved once here and handed
+  to every worker, so a batch of fifty reports stages the theme from one
+  place.
 
 - include:
 
-  Which categories of file to bundle – see
+  Which categories to bundle. See
   [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md).
 
 ## Value
 
-Invisibly, a character vector of paths to the archives created, with
-`NA` in the position of any file that failed.
+Invisibly, a character vector of the archives created, with `NA` in the
+position of any file that failed.
 
 ## Details
 
-A file that fails to render does not stop the batch: it comes back as
-`NA` and its error message is reported at the end, named. Each render
-owns a scratch directory, so parallel workers cannot collide.
+A file that fails to render does not stop the batch. It comes back as
+`NA`, and its error message is named in the summary. Each render owns a
+scratch directory, so parallel workers cannot collide.
 
 ## Examples
 

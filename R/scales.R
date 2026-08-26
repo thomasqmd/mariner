@@ -2,8 +2,10 @@
 
 #' Discrete colour and fill scales for mariner
 #'
-#' @param reverse Logical; if `TRUE`, reverses the color vector.
-#' @param ... Arguments passed to [ggplot2::discrete_scale()].
+#' Categories with no order. Eight colours before the palette interpolates.
+#'
+#' @param reverse Logical; if `TRUE`, reverse the colours.
+#' @param ... Further arguments for [ggplot2::discrete_scale()].
 #' @return A ggplot2 discrete scale object.
 #' @export
 #' @rdname scale_mariner_d
@@ -36,11 +38,19 @@ scale_fill_mariner_d <- function(reverse = FALSE, ...) {
 
 #' Continuous colour and fill scales for mariner
 #'
-#' @param reverse Logical; if `TRUE`, reverses the color gradient.
-#' @param ... Arguments passed to [ggplot2::scale_colour_gradientn()] or [ggplot2::scale_fill_gradientn()].
+#' Magnitude on one hue, as a smooth gradient.
+#'
+#' @param reverse Logical; if `TRUE`, reverse the gradient.
+#' @param ... Further arguments for [ggplot2::scale_colour_gradientn()] or
+#'   [ggplot2::scale_fill_gradientn()].
 #' @return A ggplot2 continuous scale object.
 #' @export
 #' @rdname scale_mariner_c
+#' @examples
+#' library(ggplot2)
+#' ggplot(mpg, aes(displ, hwy, colour = cty)) +
+#'   geom_point() +
+#'   scale_colour_mariner_c()
 scale_colour_mariner_c <- function(reverse = FALSE, ...) {
   ggplot2::scale_colour_gradientn(
     colours = mariner_pal(family = "sequential", reverse = reverse)(100),
@@ -63,11 +73,20 @@ scale_fill_mariner_c <- function(reverse = FALSE, ...) {
 
 #' Ordinal colour and fill scales for mariner
 #'
-#' @param reverse Logical; if `TRUE`, reverses the color ramp.
-#' @param ... Arguments passed to [ggplot2::discrete_scale()].
-#' @return A ggplot2 discrete scale object tailored for ordered categories.
+#' A few ranked levels. The palette ramps rather than contrasts, so the colours
+#' carry the order.
+#'
+#' @param reverse Logical; if `TRUE`, reverse the ramp.
+#' @param ... Further arguments for [ggplot2::discrete_scale()].
+#' @return A ggplot2 discrete scale object for ordered categories.
 #' @export
 #' @rdname scale_mariner_o
+#' @examples
+#' library(ggplot2)
+#' mpg$size <- cut(mpg$displ, 3, labels = c("Small", "Medium", "Large"))
+#' ggplot(mpg, aes(hwy, fill = size)) +
+#'   geom_histogram(bins = 20) +
+#'   scale_fill_mariner_o()
 scale_colour_mariner_o <- function(reverse = FALSE, ...) {
   ggplot2::discrete_scale(
     aesthetics = "colour",
@@ -92,11 +111,22 @@ scale_fill_mariner_o <- function(reverse = FALSE, ...) {
 
 #' Diverging colour and fill scales for mariner
 #'
-#' @param reverse Logical; if `TRUE`, reverses the color gradient.
-#' @param ... Arguments passed to [ggplot2::scale_colour_gradientn()] or [ggplot2::scale_fill_gradientn()].
+#' A signed quantity, where the neutral step means no difference. Set `limits`
+#' symmetrically, or the neutral step lands wherever the data straddles.
+#'
+#' @param reverse Logical; if `TRUE`, reverse the gradient.
+#' @param ... Further arguments for [ggplot2::scale_colour_gradientn()] or
+#'   [ggplot2::scale_fill_gradientn()].
 #' @return A ggplot2 diverging scale object.
 #' @export
 #' @rdname scale_mariner_div
+#' @examples
+#' library(ggplot2)
+#' mpg$delta <- mpg$hwy - mean(mpg$hwy)
+#' lim <- max(abs(mpg$delta))
+#' ggplot(mpg, aes(displ, hwy, colour = delta)) +
+#'   geom_point() +
+#'   scale_colour_mariner_div(limits = c(-lim, lim))
 scale_colour_mariner_div <- function(reverse = FALSE, ...) {
   ggplot2::scale_colour_gradientn(
     colours = mariner_pal(family = "diverging", reverse = reverse)(101),
@@ -119,11 +149,20 @@ scale_fill_mariner_div <- function(reverse = FALSE, ...) {
 
 #' Binned colour and fill scales for mariner
 #'
-#' @param reverse Logical; if `TRUE`, reverses the color steps.
-#' @param ... Arguments passed to [ggplot2::scale_colour_stepsn()] or [ggplot2::scale_fill_stepsn()].
+#' The sequential palette cut into steps. Use it when a reader has to name the
+#' band a point falls in.
+#'
+#' @param reverse Logical; if `TRUE`, reverse the steps.
+#' @param ... Further arguments for [ggplot2::scale_colour_stepsn()] or
+#'   [ggplot2::scale_fill_stepsn()].
 #' @return A ggplot2 binned scale object.
 #' @export
 #' @rdname scale_mariner_b
+#' @examples
+#' library(ggplot2)
+#' ggplot(mpg, aes(displ, hwy, colour = cty)) +
+#'   geom_point() +
+#'   scale_colour_mariner_b()
 scale_colour_mariner_b <- function(reverse = FALSE, ...) {
   ggplot2::scale_colour_stepsn(
     colours = mariner_pal(family = "sequential", reverse = reverse)(100),

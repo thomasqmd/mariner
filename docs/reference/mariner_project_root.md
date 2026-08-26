@@ -1,7 +1,7 @@
 # Locate the project root
 
-Resolves the directory that `reports/`, `zip_files/` and `assets/` are
-created beneath, in this order:
+Resolves the directory that `assets/`, `reports/` and `zip_files/` sit
+beneath, in this order:
 
 ## Usage
 
@@ -13,8 +13,7 @@ mariner_project_root(path = ".")
 
 - path:
 
-  Directory to start the upward search from. Defaults to the working
-  directory.
+  Directory to search upward from. Defaults to the working directory.
 
 ## Value
 
@@ -22,23 +21,23 @@ A normalised absolute path.
 
 ## Details
 
-1.  `getOption("mariner.project_root")`, if set. The escape hatch, for a
+1.  `getOption("mariner.project_root")`, if set. The escape hatch for a
     session whose working directory is not where the reports belong.
 
-2.  The nearest ancestor of `path` – starting with `path` itself – that
-    contains an `.Rproj` file, a `_quarto.yml`, or a `DESCRIPTION`.
+2.  The nearest ancestor of `path`, `path` included, that holds an
+    `.Rproj` file, a `_quarto.yml`, or a `DESCRIPTION`.
 
 3.  `path` itself, normalised.
 
-Note that `.git` is *not* a marker here, though it is one for
+`.git` is not a marker here, though it is one for
 [`mariner_looks_like_project()`](https://thomasqmd.github.io/mariner/reference/mariner_looks_like_project.md).
 See the comment in `R/setup.R` for why.
 
-An explicit `root =` argument to
+A `root` argument to
 [`mariner_dirs()`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md)
 or
 [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
-beats all three – those functions only consult this one when `root` is
+beats all three. Those functions call this one only when `root` is
 `NULL`.
 
 ## See also
@@ -57,5 +56,5 @@ withr::with_options(
   list(mariner.project_root = tempdir()),
   mariner_project_root()
 )
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpzQHXJH"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief"
 ```

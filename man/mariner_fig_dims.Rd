@@ -13,10 +13,10 @@ mariner_fig_dims(format = mariner_formats)
 A named list with numeric \code{width} and \code{height} in inches.
 }
 \description{
-The drawing area a figure gets on the page: the geometry in \verb{_extension.yml}
+The drawing area a figure gets on the page. The geometry in \verb{_extension.yml}
 (US Letter, 1in left and right, 0.75in top and bottom) leaves 6.5in of text
-width, and 4.5in tall is a little under the 3:2 that leaves room for a
-caption and surrounding prose.
+width. The 4.5in height sits under 3:2, which leaves room for a caption and
+the prose around it.
 }
 \examples{
 mariner_fig_dims("pdf")

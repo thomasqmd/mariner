@@ -17,19 +17,19 @@ mariner_knitr_setup(
 
 \item{theme}{Theme name. Defaults to the built-in mariner theme.}
 
-\item{dpi}{Numeric figure resolution in dots per inch. Defaults to \code{300}.}
+\item{dpi}{Figure resolution in dots per inch. Defaults to \code{300}.}
 
-\item{fig_format}{Image device. Defaults to \code{"cairo_pdf"} where the build has
-cairo, and base \code{"pdf"} where it does not.}
+\item{fig_format}{Graphics device. Defaults to \code{"cairo_pdf"} where the build
+has cairo, base \code{"pdf"} where it does not.}
 
-\item{...}{Additional chunk options passed to \code{knitr::opts_chunk$set()}.}
+\item{...}{Further chunk options for \code{knitr::opts_chunk$set()}.}
 }
 \value{
-Invisibly returns the previous knitr chunk options.
+Invisibly, the previous chunk options.
 }
 \description{
-Configures knitr chunk options with figure dimensions, resolution, and theme
-settings. Call it in the setup chunk of a report.
+Sets the chunk options a report needs -- figure size, resolution, device --
+and applies the brand ggplot2 theme. Call it in the setup chunk.
 }
 \examples{
 \dontrun{

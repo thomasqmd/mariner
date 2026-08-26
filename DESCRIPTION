@@ -10,15 +10,12 @@ Authors@R: c(
       role = c("aut", "cre")
     )
   )
-Description: Provides a set of functions to simplify and automate the
-    process of rendering and packaging Quarto documents. The package
-    allows users to generate multiple reports from a single parameterized
-    template and to bundle Quarto files along with their outputs, such
-    as PDFs, TeX files, and purled R scripts, into a single, easily
-    shareable zip archive. It also carries a complete Quarto pdf
-    theme, with bundled fonts and a palette validated for contrast and
-    colour-vision separation, so reports are styled and their figures drawn
-    from the same colours as the page without anything to install separately.
+Description: Turns one parameterized Quarto template into a set of reports,
+    renders them, and bundles each source, PDF, TeX file and purled R script
+    into a zip archive. The package carries its own Quarto PDF theme, with
+    bundled fonts and a palette tested for contrast and for separation under
+    colour vision deficiency, so a report and its figures use one set of
+    colours and there is nothing else to install.
 License: MIT + file LICENSE
 URL: https://thomasqmd.github.io/mariner/, https://github.com/thomasqmd/mariner
 BugReports: https://github.com/thomasqmd/mariner/issues
@@ -52,7 +49,8 @@ Suggests:
     progressr,
     tinytex,
     conflicted,
+    dplyr,
     patchwork,
     tidyverse
 Config/testthat/edition: 3
-VignetteBuilder: knitr
+VignetteBuilder: quarto

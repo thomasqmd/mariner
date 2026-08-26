@@ -11,14 +11,12 @@ A character vector.
 mariner_formats
 }
 \description{
-The Quarto formats the vendored extension contributes.
+The Quarto formats the extension contributes.
 }
 \details{
-There is one: \code{pdf}, rendered through xelatex. mariner exists to turn a
-parameterized \code{.qmd} into a bundled report, and a report is a PDF.
+There is one: \code{pdf}, through xelatex. mariner turns a parameterized \code{.qmd}
+into a report, and a report is a PDF.
 
-It stays a vector, and \code{format} stays a named argument on the functions that
-take one, for the same reason \link{mariner_themes} does: a second target later is
-an entry here rather than a signature change across the package.
+It stays a vector for the same reason \link{mariner_themes} does.
 }
 \keyword{datasets}

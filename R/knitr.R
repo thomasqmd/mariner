@@ -2,10 +2,10 @@
 
 #' Figure dimensions for a branded report
 #'
-#' The drawing area a figure gets on the page: the geometry in `_extension.yml`
+#' The drawing area a figure gets on the page. The geometry in `_extension.yml`
 #' (US Letter, 1in left and right, 0.75in top and bottom) leaves 6.5in of text
-#' width, and 4.5in tall is a little under the 3:2 that leaves room for a
-#' caption and surrounding prose.
+#' width. The 4.5in height sits under 3:2, which leaves room for a caption and
+#' the prose around it.
 #'
 #' @param format One of [mariner_formats].
 #' @return A named list with numeric `width` and `height` in inches.
@@ -19,16 +19,16 @@ mariner_fig_dims <- function(format = mariner_formats) {
 
 #' Global knitr setup for branded Quarto documents
 #'
-#' Configures knitr chunk options with figure dimensions, resolution, and theme
-#' settings. Call it in the setup chunk of a report.
+#' Sets the chunk options a report needs -- figure size, resolution, device --
+#' and applies the brand ggplot2 theme. Call it in the setup chunk.
 #'
 #' @param format One of [mariner_formats].
 #' @param theme Theme name. Defaults to the built-in mariner theme.
-#' @param dpi Numeric figure resolution in dots per inch. Defaults to `300`.
-#' @param fig_format Image device. Defaults to `"cairo_pdf"` where the build has
-#'   cairo, and base `"pdf"` where it does not.
-#' @param ... Additional chunk options passed to `knitr::opts_chunk$set()`.
-#' @return Invisibly returns the previous knitr chunk options.
+#' @param dpi Figure resolution in dots per inch. Defaults to `300`.
+#' @param fig_format Graphics device. Defaults to `"cairo_pdf"` where the build
+#'   has cairo, base `"pdf"` where it does not.
+#' @param ... Further chunk options for `knitr::opts_chunk$set()`.
+#' @return Invisibly, the previous chunk options.
 #' @export
 #' @examples
 #' \dontrun{

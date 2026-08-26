@@ -1,26 +1,26 @@
-#' Bundle Multiple Quarto Files Sequentially or in Parallel
+#' Bundle many Quarto files, in sequence or in parallel
 #'
 #' @description
-#' A wrapper around [process_file()] for a vector of Quarto (`.qmd`) files.
-#' Execution is sequential by default and parallel under a `future` plan, e.g.
+#' [process_file()] over a vector of Quarto (`.qmd`) files. The batch runs
+#' sequentially by default, and in parallel under a `future` plan such as
 #' `future::plan(future::multisession)`.
 #'
 #' @details
-#' A file that fails to render does not stop the batch: it comes back as `NA`
-#' and its error message is reported at the end, named. Each render owns a
-#' scratch directory, so parallel workers cannot collide.
+#' A file that fails to render does not stop the batch. It comes back as `NA`,
+#' and its error message is named in the summary. Each render owns a scratch
+#' directory, so parallel workers cannot collide.
 #'
-#' @param input_files A character vector of paths to `.qmd` files.
-#' @param output_dir Directory for the zip archives. Defaults to the project's
-#'   `zip_files/` folder -- see [mariner_dirs()].
+#' @param input_files A character vector of `.qmd` paths.
+#' @param output_dir Where the archives go. Defaults to the project's
+#'   `zip_files/` folder. See [mariner_dirs()].
 #' @param theme One of [mariner_themes].
-#' @param assets_dir Directory holding an already-built extension. Resolved once
-#'   here and passed to every worker, so a batch of fifty reports stages the
-#'   theme from one place rather than assembling it fifty times.
-#' @param include Which categories of file to bundle -- see [process_file()].
+#' @param assets_dir Directory that holds a built extension. Resolved once here
+#'   and handed to every worker, so a batch of fifty reports stages the theme
+#'   from one place.
+#' @param include Which categories to bundle. See [process_file()].
 #'
-#' @return Invisibly, a character vector of paths to the archives created, with
-#'   `NA` in the position of any file that failed.
+#' @return Invisibly, a character vector of the archives created, with `NA` in
+#'   the position of any file that failed.
 #' @export
 #' @importFrom purrr map_chr
 #' @importFrom furrr future_map2

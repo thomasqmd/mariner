@@ -2,7 +2,7 @@
 
 #' Available mariner templates
 #'
-#' Lists the template names shipped by a package.
+#' The template names a package ships.
 #'
 #' @param package Package to inspect. Defaults to `"mariner"`.
 #' @return A character vector of template names.
@@ -19,13 +19,13 @@ mariner_templates <- function(package = "mariner") {
 
 #' Path to a mariner template skeleton
 #'
-#' Resolves the path to a template's `skeleton.qmd` file.
+#' Resolves a template name to its `skeleton.qmd`.
 #'
 #' @param template Name of the template directory under `inst/templates/`.
 #'   Defaults to `"report"`.
-#' @param package Package shipping the template. Defaults to `"mariner"`.
+#' @param package Package that ships the template. Defaults to `"mariner"`.
 #' @param call Caller environment for error reporting.
-#' @return An absolute file path to the template's `skeleton.qmd`.
+#' @return An absolute path to the template's `skeleton.qmd`.
 #' @export
 #' @examples
 #' mariner_template_path("report")

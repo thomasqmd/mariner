@@ -14,13 +14,12 @@ mariner_looks_like_project(path = ".")
 }
 \description{
 The guard \code{.onAttach()} uses before it creates anything. A directory counts
-as a project root if it contains an \code{.Rproj} file, a \verb{_quarto.yml}, a
+as a project root if it holds an \code{.Rproj} file, a \verb{_quarto.yml}, a
 \code{DESCRIPTION}, or a \code{.git} directory.
 }
 \details{
-This is exported so the attach behaviour is inspectable rather than
-mysterious: if \code{library(mariner)} did not create the folders you expected,
-\code{mariner_looks_like_project(getwd())} says why in one call.
+It is exported so the attach behaviour can be checked: if \code{library(mariner)}
+did not create the folders you expected, this says why.
 }
 \examples{
 # The directory R is currently running in:

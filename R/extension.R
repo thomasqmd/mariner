@@ -28,6 +28,10 @@
 # result cannot disagree about what "complete" means.
 EXTENSION_SOURCES <- list(
   list(from = "tex",                pattern = "\\.tex$",         into = "."),
+  # Alongside the manifest rather than in a subdirectory, because _extension.yml
+  # names the filter by bare filename and Quarto resolves that against the
+  # extension root.
+  list(from = "lua",                pattern = "\\.lua$",         into = "."),
   list(from = c("assets", "fonts"), pattern = "\\.(ttf|txt)$",   into = "fonts"),
   # Every mark, not just the ones wired up today. They are ~35 KB together, and
   # a template that reaches for the stacked lockup should not need a rebuild.

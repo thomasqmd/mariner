@@ -58,6 +58,7 @@ test_that("every bundled family resolves to a real font file", {
 
 test_that("Atkinson resolves to the copy vendored in this package", {
   skip_if_not_installed("systemfonts")
+  skip_if(mariner_fonts_available("pdf"), "fonts are already installed system-wide")
   mariner_register_fonts(quiet = TRUE)
 
   # Atkinson is the family that proves registration happened. Lora and JetBrains
@@ -75,6 +76,7 @@ test_that("Atkinson resolves to the copy vendored in this package", {
 
 test_that("the four styles are real cuts, not one file four times", {
   skip_if_not_installed("systemfonts")
+  skip_if(mariner_fonts_available("pdf"), "fonts are already installed system-wide")
   mariner_register_fonts(quiet = TRUE)
 
   # Resolved style by style, the way the device asks for them.
@@ -121,7 +123,7 @@ test_that("theme_mariner() never asks the pdf device for a face it cannot reach"
   sys <- tryCatch(systemfonts::system_fonts(), error = function(e) NULL)
   installed <- !is.null(sys) && any(grepl("^Atkinson Hyperlegible", sys$family))
 
-  th <- theme_mariner("baylor", format = "pdf")
+  th <- theme_mariner(format = "pdf")
   if (installed) {
     expect_equal(th$text$family, "Atkinson Hyperlegible Next")
   } else {
@@ -152,7 +154,7 @@ test_that("a report figure draws with real text metrics and no font warning", {
   p <- ggplot2::ggplot(ggplot2::mpg, ggplot2::aes(class, hwy)) +
     ggplot2::geom_point() +
     ggplot2::labs(x = "Vehicle class", y = "Highway MPG") +
-    theme_mariner("baylor")
+    theme_mariner()
 
   out <- withr::local_tempfile(fileext = ".pdf")
   warnings_seen <- character()

@@ -33,18 +33,18 @@ test_that("mariner_pal() returns functions when n is NULL", {
 })
 
 test_that("mariner_pal() returns character vector when n is provided", {
-  cols4 <- mariner_pal("baylor", "discrete", n = 4)
+  cols4 <- mariner_pal("mariner", "discrete", n = 4)
   expect_equal(length(cols4), 4)
   expect_true(is.character(cols4))
 
-  cols_rev <- mariner_pal("baylor", "discrete", n = 4, reverse = TRUE)
+  cols_rev <- mariner_pal("mariner", "discrete", n = 4, reverse = TRUE)
   expect_equal(cols_rev, rev(cols4))
 })
 
 test_that("mariner_pal() warns when discrete n exceeds 8", {
-  expect_warning(mariner_pal("baylor", "discrete", n = 10), "Discrete palette")
+  expect_warning(mariner_pal("mariner", "discrete", n = 10), "Discrete palette")
 })
 
 test_that("mariner_pal() returns empty vector on n <= 0", {
-  expect_equal(mariner_pal("baylor", "discrete", n = 0), character(0))
+  expect_equal(mariner_pal("mariner", "discrete", n = 0), character(0))
 })

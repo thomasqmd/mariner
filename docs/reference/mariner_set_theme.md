@@ -1,10 +1,9 @@
 # Set global ggplot2 theme and scale defaults
 
-Sets
+Makes
 [`theme_mariner()`](https://thomasqmd.github.io/mariner/reference/theme_mariner.md)
-as the global default theme and configures default discrete and
-continuous scales so subsequent plots use the brand palette
-automatically.
+the global ggplot2 theme and the brand palettes the default discrete and
+continuous scales. Later plots need no scale call.
 
 ## Usage
 
@@ -25,15 +24,17 @@ mariner_set_theme(theme = mariner_themes, format = mariner_formats, ...)
 
 - ...:
 
-  Arguments passed to
+  Further arguments for
   [`theme_mariner()`](https://thomasqmd.github.io/mariner/reference/theme_mariner.md).
 
 ## Value
 
-Invisibly returns the previous theme.
+Invisibly, the previous theme.
 
 ## Examples
 
 ``` r
-mariner_set_theme()
+# This changes global ggplot2 state. The return value puts it back.
+old <- mariner_set_theme()
+ggplot2::theme_set(old)
 ```

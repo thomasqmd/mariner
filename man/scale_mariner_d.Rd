@@ -13,15 +13,15 @@ scale_color_mariner_d(reverse = FALSE, ...)
 scale_fill_mariner_d(reverse = FALSE, ...)
 }
 \arguments{
-\item{reverse}{Logical; if \code{TRUE}, reverses the color vector.}
+\item{reverse}{Logical; if \code{TRUE}, reverse the colours.}
 
-\item{...}{Arguments passed to \code{\link[ggplot2:discrete_scale]{ggplot2::discrete_scale()}}.}
+\item{...}{Further arguments for \code{\link[ggplot2:discrete_scale]{ggplot2::discrete_scale()}}.}
 }
 \value{
 A ggplot2 discrete scale object.
 }
 \description{
-Discrete colour and fill scales for mariner
+Categories with no order. Eight colours before the palette interpolates.
 }
 \examples{
 library(ggplot2)

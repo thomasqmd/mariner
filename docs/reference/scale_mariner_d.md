@@ -1,6 +1,6 @@
 # Discrete colour and fill scales for mariner
 
-Discrete colour and fill scales for mariner
+Categories with no order. Eight colours before the palette interpolates.
 
 ## Usage
 
@@ -16,11 +16,11 @@ scale_fill_mariner_d(reverse = FALSE, ...)
 
 - reverse:
 
-  Logical; if `TRUE`, reverses the color vector.
+  Logical; if `TRUE`, reverse the colours.
 
 - ...:
 
-  Arguments passed to
+  Further arguments for
   [`ggplot2::discrete_scale()`](https://ggplot2.tidyverse.org/reference/discrete_scale.html).
 
 ## Value

@@ -1,8 +1,8 @@
 # Does this directory look like a project root?
 
 The guard `.onAttach()` uses before it creates anything. A directory
-counts as a project root if it contains an `.Rproj` file, a
-`_quarto.yml`, a `DESCRIPTION`, or a `.git` directory.
+counts as a project root if it holds an `.Rproj` file, a `_quarto.yml`,
+a `DESCRIPTION`, or a `.git` directory.
 
 ## Usage
 
@@ -22,11 +22,9 @@ mariner_looks_like_project(path = ".")
 
 ## Details
 
-This is exported so the attach behaviour is inspectable rather than
-mysterious: if
+It is exported so the attach behaviour can be checked: if
 [`library(mariner)`](https://thomasqmd.github.io/mariner/) did not
-create the folders you expected, `mariner_looks_like_project(getwd())`
-says why in one call.
+create the folders you expected, this says why.
 
 ## See also
 

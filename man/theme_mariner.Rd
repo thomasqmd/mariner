@@ -17,24 +17,27 @@ theme_mariner(
 
 \item{format}{One of \link{mariner_formats}.}
 
-\item{base_size}{Base font size in points. Defaults to \code{11}, matching the
-report body text set in \verb{_extension.yml}.}
+\item{base_size}{Base font size in points. Defaults to \code{11}, the report body
+size set in \verb{_extension.yml}.}
 
-\item{base_family}{Font family name. Defaults to \code{"Atkinson Hyperlegible Next"}.}
+\item{base_family}{Font family. Defaults to \code{"Atkinson Hyperlegible Next"}.}
 
-\item{...}{Additional arguments passed to \code{\link[ggplot2:theme]{ggplot2::theme()}}.}
+\item{...}{Further arguments for \code{\link[ggplot2:theme]{ggplot2::theme()}}.}
 }
 \value{
 A ggplot2 theme object.
 }
 \description{
-Provides a consistent ggplot2 theme aligned with the brand typography,
-background, rule grids, and primary colors of the document theme.
+A ggplot2 theme that matches the page: the brand typeface, background, ink
+and grid rules.
 }
 \examples{
 library(ggplot2)
+# base_family = "" keeps the device's own font. The bundled families reach a
+# plot through systemfonts, which the base pdf() device does not read. A
+# report renders through cairo_pdf and gets the real face.
 ggplot(mpg, aes(displ, hwy, colour = class)) +
   geom_point() +
   scale_colour_mariner_d() +
-  theme_mariner()
+  theme_mariner(base_family = "")
 }

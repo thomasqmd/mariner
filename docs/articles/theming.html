@@ -33,6 +33,7 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/get-started.html">Get Started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/theming.html">Theming &amp; Scales</a></li>
+<li class="nav-item"><a class="nav-link" href="../mariner-gallery.pdf">Gallery (PDF)</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
@@ -61,74 +62,105 @@
 
 
 
-    <p><code>mariner</code> provides a Baylor theme and a palette system for <code>ggplot2</code>.</p>
+    <!--
+Hand-rolled tabs, because Quarto's `::: {.panel-tabset}` does not survive the
+vignette build. The quarto::html vignette engine renders with `document-css:
+false` and no Bootstrap, so a panel-tabset comes out as a bare class on stacked
+divs with no nav, no panes and no JS -- the tabs silently become five headings
+in a row. This is ~30 lines and depends on nothing.
+
+Each panel is `::: {.mar-tab data-title="..."}` inside a `::: {.mar-tabs}`; the nav
+is built from the data-title attributes at load.
+
+The class names must NOT contain the substring "tabset". pkgdown finds tabsets
+with the XPath `//div[contains(@class, 'tabset')]` -- a substring match, not a
+class match -- so an earlier `.mtabset` was picked up by pkgdown's own tabset
+rewriter, which replaced the first panel with a Bootstrap `tab-pane` carrying
+another section's id and broke the set.
+--><style>
+.mar-tabs { margin: 1.25em 0; }
+.mar-tabs-nav {
+  display: flex; flex-wrap: wrap; gap: 0.15rem;
+  border-bottom: 1px solid #c2c8c4; margin-bottom: 1rem;
+}
+.mar-tabs-nav button {
+  font: inherit; background: none; border: 0; cursor: pointer;
+  padding: 0.45em 0.9em; color: #6f7671;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.mar-tabs-nav button:hover { color: #154734; }
+.mar-tabs-nav button[aria-selected="true"] {
+  color: #154734; border-bottom-color: #154734; font-weight: 600;
+}
+.mar-tabs > .mar-tab { display: none; }
+.mar-tabs > .mar-tab.is-active { display: block; }
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".mar-tabs").forEach(function (set) {
+    var tabs = Array.prototype.filter.call(
+      set.children, function (el) { return el.classList.contains("mar-tab"); }
+    );
+    if (!tabs.length) return;
+    var nav = document.createElement("div");
+    nav.className = "mar-tabs-nav";
+    nav.setAttribute("role", "tablist");
+    tabs.forEach(function (tab, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.textContent = tab.getAttribute("data-title") || "Tab " + (i + 1);
+      b.setAttribute("aria-selected", i === 0 ? "true" : "false");
+      b.addEventListener("click", function () {
+        tabs.forEach(function (t) { t.classList.remove("is-active"); });
+        nav.querySelectorAll("button").forEach(function (x) {
+          x.setAttribute("aria-selected", "false");
+        });
+        tab.classList.add("is-active");
+        b.setAttribute("aria-selected", "true");
+      });
+      if (i === 0) tab.classList.add("is-active");
+      nav.appendChild(b);
+    });
+    set.insertBefore(nav, tabs[0]);
+  });
+});
+</script><p>mariner ships a document theme and a matching palette for <code>ggplot2</code>.</p>
 <section class="level2"><h2 id="brand-palette-and-chrome">1. Brand Palette and Chrome<a class="anchor" aria-label="anchor" href="#brand-palette-and-chrome"></a>
 </h2>
-<p>Brand colours separate into chrome roles and data series palettes.</p>
+<p>The brand colours split in two.</p>
 <ul>
 <li>
-<strong>Chrome roles</strong>: Page background, headings, rules, and link text.</li>
+<strong>Chrome roles</strong>: the page background, headings, rules and link text.</li>
 <li>
-<strong>Data series</strong>: Colors selected and tested for contrast against the background and distinction under color vision deficiencies.</li>
+<strong>Data series</strong>: the colours a figure draws with. Each one clears a contrast threshold against the background and stays separable under colour vision deficiency.</li>
 </ul>
-<p>Inspect available brand hex codes:</p>
+<p><code><a href="../reference/mariner_colors.html">mariner_colors()</a></code> returns every colour the theme defines, by name:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_colors.html">mariner_colors</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      background      foreground    baylor-green university-gold        gold-ink </span></span>
-<span><span class="co">#&gt;       "#fefefe"       "#222222"       "#154734"       "#FFB81C"       "#9b6e06" </span></span>
-<span><span class="co">#&gt;       gold-rule  series-1-green   series-2-gold series-3-purple  series-4-olive </span></span>
-<span><span class="co">#&gt;       "#c28a01"       "#017553"       "#c08802"       "#aa4499"       "#979731" </span></span>
-<span><span class="co">#&gt;    series-5-sky series-6-orange series-7-indigo   series-8-rose           seq-1 </span></span>
-<span><span class="co">#&gt;       "#0178bc"       "#e8712a"       "#493fa6"       "#cc6677"       "#eaf7f1" </span></span>
-<span><span class="co">#&gt;           seq-2           seq-3           seq-4           seq-5           seq-6 </span></span>
-<span><span class="co">#&gt;       "#c5d7ce"       "#a0b9ad"       "#7d9b8c"       "#5b7e6d"       "#396250" </span></span>
-<span><span class="co">#&gt;           seq-7           ord-1           ord-2           ord-3           ord-4 </span></span>
-<span><span class="co">#&gt;       "#154734"       "#a8b4ae"       "#83988e"       "#5f7c6e"       "#3b6150" </span></span>
-<span><span class="co">#&gt;           ord-5           div-1           div-2           div-3           div-4 </span></span>
-<span><span class="co">#&gt;       "#154734"       "#017553"       "#649c83"       "#a8c3b6"       "#e9ecea" </span></span>
-<span><span class="co">#&gt;           div-5           div-6           div-7             ink   ink-secondary </span></span>
-<span><span class="co">#&gt;       "#decaac"       "#cfaa6b"       "#c08802"       "#222222"       "#4a4f4b" </span></span>
-<span><span class="co">#&gt;       ink-muted       rule-grid       rule-axis         primary       secondary </span></span>
-<span><span class="co">#&gt;       "#6f7671"       "#dfe3e0"       "#c2c8c4"       "#154734"       "#c28a01" </span></span>
-<span><span class="co">#&gt;            link      accent-ink     accent-rule      on-primary    on-secondary </span></span>
-<span><span class="co">#&gt;       "#154734"       "#9a6e13"       "#c28a01"       "#fefefe"       "#222222" </span></span>
-<span><span class="co">#&gt;        series-1        series-2        series-3        series-4        series-5 </span></span>
-<span><span class="co">#&gt;       "#017553"       "#c08802"       "#aa4499"       "#979731"       "#0178bc" </span></span>
-<span><span class="co">#&gt;        series-6        series-7        series-8 </span></span>
-<span><span class="co">#&gt;       "#e8712a"       "#493fa6"       "#cc6677"</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/mariner_colors.html">mariner_colors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "background"      "foreground"      "mariner-green"   "mariner-gold"   </span></span>
+<span><span class="co">#&gt;  [5] "gold-ink"        "gold-rule"       "series-1-green"  "series-2-gold"  </span></span>
+<span><span class="co">#&gt;  [9] "series-3-purple" "series-4-olive"  "series-5-sky"    "series-6-orange"</span></span>
+<span><span class="co">#&gt; [13] "series-7-indigo" "series-8-rose"   "seq-1"           "seq-2"          </span></span>
+<span><span class="co">#&gt; [17] "seq-3"           "seq-4"           "seq-5"           "seq-6"          </span></span>
+<span><span class="co">#&gt; [21] "seq-7"           "ord-1"           "ord-2"           "ord-3"          </span></span>
+<span><span class="co">#&gt; [25] "ord-4"           "ord-5"           "div-1"           "div-2"          </span></span>
+<span><span class="co">#&gt; [29] "div-3"           "div-4"           "div-5"           "div-6"          </span></span>
+<span><span class="co">#&gt; [33] "div-7"           "ink"             "ink-secondary"   "ink-muted"      </span></span>
+<span><span class="co">#&gt; [37] "rule-grid"       "rule-axis"       "primary"         "secondary"      </span></span>
+<span><span class="co">#&gt; [41] "link"            "accent-ink"      "accent-rule"     "on-primary"     </span></span>
+<span><span class="co">#&gt; [45] "on-secondary"    "series-1"        "series-2"        "series-3"       </span></span>
+<span><span class="co">#&gt; [49] "series-4"        "series-5"        "series-6"        "series-7"       </span></span>
+<span><span class="co">#&gt; [53] "series-8"</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/mariner_colors.html">mariner_colors</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"background"</span>, <span class="st">"ink"</span>, <span class="st">"primary"</span>, <span class="st">"secondary"</span>, <span class="st">"link"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; background        ink    primary  secondary       link </span></span>
+<span><span class="co">#&gt;  "#fefefe"  "#222222"  "#154734"  "#c28a01"  "#154734"</span></span></code></pre></div>
 </div>
 <section class="level3"><h3 id="brand-chrome-roles">Brand Chrome Roles<a class="anchor" aria-label="anchor" href="#brand-chrome-roles"></a>
 </h3>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">chrome_roles</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"primary"</span>, <span class="st">"secondary"</span>, <span class="st">"accent-ink"</span>, <span class="st">"accent-rule"</span>,</span>
-<span>                   <span class="st">"link"</span>, <span class="st">"ink"</span>, <span class="st">"ink-muted"</span><span class="op">)</span></span>
-<span><span class="va">chrome_labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Primary"</span>, <span class="st">"Secondary"</span>, <span class="st">"Accent Ink"</span>, <span class="st">"Accent Rule"</span>,</span>
-<span>                   <span class="st">"Link"</span>, <span class="st">"Ink"</span>, <span class="st">"Muted Ink"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">chrome_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  Slot  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">chrome_roles</span><span class="op">)</span>,</span>
-<span>  Role  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">chrome_labels</span>, levels <span class="op">=</span> <span class="va">chrome_labels</span><span class="op">)</span>,</span>
-<span>  Color <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="../reference/mariner_colors.html">mariner_colors</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="va">chrome_roles</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">chrome_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">Slot</span>, <span class="fl">1</span>, fill <span class="op">=</span> <span class="va">Color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span>color <span class="op">=</span> <span class="fu"><a href="../reference/mariner_colors.html">mariner_colors</a></span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="st">"background"</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>            linewidth <span class="op">=</span> <span class="fl">1.2</span>, width <span class="op">=</span> <span class="fl">0.88</span>, height <span class="op">=</span> <span class="fl">0.88</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_identity.html" class="external-link">scale_fill_identity</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="va">chrome_df</span><span class="op">$</span><span class="va">Slot</span>, labels <span class="op">=</span> <span class="va">chrome_df</span><span class="op">$</span><span class="va">Role</span>,</span>
-<span>                     position <span class="op">=</span> <span class="st">"top"</span>, expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">0.02</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="cn">NULL</span>, expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.04</span>, <span class="fl">0.04</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_fixed</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="../reference/theme_mariner.html">theme_mariner</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
-<span>    panel.grid <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    axis.line <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    axis.text.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure><p><img src="theming_files/figure-html/chrome-swatch-1.png" class="quarto-figure quarto-figure-center" width="624"></p>
@@ -138,48 +170,19 @@
 </div>
 </section></section><section class="level2"><h2 id="palette-families">2. Palette Families<a class="anchor" aria-label="anchor" href="#palette-families"></a>
 </h2>
-<p><code><a href="../reference/mariner_pal.html">mariner_pal()</a></code> generates palettes across five families:</p>
+<p><code><a href="../reference/mariner_pal.html">mariner_pal()</a></code> covers four families:</p>
 <ol type="1">
 <li>
-<strong>Discrete (<code>"discrete"</code>)</strong>: Categorical data up to 8 classes.</li>
+<strong>Discrete (<code>"discrete"</code>)</strong>: categories, up to 8 classes.</li>
 <li>
-<strong>Sequential (<code>"sequential"</code>)</strong>: Quantitative magnitude.</li>
+<strong>Sequential (<code>"sequential"</code>)</strong>: magnitude.</li>
 <li>
-<strong>Ordinal (<code>"ordinal"</code>)</strong>: Ordered factors.</li>
+<strong>Ordinal (<code>"ordinal"</code>)</strong>: ordered factors.</li>
 <li>
-<strong>Diverging (<code>"diverging"</code>)</strong>: Values with a neutral midpoint.</li>
-<li>
-<strong>Chart chrome</strong>: Structural grid and axis rules.</li>
+<strong>Diverging (<code>"diverging"</code>)</strong>: values around a neutral midpoint.</li>
 </ol>
+<p>The last row below is not a family. Chart chrome is a set of <em>roles</em> from <code><a href="../reference/mariner_colors.html">mariner_colors()</a></code> — the ink and rules a panel is drawn with. It is here because a figure uses those colours without being asked.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fams</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="st">"Categorical (8)"</span>  <span class="op">=</span> <span class="fu"><a href="../reference/mariner_pal.html">mariner_pal</a></span><span class="op">(</span>family <span class="op">=</span> <span class="st">"discrete"</span>,   n <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>,</span>
-<span>  <span class="st">"Sequential (7)"</span>   <span class="op">=</span> <span class="fu"><a href="../reference/mariner_pal.html">mariner_pal</a></span><span class="op">(</span>family <span class="op">=</span> <span class="st">"sequential"</span>, n <span class="op">=</span> <span class="fl">7</span><span class="op">)</span>,</span>
-<span>  <span class="st">"Ordinal (5)"</span>      <span class="op">=</span> <span class="fu"><a href="../reference/mariner_pal.html">mariner_pal</a></span><span class="op">(</span>family <span class="op">=</span> <span class="st">"ordinal"</span>,    n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,</span>
-<span>  <span class="st">"Diverging (7)"</span>    <span class="op">=</span> <span class="fu"><a href="../reference/mariner_pal.html">mariner_pal</a></span><span class="op">(</span>family <span class="op">=</span> <span class="st">"diverging"</span>,  n <span class="op">=</span> <span class="fl">7</span><span class="op">)</span>,</span>
-<span>  <span class="st">"Chart chrome (5)"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="../reference/mariner_colors.html">mariner_colors</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ink"</span>, <span class="st">"ink-secondary"</span>, <span class="st">"ink-muted"</span>, <span class="st">"rule-axis"</span>, <span class="st">"rule-grid"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">swatches</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">fams</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Family <span class="op">=</span> <span class="va">f</span>, Step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">fams</span><span class="op">[[</span><span class="va">f</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, Color <span class="op">=</span> <span class="va">fams</span><span class="op">[[</span><span class="va">f</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">swatches</span><span class="op">$</span><span class="va">Family</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">swatches</span><span class="op">$</span><span class="va">Family</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">fams</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">swatches</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">Step</span>, <span class="va">Family</span>, fill <span class="op">=</span> <span class="va">Color</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span>color <span class="op">=</span> <span class="fu"><a href="../reference/mariner_colors.html">mariner_colors</a></span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="st">"background"</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>            linewidth <span class="op">=</span> <span class="fl">1.2</span>, height <span class="op">=</span> <span class="fl">0.72</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_identity.html" class="external-link">scale_fill_identity</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="cn">NULL</span>, expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.01</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="../reference/theme_mariner.html">theme_mariner</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
-<span>    panel.grid <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    axis.text.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure><p><img src="theming_files/figure-html/palette-swatches-1.png" class="quarto-figure quarto-figure-center" width="624"></p>
@@ -189,17 +192,31 @@
 </div>
 </section><section class="level2"><h2 id="scale-functions">3. Scale Functions<a class="anchor" aria-label="anchor" href="#scale-functions"></a>
 </h2>
-<p><code>mariner</code> exports scale functions for <code>colour</code> and <code>fill</code>.</p>
-<section class="level3"><h3 id="discrete-scale-scale_colour_mariner_d">Discrete Scale: <code>scale_colour_mariner_d()</code>
-<a class="anchor" aria-label="anchor" href="#discrete-scale-scale_colour_mariner_d"></a>
-</h3>
+<p>Five scale families reach four palettes. Sequential is spent twice: <code>scale_*_mariner_c()</code> runs it as a gradient, <code>scale_*_mariner_b()</code> cuts it into steps. The rest map one to one — <code>_d()</code> to discrete, <code>_o()</code> to ordinal, <code>_div()</code> to diverging. Each has a <code>colour</code> and a <code>fill</code> form, and <code>scale_color_*</code> works everywhere <code>scale_colour_*</code> does.</p>
+<p>One dataset throughout, fuel economy for 234 vehicle models, so a difference between two tabs is the scale rather than a change of subject. The <a href="../mariner-gallery.pdf">gallery PDF</a> carries the same figures.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">class</span>, <span class="va">hwy</span>, color <span class="op">=</span> <span class="va">class</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_jitter.html" class="external-link">geom_jitter</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.2</span>, height <span class="op">=</span> <span class="fl">0</span>, size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mpg_data</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="va"><a href="https://ggplot2.tidyverse.org/reference/mpg.html" class="external-link">mpg</a></span></span>
+<span><span class="va">mpg_data</span><span class="op">$</span><span class="va">class</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">mpg_data</span><span class="op">$</span><span class="va">class</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Ordinal needs an ordered variable, so displacement is cut into ranked bands.</span></span>
+<span><span class="va">mpg_data</span><span class="op">$</span><span class="va">size</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="va">mpg_data</span><span class="op">$</span><span class="va">displ</span>, <span class="fl">3</span>,</span>
+<span>                     labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Small"</span>, <span class="st">"Medium"</span>, <span class="st">"Large"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">class_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">cty</span>, <span class="va">hwy</span><span class="op">)</span> <span class="op">~</span> <span class="va">class</span>, data <span class="op">=</span> <span class="va">mpg_data</span>, FUN <span class="op">=</span> <span class="va">mean</span><span class="op">)</span></span>
+<span><span class="va">class_summary</span><span class="op">$</span><span class="va">delta</span> <span class="op">&lt;-</span> <span class="va">class_summary</span><span class="op">$</span><span class="va">hwy</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mpg_data</span><span class="op">$</span><span class="va">hwy</span><span class="op">)</span></span>
+<span><span class="va">class_summary</span> <span class="op">&lt;-</span> <span class="va">class_summary</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">class_summary</span><span class="op">$</span><span class="va">delta</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">class_summary</span><span class="op">$</span><span class="va">class</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">class_summary</span><span class="op">$</span><span class="va">class</span>, levels <span class="op">=</span> <span class="va">class_summary</span><span class="op">$</span><span class="va">class</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="mar-tabs">
+<div class="mar-tab" data-title="Discrete">
+<p><code><a href="../reference/scale_mariner_d.html">scale_colour_mariner_d()</a></code> — categories with no order. The observations themselves rather than a boxplot, which would summarise them and hide how many models sit behind each class.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">class</span>, <span class="va">hwy</span>, colour <span class="op">=</span> <span class="va">class</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_jitter.html" class="external-link">geom_jitter</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.22</span>, height <span class="op">=</span> <span class="fl">0</span>, alpha <span class="op">=</span> <span class="fl">0.75</span>, size <span class="op">=</span> <span class="fl">1.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/scale_mariner_d.html">scale_colour_mariner_d</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Fuel Economy by Vehicle Class"</span>,</span>
-<span>       x <span class="op">=</span> <span class="st">"Vehicle Class"</span>, y <span class="op">=</span> <span class="st">"Highway MPG"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="st">"Highway mpg"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/theme_mariner.html">theme_mariner</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <div class="cell-output-display">
@@ -209,16 +226,15 @@
 </div>
 </div>
 </div>
-</section><section class="level3"><h3 id="continuous-scale-scale_colour_mariner_c">Continuous Scale: <code>scale_colour_mariner_c()</code>
-<a class="anchor" aria-label="anchor" href="#continuous-scale-scale_colour_mariner_c"></a>
-</h3>
+</div>
+<div class="mar-tab" data-title="Continuous">
+<p><code><a href="../reference/scale_mariner_c.html">scale_colour_mariner_c()</a></code> — magnitude on one hue, as a smooth gradient.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">displ</span>, <span class="va">hwy</span>, color <span class="op">=</span> <span class="va">cty</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">displ</span>, <span class="va">hwy</span>, colour <span class="op">=</span> <span class="va">cty</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.2</span>, alpha <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/scale_mariner_c.html">scale_colour_mariner_c</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Displacement and Highway MPG"</span>,</span>
-<span>       x <span class="op">=</span> <span class="st">"Engine Displacement (L)"</span>, y <span class="op">=</span> <span class="st">"Highway MPG"</span>, color <span class="op">=</span> <span class="st">"City MPG"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Engine displacement (L)"</span>, y <span class="op">=</span> <span class="st">"Highway mpg"</span>, colour <span class="op">=</span> <span class="st">"City mpg"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/theme_mariner.html">theme_mariner</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -227,45 +243,15 @@
 </div>
 </div>
 </div>
-</section><section class="level3"><h3 id="diverging-scale-scale_fill_mariner_div">Diverging Scale: <code>scale_fill_mariner_div()</code>
-<a class="anchor" aria-label="anchor" href="#diverging-scale-scale_fill_mariner_div"></a>
-</h3>
-<p>Diverging scales center on zero or a reference value with symmetric limits:</p>
+</div>
+<div class="mar-tab" data-title="Ordinal">
+<p><code><a href="../reference/scale_mariner_o.html">scale_fill_mariner_o()</a></code> — a few ranked levels. The palette ramps rather than contrasts, so the colours carry the order.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">class_mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">mpg</span><span class="op">$</span><span class="va">hwy</span>, <span class="va">mpg</span><span class="op">$</span><span class="va">class</span>, <span class="va">mean</span><span class="op">)</span></span>
-<span><span class="va">class_deviation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">class_mean</span><span class="op">)</span>,</span>
-<span>  deviation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">class_mean</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mpg</span><span class="op">$</span><span class="va">hwy</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">class_deviation</span> <span class="op">&lt;-</span> <span class="va">class_deviation</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">class_deviation</span><span class="op">$</span><span class="va">deviation</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">class_deviation</span><span class="op">$</span><span class="va">class</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">class_deviation</span><span class="op">$</span><span class="va">class</span>, levels <span class="op">=</span> <span class="va">class_deviation</span><span class="op">$</span><span class="va">class</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">div_limit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">class_deviation</span><span class="op">$</span><span class="va">deviation</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">class_deviation</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">class</span>, <span class="va">deviation</span>, fill <span class="op">=</span> <span class="va">deviation</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="../reference/scale_mariner_div.html">scale_fill_mariner_div</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="va">div_limit</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Highway MPG Relative to Mean"</span>,</span>
-<span>       x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="st">"MPG Deviation from Average"</span>, fill <span class="op">=</span> <span class="st">"Deviation"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="../reference/theme_mariner.html">theme_mariner</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure><p><img src="theming_files/figure-html/scale-diverging-1.png" class="quarto-figure quarto-figure-center" width="624"></p>
-</figure>
-</div>
-</div>
-</div>
-</section><section class="level3"><h3 id="ordinal-scale-scale_fill_mariner_o">Ordinal Scale: <code>scale_fill_mariner_o()</code>
-<a class="anchor" aria-label="anchor" href="#ordinal-scale-scale_fill_mariner_o"></a>
-</h3>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">diamonds</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">cut</span>, fill <span class="op">=</span> <span class="va">cut</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">size</span>, fill <span class="op">=</span> <span class="va">size</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_bar</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/scale_mariner_o.html">scale_fill_mariner_o</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Diamond Counts by Cut Quality"</span>, x <span class="op">=</span> <span class="st">"Cut"</span>, y <span class="op">=</span> <span class="st">"Count"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Engine size band"</span>, y <span class="op">=</span> <span class="st">"Models"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/theme_mariner.html">theme_mariner</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <div class="cell-output-display">
@@ -275,16 +261,35 @@
 </div>
 </div>
 </div>
-</section><section class="level3"><h3 id="binned-scale-scale_fill_mariner_b">Binned Scale: <code>scale_fill_mariner_b()</code>
-<a class="anchor" aria-label="anchor" href="#binned-scale-scale_fill_mariner_b"></a>
-</h3>
+</div>
+<div class="mar-tab" data-title="Diverging">
+<p><code><a href="../reference/scale_mariner_div.html">scale_fill_mariner_div()</a></code> — a signed quantity, where the neutral step means <em>no difference</em>. The limits are symmetric on purpose. Without that, the neutral step lands wherever the data straddles and the scale misplaces zero.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">faithfuld</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">waiting</span>, <span class="va">eruptions</span>, fill <span class="op">=</span> <span class="va">density</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="../reference/scale_mariner_b.html">scale_fill_mariner_b</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Old Faithful Eruption Density"</span>,</span>
-<span>       x <span class="op">=</span> <span class="st">"Waiting Time (min)"</span>, y <span class="op">=</span> <span class="st">"Eruption Duration (min)"</span>, fill <span class="op">=</span> <span class="st">"Density"</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">class_summary</span><span class="op">$</span><span class="va">delta</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">class_summary</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">class</span>, <span class="va">delta</span>, fill <span class="op">=</span> <span class="va">delta</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/scale_mariner_div.html">scale_fill_mariner_div</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="va">lim</span>, <span class="va">lim</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="st">"Difference from overall mean (mpg)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/theme_mariner.html">theme_mariner</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure><p><img src="theming_files/figure-html/scale-diverging-1.png" class="quarto-figure quarto-figure-center" width="624"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="mar-tab" data-title="Binned">
+<p><code><a href="../reference/scale_mariner_b.html">scale_colour_mariner_b()</a></code> — the sequential palette cut into steps. Use it when a reader has to name the band a point falls in, not just rank two points by eye.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">displ</span>, <span class="va">hwy</span>, colour <span class="op">=</span> <span class="va">cty</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.2</span>, alpha <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/scale_mariner_b.html">scale_colour_mariner_b</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Engine displacement (L)"</span>, y <span class="op">=</span> <span class="st">"Highway mpg"</span>, colour <span class="op">=</span> <span class="st">"City mpg"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/theme_mariner.html">theme_mariner</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -293,11 +298,68 @@
 </div>
 </div>
 </div>
-</section></section><section class="level2"><h2 id="knitr-chunk-configuration">4. Knitr Chunk Configuration<a class="anchor" aria-label="anchor" href="#knitr-chunk-configuration"></a>
+</div>
+</div>
+</section><section class="level2"><h2 id="knitr-chunk-configuration">4. Knitr Chunk Configuration<a class="anchor" aria-label="anchor" href="#knitr-chunk-configuration"></a>
 </h2>
-<p>In report <code>.qmd</code> setup chunks, <code><a href="../reference/mariner_knitr_setup.html">mariner_knitr_setup()</a></code> initializes options and sets the ggplot2 theme:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>In the setup chunk of a report, <code><a href="../reference/mariner_knitr_setup.html">mariner_knitr_setup()</a></code> sets the chunk options and the ggplot2 theme:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_knitr_setup.html">mariner_knitr_setup</a></span><span class="op">(</span><span class="st">"pdf"</span><span class="op">)</span></span></code></pre></div>
+</section><section class="level2"><h2 id="document-markup-and-callouts">5. Document Markup and Callouts<a class="anchor" aria-label="anchor" href="#document-markup-and-callouts"></a>
+</h2>
+<p>The theme gives a report two more things. Both act on <strong>PDF output only</strong>: a Lua filter in the Quarto extension carries them, so they do nothing in this HTML vignette. The <a href="../mariner-gallery.pdf">gallery PDF</a> has them typeset.</p>
+<p><strong>Markup for defined terms and blocks:</strong></p>
+<table class="table caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead><tr class="header">
+<th>Written</th>
+<th>Renders as</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>[formal sum]{.defn}</code></td>
+<td>a defined term — underlined italic, brand primary</td>
+</tr>
+<tr class="even">
+<td><code>[basis]{.term}</code></td>
+<td>a key term — bold, brand primary</td>
+</tr>
+<tr class="odd">
+<td><code>[combination]{.termref}</code></td>
+<td>a reference back to one — italic, brand primary</td>
+</tr>
+<tr class="even">
+<td><code>[unreduced]{.emph}</code></td>
+<td>strong emphasis — underlined bold italic</td>
+</tr>
+<tr class="odd">
+<td><code>[A B C]{.font-headings}</code></td>
+<td>a specimen set in the heading face</td>
+</tr>
+<tr class="even">
+<td><code>[A B C]{.font-body}</code></td>
+<td>a specimen set in the body face</td>
+</tr>
+<tr class="odd">
+<td>
+<code>::: {.def}</code> … <code>:::</code>
+</td>
+<td>a definition block, indented under a rule</td>
+</tr>
+<tr class="even">
+<td>
+<code>::: {.thm}</code> … <code>:::</code>
+</td>
+<td>a theorem block, ruled above and below</td>
+</tr>
+</tbody>
+</table>
+<p>An identifier on a <code>.defn</code> — <code>[support]{.defn #support}</code> — also plants a cross-reference target.</p>
+<p>Markdown <code>*italics*</code> are untouched. <code>.emph</code> is its own mark, not a restyling of emphasis.</p>
+<p><strong>Callouts.</strong> Quarto’s five — <code>::: {.callout-note}</code>, <code>.callout-tip</code>, <code>.callout-warning</code>, <code>.callout-important</code> and <code>.callout-caution</code> — work as usual and take the brand colours on their border and title.</p>
 </section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);

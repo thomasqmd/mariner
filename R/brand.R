@@ -17,8 +17,8 @@
 #' @return A list, as parsed from the YAML.
 #' @noRd
 #' @examples
-#' b <- read_brand("baylor")
-#' b$color$palette[["baylor-green"]]
+#' b <- read_brand("mariner")
+#' b$color$palette[["mariner-green"]]
 read_brand <- function(theme = mariner_themes) {
   theme <- check_theme(theme)
   yaml::read_yaml(mariner_path("brand", theme, "_brand.yml"))
@@ -64,7 +64,7 @@ brand_name <- function(brand, which = c("full", "short")) {
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
 # A _brand.yml may name a colour either literally, as a hex string, or by
-# palette key ("baylor-green"). `color.primary` uses the second form.
+# palette key ("mariner-green"). `color.primary` uses the second form.
 brand_resolve <- function(brand, value) {
   pal <- brand$color$palette
   if (!is.null(pal[[value]])) pal[[value]] else value
@@ -73,17 +73,17 @@ brand_resolve <- function(brand, value) {
 # The SEMANTIC layer.
 #
 # The stylesheets are written against these names rather than against palette
-# keys like `baylor-green`, which is what would let a second theme drop in
+# keys like `mariner-green`, which is what would let a second theme drop in
 # without a fork of every partial.
 #
 # Four of them are COMPUTED rather than looked up, and that is the point:
 #
 #   on-primary / on-secondary  the ink that goes ON that colour. Every source
 #     stylesheet hard-codes a near-white on the heading bar, which is right for
-#     Baylor green and illegible on gold -- 1.7:1. Computing it means a theme
+#     mariner green and illegible on gold -- 1.7:1. Computing it means a theme
 #     whose primary is light gets dark text without anyone remembering to.
 #   accent-ink  the secondary, darkened until it can carry small text (4.5:1).
-#     Baylor's `gold-ink` is this done by hand for one theme; a theme with a
+#     Mariner's `gold-ink` is this done by hand for one theme; a theme with a
 #     lighter secondary would fail the same way if `.term` and `.citation` used
 #     it raw. `accent-rule` is the same idea at the 3:1 a border needs, and both
 #     return the secondary unchanged when it already passes.

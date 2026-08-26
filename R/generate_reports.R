@@ -120,42 +120,38 @@ as_param_value <- function(x) {
   x
 }
 
-#' Create Quarto Source Files from a Template
+#' Create Quarto sources from a template
 #'
 #' @description
-#' Creates multiple Quarto (`.qmd`) source files from a parameterized template,
-#' one per row of `params_df`. Each file gets that row's values spliced into its
-#' YAML `params:` block.
+#' Writes one Quarto (`.qmd`) source file per row of `params_df`. Each file gets
+#' that row's values in its YAML `params:` block.
 #'
-#' The template can be one shipped by a package or a `.qmd` file path.
+#' The template is either one a package ships or a `.qmd` path.
 #'
 #' @details
-#' Values are substituted by parsing the template's front matter as YAML,
-#' merging the row into its `params` entry, and re-emitting it. Only the
-#' `params` block changes -- `title`, `format` and everything else are carried
-#' across untouched, including inline R such as
+#' mariner parses the template front matter as YAML, merges the row into its
+#' `params` entry, and re-emits it. Only `params` changes. `title`, `format` and
+#' the rest come across untouched, inline R included:
 #' `` title: "`r paste('Report', params$chapter)`" ``.
 #'
-#' A column in `params_df` with no counterpart in the template's `params` block
-#' is *not* substituted, and raises a warning naming it. This is almost always a
-#' typo or a template mismatch, and the previous behaviour -- dropping it in
-#' silence -- produced reports that were wrong in a way nothing announced.
+#' A column of `params_df` with no counterpart in the template's `params` block
+#' is not substituted, and warns. That case is a typo or a template mismatch,
+#' and the old behaviour dropped it in silence.
 #'
-#' @param params_df A data frame where each row describes one report. Column
-#'   names are matched against the parameter names in the template's YAML
-#'   `params:` block.
-#' @param template_name Name of a template directory shipped by
-#'   `template_package`. Ignored when `template_path` is given.
+#' @param params_df A data frame, one row per report. Column names match the
+#'   parameter names in the template's `params:` block.
+#' @param template_name A template directory that `template_package` ships.
+#'   Ignored when `template_path` is given.
 #' @param template_package Installed package to look for `template_name` in.
-#' @param output_dir Directory the `.qmd` files are written to. Defaults to the
-#'   project's `reports/` folder -- see [mariner_dirs()]. Created if needed.
-#' @param template_path Path to a `.qmd` file to use instead of a packaged
-#'   template.
-#' @param file_name A [glue::glue()] template for the output file names,
-#'   evaluated against each row of `params_df`. The `.qmd` extension is added
-#'   automatically and must not be included here.
+#' @param output_dir Where the `.qmd` files go. Defaults to the project's
+#'   `reports/` folder. See [mariner_dirs()]. Created if it is missing.
+#' @param template_path A `.qmd` path to use instead of a packaged template.
+#' @param file_name A [glue::glue()] template for the output names, evaluated
+#'   against each row of `params_df`. Leave off the `.qmd` extension; mariner
+#'   adds it. Every column that varies has to appear here, or two rows resolve to
+#'   one name and the second overwrites the first.
 #'
-#' @return Invisibly, a character vector of the paths actually written.
+#' @return Invisibly, a character vector of the paths written.
 #' @export
 #' @importFrom purrr pmap_chr
 #' @importFrom fs dir_create
