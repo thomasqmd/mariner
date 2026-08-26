@@ -63,30 +63,39 @@
 
 
     <p><strong>mariner</strong> writes one Quarto report per row of a parameter table, renders each one, and bundles it into a zip archive.</p>
-<section class="level2"><h2 id="system-preflight-check">1. System Preflight Check<a class="anchor" aria-label="anchor" href="#system-preflight-check"></a>
+<section class="level2"><h2 id="installation">0. Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p><strong>mariner</strong> installs from GitHub, so R builds it from source.</p>
+<p><strong>Windows needs <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> first.</strong> Match the version to your R — check <code>R.version.string</code>, so R 4.5.x takes Rtools45 — then restart RStudio. Without it the install stops at <code>Could not find tools necessary to compile a package</code>. macOS and Linux need nothing extra.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"thomasqmd/mariner"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><code>dependencies = TRUE</code> brings the <code>Suggests</code> along.</p>
+</section><section class="level2"><h2 id="system-preflight-check">1. System Preflight Check<a class="anchor" aria-label="anchor" href="#system-preflight-check"></a>
 </h2>
 <p>Check the machine first: Quarto, LaTeX, the fonts.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thomasqmd.github.io/mariner/">mariner</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/mariner_check_setup.html">mariner_check_setup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Output:</p>
-<pre><code>── mariner setup ─────────────────────────────────────────────────────────────
-✔ Quarto: version 1.4.550
-✔ LaTeX: xelatex available
-✔ Figure fonts: bundled and available
+<pre><code>── mariner setup ───────────────────────────────────────────────────────────────
+ℹ Project: /Users/you/classes/stat3010
+✔ Quarto: version 1.10.18
+✔ LaTeX: TinyTeX
+✔ Figure fonts: all three families installed
 ✔ Zip archives: created and read back
-✔ Project folders: present
-✔ Theme in reports/: present and complete
+✔ Project folders: assets/, reports/, zip_files/
+✔ Theme in reports/: _extensions/mariner
 ✔ Figure theme: theme_mariner() builds
 ✔ Template packages: all 1 installed
-✔ Setup check complete: ready to render reports.</code></pre>
+✔ Everything checks out.</code></pre>
 <p>A <code>warn</code> on the fonts means the figures in a PDF will come out in the device’s default typeface while the page text does not. Fix it with:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_install_fonts.html">mariner_install_fonts</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </section><section class="level2"><h2 id="project-scaffolding">2. Project Scaffolding<a class="anchor" aria-label="anchor" href="#project-scaffolding"></a>
 </h2>
 <p>Create the folders and install the Quarto theme:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_setup_project.html">mariner_setup_project</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>You get three directories:</p>
 <ul>
@@ -99,7 +108,7 @@
 </ul></section><section class="level2"><h2 id="define-parameters">3. Define Parameters<a class="anchor" aria-label="anchor" href="#define-parameters"></a>
 </h2>
 <p>One row per report:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">report_params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html" class="external-link">expand_grid</a></span><span class="op">(</span></span>
@@ -112,19 +121,20 @@
 </section><section class="level2"><h2 id="generate-report-sources">4. Generate Report Sources<a class="anchor" aria-label="anchor" href="#generate-report-sources"></a>
 </h2>
 <p>Write the <code>.qmd</code> files from the built-in template:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qmd_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_reports.html">generate_reports</a></span><span class="op">(</span></span>
 <span>  params_df <span class="op">=</span> <span class="va">report_params</span>,</span>
 <span>  template_name <span class="op">=</span> <span class="st">"report"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">qmd_files</span></span></code></pre></div>
 <p>Output:</p>
-<pre><code>[1] "reports/Report-1_1.qmd" "reports/Report-1_2.qmd"</code></pre>
+<pre><code>[1] "/Users/you/classes/stat3010/reports/Report-1_1.qmd"
+[2] "/Users/you/classes/stat3010/reports/Report-1_2.qmd"</code></pre>
 <p>The names come from <code>file_name</code>, a <a href="https://glue.tidyverse.org" class="external-link">glue</a> template over the columns of <code>params_df</code>. It defaults to <code>"Report-{chapter}_{problem_numbers}"</code>. <strong>Every column that varies has to appear in it.</strong> Otherwise two rows resolve to one name and the second overwrites the first. That is why the grid above holds <code>author</code> constant: it does not tell one report from another.</p>
 </section><section class="level2"><h2 id="render-and-bundle-reports">5. Render and Bundle Reports<a class="anchor" aria-label="anchor" href="#render-and-bundle-reports"></a>
 </h2>
 <p>Render each document and bundle it:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Sequential:</span></span>
 <span><span class="va">zip_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_files.html">process_files</a></span><span class="op">(</span><span class="va">qmd_files</span><span class="op">)</span></span>
 <span></span>
@@ -136,8 +146,10 @@
 <ul>
 <li>the <code>.qmd</code> source,</li>
 <li>the purled <code>.R</code> script,</li>
-<li>the rendered <code>.pdf</code>.</li>
+<li>the rendered <code>.pdf</code>,</li>
+<li>whatever else the render left behind, such as the <code>.tex</code> the starter template keeps.</li>
 </ul>
+<p>The <code>include</code> argument selects among those four. See <code><a href="../reference/process_file.html">?process_file</a></code>.</p>
 <p>A file that fails to render does not stop the batch. It comes back as <code>NA</code> and its error message is named in the summary.</p>
 </section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {

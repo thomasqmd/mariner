@@ -93,6 +93,34 @@
 
 ### Bug Fixes
 
+- **A project scaffolded by
+  [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
+  is now found again.**
+  [`mariner_project_root()`](https://thomasqmd.github.io/mariner/reference/mariner_project_root.md)
+  recognised only an `.Rproj`, a `_quarto.yml` or a `DESCRIPTION`, so in
+  a plain directory the scaffolder and the renderer disagreed about
+  where the project was: setup created `zip_files/` beside the three
+  folders, while
+  [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md)
+  walked up from `reports/ch1.qmd`, found no marker, fell back to
+  `reports/` itself, and wrote `reports/zip_files/`. A directory holding
+  all three mariner folders is now a root in its own right.
+
+- **The staged theme link is removed on Windows.** Teardown used
+  `unlink(recursive = FALSE)`, which Windows refuses on a directory
+  reparse point —
+  `mismatch between the tag specified in the request and the tag present in the reparse point`
+  — so every render warned and left the link standing for the recursive
+  delete on the next line. It now goes through
+  [`fs::link_delete()`](https://fs.r-lib.org/reference/delete.html), and
+  a link that cannot be removed is reported rather than deleted
+  recursively.
+
+- **A missing input file says where to look.**
+  `process_file("Report-1_1.qmd")` from the project root reported only
+  that the file did not exist. It now adds
+  `Did you mean 'reports/Report-1_1.qmd'?` when the name resolves there.
+
 - **[`generate_reports()`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)
   parses the YAML instead of rewriting it with a regex.** The old
   approach broke on a param whose default was empty or `null`, on list-
@@ -100,13 +128,16 @@
   dropped a `params_df` column with no counterpart in the template.
   Unmatched columns now warn once, naming both what was passed and what
   the template declares.
+
 - **[`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md)
   stages the theme beside the document it renders**, so a report using
   `format: mariner-pdf` finds its fonts. It symlinks from `assets/`
   where the platform allows and copies where it does not.
+
 - **Fonts are registered inside each parallel worker.** A `multisession`
   worker is a fresh process, so its figures used to fall back to the
   device default — in parallel runs only, with nothing to show for it.
+
 - **A `_files/` directory now travels with a document whose name has a
   space in it.** Quarto names its output after a sanitised form of the
   input stem, so `report with spaces.qmd` renders to
@@ -114,6 +145,7 @@
   classed the directory as an intermediate. The default `include`
   bundled it either way, but `include = c("source", "output")` shipped
   an HTML document without its dependencies.
+
 - **Windows font installation could not have worked.**
   [`mariner_install_fonts()`](https://thomasqmd.github.io/mariner/reference/mariner_install_fonts.md)
   quoted its `reg add` arguments with
@@ -122,15 +154,18 @@
   through `cmd.exe`, which does not strip single quotes. Every registry
   write was refused. Windows ignores a font file the registry does not
   name, so the fonts appeared to install and did nothing.
+
 - The Windows registry value now carries the font’s own full name
   (`Lora Regular (TrueType)`) rather than one derived from the filename
   (`Lora-Regular (TrueType)`). That is what Windows writes, and it stops
   a later install through Explorer from leaving a duplicate entry.
+
 - On Linux without `fc-cache`,
   [`mariner_install_fonts()`](https://thomasqmd.github.io/mariner/reference/mariner_install_fonts.md)
   says so. The fonts install either way, but they are not picked up at
   once, and the previous silence left no route from “restart R” to the
   cause.
+
 - Bundling moved from [`utils::zip()`](https://rdrr.io/r/utils/zip.html)
   to [`zip::zip()`](https://r-lib.github.io/zip/reference/zip.html). The
   old backend shelled out to an external `zip` binary that a stock

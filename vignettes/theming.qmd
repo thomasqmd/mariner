@@ -191,7 +191,7 @@ everywhere `scale_colour_*` does.
 
 One dataset throughout, fuel economy for 234 vehicle models, so a difference
 between two tabs is the scale rather than a change of subject. The
-[gallery PDF](../mariner-gallery.pdf) carries the same figures.
+[gallery PDF](https://thomasqmd.github.io/mariner/mariner-gallery.pdf) carries the same figures.
 
 ```{r scale-data}
 mpg_data <- ggplot2::mpg
@@ -306,7 +306,7 @@ mariner_knitr_setup("pdf")
 
 The theme gives a report two more things. Both act on **PDF output only**: a
 Lua filter in the Quarto extension carries them, so they do nothing in this HTML
-vignette. The [gallery PDF](../mariner-gallery.pdf) has them typeset.
+vignette. The [gallery PDF](https://thomasqmd.github.io/mariner/mariner-gallery.pdf) has them typeset.
 
 **Markup for defined terms and blocks:**
 

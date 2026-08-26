@@ -43,6 +43,33 @@ classify_artefacts <- function(entries, stem) {
   split(entries, factor(kind, levels = INCLUDE_KINDS))
 }
 
+# "Did you mean reports/<name>?"
+#
+# The working directory is the project root and the sources live in reports/, so
+# a student who reads a filename out of the RStudio Files pane and types it gets
+# a miss. This function already resolves the OUTPUT from the project layout --
+# the zip goes to zip_files/ -- and this is the input half of that same
+# knowledge.
+#
+# A HINT, not a fallback. Resolving the bare name silently would work and would
+# teach nobody where their files are, and it would turn a typo into a search of
+# two directories reported as one failure.
+#
+# Only bare filenames, because that is the mistake being answered. A path that
+# is already a path is a different error, and pointing it at reports/ would be
+# a guess rather than a hint.
+#
+# The relative form is returned rather than the absolute one: it is what the
+# caller has to type, and MARINER_DIR_NAMES keeps it right through a rename.
+reports_hint <- function(input_file, root = NULL) {
+  if (!identical(basename(input_file), input_file)) return(NULL)
+
+  dirs <- tryCatch(mariner_dirs(root), error = function(e) NULL)
+  if (is.null(dirs) || !file.exists(file.path(dirs$reports, input_file))) return(NULL)
+
+  file.path(MARINER_DIR_NAMES[["reports"]], input_file)
+}
+
 # Put the theme where the document can reach it, and return an undo function.
 #
 # §0.4 of the plan, measured rather than assumed: `brand-preamble.tex` reaches
@@ -74,9 +101,33 @@ stage_extension <- function(scratch, theme, assets_dir) {
 
   # Removing the LINK before the scratch tree goes is not superstition: a
   # recursive delete that followed it would take the project's assets/ with it.
-  # R's unlink() removes the link rather than its target, and this makes that
-  # guarantee local rather than something inherited from a helper's docs.
-  function() unlink(dest, recursive = FALSE, force = TRUE)
+  #
+  # fs::link_delete(), not unlink(recursive = FALSE). The latter removes a POSIX
+  # symlink and REFUSES a Windows directory reparse point --
+  #
+  #   cannot delete reparse point '...', reason 'There is a mismatch between the
+  #   tag specified in the request and the tag present in the reparse point'
+  #
+  # -- which left the link standing for the fs::dir_delete() on the next line,
+  # so the guarantee above rested on fs happening not to follow it rather than
+  # on this function having done its job.
+  #
+  # A link that cannot be removed is WARNED about, never deleted recursively.
+  # Leaving one in a temp directory costs nothing; following it costs the
+  # student their assets/.
+  function() {
+    if (fs::is_link(dest)) {
+      tryCatch(fs::link_delete(dest), error = function(e) {
+        cli::cli_warn(c(
+          "Could not remove the staged theme link at {.file {dest}}.",
+          i = "It is inside a temporary directory and can be deleted by hand."
+        ))
+      })
+    } else {
+      # The copy fallback: a real directory, and one this function created.
+      unlink(dest, recursive = TRUE, force = TRUE)
+    }
+  }
 }
 
 #' Bundle a Quarto file and its outputs
@@ -148,7 +199,12 @@ process_file <- function(input_file,
                          assets_dir = mariner_dirs()$assets,
                          include = INCLUDE_KINDS) {
   if (!file.exists(input_file)) {
-    cli::cli_abort("Input file does not exist: {.file {input_file}}.")
+    hint <- reports_hint(input_file)
+    cli::cli_abort(c(
+      "Input file does not exist: {.file {input_file}}.",
+      # NULL when there is nothing to suggest, which drops the bullet.
+      i = if (!is.null(hint)) "Did you mean {.file {hint}}?"
+    ))
   }
 
   input_path <- fs::path_abs(input_file)

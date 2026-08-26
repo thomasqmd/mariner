@@ -16,15 +16,19 @@ Documentation: <https://thomasqmd.github.io/mariner/>.
 
 ## Installation
 
-The development version, from GitHub:
+**mariner** installs from GitHub, so R builds it from source.
 
-`# install.packages("pak")`` ``pak``::`[`pak`](https://pak.r-lib.org/reference/pak.html)`(``"thomasqmd/mariner"``)`
+**Windows needs [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+first.** Match the version to your R — check `R.version.string`, so R
+4.5.x takes Rtools45 — then restart RStudio. Without it the install
+stops at `Could not find tools necessary to compile a package`. macOS
+and Linux need nothing extra.
 
-That installs what mariner itself needs. To also get the packages a
-course typically uses alongside it — **tidyverse**, **patchwork**,
-**tinytex** and the rest of `Suggests`:
+`# install.packages("pak")`` ``pak``::`[`pak`](https://pak.r-lib.org/reference/pak.html)`(``"thomasqmd/mariner"``, dependencies ``=`` ``TRUE``)`
 
-`pak``::`[`pak`](https://pak.r-lib.org/reference/pak.html)`(``"thomasqmd/mariner"``, dependencies ``=`` ``TRUE``)`
+`dependencies = TRUE` brings the `Suggests` along — **tidyverse**,
+**patchwork**, **tinytex** and the rest — which is what a course usually
+wants. Leave it off to install only what mariner itself needs.
 
 ## Folder Structure
 

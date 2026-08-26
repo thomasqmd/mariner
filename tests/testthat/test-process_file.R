@@ -204,6 +204,159 @@ test_that("process_file errors on bad inputs", {
   expect_error(process_file(txt), "must be a .qmd file", fixed = TRUE)
 })
 
+# --- the reports/ hint -------------------------------------------------------
+#
+# The working directory is the project root and the sources live in reports/, so
+# a bare filename read out of the Files pane misses. The hint points back onto
+# the documented path instead of resolving the name behind the caller's back.
+
+# A project root with one generated report already in reports/.
+local_project <- function(env = parent.frame()) {
+  dir <- withr::local_tempdir(.local_envir = env)
+  dir.create(file.path(dir, "reports"), recursive = TRUE)
+  file.create(file.path(dir, "demo.Rproj"))
+  write_qmd(file.path(dir, "reports"), "Report-1_1")
+  dir
+}
+
+test_that("a bare filename that lives in reports/ is named in the error", {
+  dir <- local_project()
+  withr::local_dir(dir)
+
+  expect_error(
+    process_file("Report-1_1.qmd"),
+    "Did you mean.*reports/Report-1_1[.]qmd"
+  )
+})
+
+test_that("a name that is nowhere gets no hint", {
+  # A typo must not be answered with a suggestion that is also wrong.
+  dir <- local_project()
+  withr::local_dir(dir)
+
+  err <- expect_error(process_file("Repot-1_1.qmd"), "does not exist")
+  expect_no_match(conditionMessage(err), "Did you mean")
+})
+
+test_that("a path that is already a path gets no hint", {
+  # Pointing `elsewhere/x.qmd` at reports/ would be a guess, not a hint.
+  dir <- local_project()
+  withr::local_dir(dir)
+
+  err <- expect_error(process_file("elsewhere/Report-1_1.qmd"), "does not exist")
+  expect_no_match(conditionMessage(err), "Did you mean")
+})
+
+test_that("a filename carrying a brace does not take the error down with it", {
+  # The hint is interpolated as a VALUE. Pasted into the format string, a `{`
+  # in the name would be re-read as glue syntax and throw while reporting.
+  dir <- local_project()
+  withr::local_dir(dir)
+  write_qmd(file.path(dir, "reports"), "a{b}")
+
+  expect_error(process_file("a{b}.qmd"), "Did you mean", fixed = TRUE)
+})
+
+test_that("reports_hint returns the relative path, or nothing", {
+  dir <- local_project()
+
+  expect_identical(
+    reports_hint("Report-1_1.qmd", root = dir),
+    file.path("reports", "Report-1_1.qmd")
+  )
+  expect_null(reports_hint("Nope.qmd", root = dir))
+  expect_null(reports_hint(file.path("sub", "Report-1_1.qmd"), root = dir))
+})
+
+# --- the reports/ hint -------------------------------------------------------
+#
+# The working directory is the project root and the sources live in reports/, so
+# a bare filename read out of the Files pane misses. The hint points back onto
+# the documented path rather than resolving the name behind the caller's back.
+
+# A project root with one report already in reports/. No .Rproj: the layout is
+# the marker.
+local_project <- function(env = parent.frame()) {
+  dir <- withr::local_tempdir(.local_envir = env)
+  for (d in c("assets", "reports", "zip_files")) dir.create(file.path(dir, d))
+  write_qmd(file.path(dir, "reports"), "Report-1_1")
+  dir
+}
+
+test_that("a bare filename that lives in reports/ is named in the error", {
+  dir <- local_project()
+  withr::local_dir(dir)
+
+  expect_error(
+    process_file("Report-1_1.qmd"),
+    "Did you mean.*reports.Report-1_1[.]qmd"
+  )
+})
+
+test_that("a name that is nowhere gets no hint", {
+  # A typo must not be answered with a suggestion that is also wrong.
+  dir <- local_project()
+  withr::local_dir(dir)
+
+  err <- expect_error(process_file("Repot-1_1.qmd"), "does not exist")
+  expect_false(grepl("Did you mean", conditionMessage(err)))
+})
+
+test_that("a path that is already a path gets no hint", {
+  # Pointing `elsewhere/x.qmd` at reports/ would be a guess, not a hint.
+  dir <- local_project()
+  withr::local_dir(dir)
+
+  err <- expect_error(process_file(file.path("elsewhere", "Report-1_1.qmd")), "does not exist")
+  expect_false(grepl("Did you mean", conditionMessage(err)))
+})
+
+test_that("a filename carrying a brace does not take the error down with it", {
+  # The hint is interpolated as a VALUE. Pasted into the format string, a `{` in
+  # the name would be re-read as glue syntax and throw while reporting the throw.
+  dir <- local_project()
+  withr::local_dir(dir)
+  write_qmd(file.path(dir, "reports"), "a{b}")
+
+  expect_error(process_file("a{b}.qmd"), "Did you mean", fixed = TRUE)
+})
+
+test_that("reports_hint returns the relative path, or nothing", {
+  dir <- local_project()
+
+  expect_identical(
+    reports_hint("Report-1_1.qmd", root = dir),
+    file.path("reports", "Report-1_1.qmd")
+  )
+  expect_null(reports_hint("Nope.qmd", root = dir))
+  expect_null(reports_hint(file.path("sub", "Report-1_1.qmd"), root = dir))
+})
+
+# --- unstaging ---------------------------------------------------------------
+
+test_that("the staged link is removed without following it", {
+  # The guarantee stage_extension()'s comment rests on. Windows refuses
+  # unlink(recursive = FALSE) on a directory reparse point, which used to leave
+  # the link standing for the recursive delete that comes next.
+  dir <- local_dir()
+  assets <- file.path(dir, "assets")
+  mariner_build_extension(assets, "mariner", quiet = TRUE)
+
+  scratch <- file.path(dir, "scratch")
+  dir.create(scratch)
+  unstage <- stage_extension(scratch, "mariner", assets)
+  staged <- file.path(scratch, "_extensions", "mariner")
+  expect_true(file.exists(file.path(staged, "_extension.yml")))
+
+  unstage()
+
+  expect_false(dir.exists(staged))
+  # The point of the whole exercise: the source survived.
+  expect_true(file.exists(
+    file.path(mariner_ext_dir(assets, "mariner"), "_extension.yml")
+  ))
+})
+
 test_that("process_file rejects .Rmd input", {
   # The package is Quarto-only as of 0.2.0. The assertion is on the MESSAGE, so
   # it cannot start passing for the wrong reason if the file simply goes missing.

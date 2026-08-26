@@ -51,6 +51,24 @@ has_markers <- function(path, markers) {
   FALSE
 }
 
+# A directory holding all three mariner folders IS a mariner project.
+#
+# Without this, mariner_setup_project() scaffolds a project that
+# mariner_project_root() cannot afterwards find. The two resolve the root
+# differently -- the scaffolder from the working directory, process_file() by
+# walking up from the INPUT FILE -- so in a directory carrying none of the
+# ROOT_MARKERS they disagreed: setup made `<project>/zip_files/`, and a render of
+# `reports/ch1.qmd` walked up from `reports/`, found no marker, fell back to
+# `reports/` itself, and wrote `reports/zip_files/`. Two bundle directories, and
+# the one the student was told about was the empty one.
+#
+# Requiring all THREE is what keeps this from firing by accident. A lone
+# `reports/` or `assets/` is an ordinary directory name; the full set is what
+# this package creates and nothing else does.
+has_mariner_layout <- function(path) {
+  all(dir.exists(file.path(path, MARINER_DIR_NAMES)))
+}
+
 #' Does this directory look like a project root?
 #'
 #' The guard `.onAttach()` uses before it creates anything. A directory counts
@@ -82,7 +100,9 @@ mariner_looks_like_project <- function(path = ".") {
 #' 1. `getOption("mariner.project_root")`, if set. The escape hatch for a
 #'    session whose working directory is not where the reports belong.
 #' 2. The nearest ancestor of `path`, `path` included, that holds an `.Rproj`
-#'    file, a `_quarto.yml`, or a `DESCRIPTION`.
+#'    file, a `_quarto.yml`, or a `DESCRIPTION` -- or that holds all three
+#'    mariner folders, so a project [mariner_setup_project()] scaffolded is
+#'    found again without also being an RStudio or Quarto project.
 #' 3. `path` itself, normalised.
 #'
 #' `.git` is not a marker here, though it is one for
@@ -116,7 +136,9 @@ mariner_project_root <- function(path = ".") {
   # "/" and dirname("C:/") is "C:/", so the fixed point is the loop's only
   # terminator -- there is no depth limit to get wrong.
   repeat {
-    if (has_markers(current, ROOT_MARKERS)) return(current)
+    if (has_markers(current, ROOT_MARKERS) || has_mariner_layout(current)) {
+      return(current)
+    }
     parent <- dirname(current)
     if (identical(parent, current)) break
     current <- parent

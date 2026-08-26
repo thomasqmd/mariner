@@ -22,7 +22,9 @@ beneath, in this order:
 \item \code{getOption("mariner.project_root")}, if set. The escape hatch for a
 session whose working directory is not where the reports belong.
 \item The nearest ancestor of \code{path}, \code{path} included, that holds an \code{.Rproj}
-file, a \verb{_quarto.yml}, or a \code{DESCRIPTION}.
+file, a \verb{_quarto.yml}, or a \code{DESCRIPTION} -- or that holds all three
+mariner folders, so a project \code{\link[=mariner_setup_project]{mariner_setup_project()}} scaffolded is
+found again without also being an RStudio or Quarto project.
 \item \code{path} itself, normalised.
 }
 

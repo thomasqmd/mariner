@@ -55,13 +55,12 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>The development version, from GitHub:</p>
+<p><strong>mariner</strong> installs from GitHub, so R builds it from source.</p>
+<p><strong>Windows needs <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> first.</strong> Match the version to your R — check <code>R.version.string</code>, so R 4.5.x takes Rtools45 — then restart RStudio. Without it the install stops at <code>Could not find tools necessary to compile a package</code>. macOS and Linux need nothing extra.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"thomasqmd/mariner"</span><span class="op">)</span></span></code></pre></div>
-<p>That installs what mariner itself needs. To also get the packages a course typically uses alongside it — <strong>tidyverse</strong>, <strong>patchwork</strong>, <strong>tinytex</strong> and the rest of <code>Suggests</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"thomasqmd/mariner"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"thomasqmd/mariner"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><code>dependencies = TRUE</code> brings the <code>Suggests</code> along — <strong>tidyverse</strong>, <strong>patchwork</strong>, <strong>tinytex</strong> and the rest — which is what a course usually wants. Leave it off to install only what mariner itself needs.</p>
 </div>
 <div class="section level2">
 <h2 id="folder-structure">Folder Structure<a class="anchor" aria-label="anchor" href="#folder-structure"></a>
@@ -75,7 +74,7 @@
 <div class="section level2">
 <h2 id="quickstart">Quickstart<a class="anchor" aria-label="anchor" href="#quickstart"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thomasqmd.github.io/mariner/">mariner</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 1. Create the folders and install the Quarto theme</span></span>
@@ -100,7 +99,7 @@
 <h2 id="theming">Theming<a class="anchor" aria-label="anchor" href="#theming"></a>
 </h2>
 <p><code><a href="reference/theme_mariner.html">theme_mariner()</a></code> and the <code>scale_*_mariner_*()</code> families draw a figure in the same colours as the page:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mpg</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">class</span>, <span class="va">hwy</span>, color <span class="op">=</span> <span class="va">class</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -118,10 +117,10 @@
 <h2 id="if-it-does-not-work">If It Does Not Work<a class="anchor" aria-label="anchor" href="#if-it-does-not-work"></a>
 </h2>
 <p><code><a href="reference/mariner_check_setup.html">mariner_check_setup()</a></code> reports on Quarto, LaTeX, the fonts, the folders and the theme, and prints the fix for anything missing:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/mariner_check_setup.html">mariner_check_setup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>If the fonts are missing:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/mariner_install_fonts.html">mariner_install_fonts</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

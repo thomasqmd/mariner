@@ -58,6 +58,23 @@
 
 ## Bug Fixes
 
+* **A project scaffolded by `mariner_setup_project()` is now found again.**
+  `mariner_project_root()` recognised only an `.Rproj`, a `_quarto.yml` or a
+  `DESCRIPTION`, so in a plain directory the scaffolder and the renderer
+  disagreed about where the project was: setup created `zip_files/` beside the
+  three folders, while `process_file()` walked up from `reports/ch1.qmd`, found
+  no marker, fell back to `reports/` itself, and wrote `reports/zip_files/`. A
+  directory holding all three mariner folders is now a root in its own right.
+* **The staged theme link is removed on Windows.** Teardown used
+  `unlink(recursive = FALSE)`, which Windows refuses on a directory reparse
+  point — `mismatch between the tag specified in the request and the tag present
+  in the reparse point` — so every render warned and left the link standing for
+  the recursive delete on the next line. It now goes through `fs::link_delete()`,
+  and a link that cannot be removed is reported rather than deleted recursively.
+* **A missing input file says where to look.** `process_file("Report-1_1.qmd")`
+  from the project root reported only that the file did not exist. It now adds
+  `Did you mean 'reports/Report-1_1.qmd'?` when the name resolves there.
+
 * **`generate_reports()` parses the YAML instead of rewriting it with a regex.**
   The old approach broke on a param whose default was empty or `null`, on list-
   and multi-line values, and on a `---` inside the document. It also dropped a

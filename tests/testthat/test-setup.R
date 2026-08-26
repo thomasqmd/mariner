@@ -416,3 +416,83 @@ test_that(".onAttach does nothing in a non-interactive session", {
   expect_null(.onAttach("lib", "mariner"))
   expect_false(any(dir.exists(unlist(mariner_dirs(dir), use.names = FALSE))))
 })
+
+# --- the mariner layout as a root marker -------------------------------------
+#
+# mariner_setup_project() used to scaffold a project that mariner_project_root()
+# could not afterwards find. The two resolve the root differently -- the
+# scaffolder from the working directory, process_file() by walking up from the
+# input file -- so without an .Rproj they disagreed, and a render wrote its
+# bundle into reports/zip_files/ while the student was told to look in
+# zip_files/.
+
+# The three folders, and nothing else.
+local_bare_project <- function(env = parent.frame()) {
+  dir <- withr::local_tempdir(.local_envir = env)
+  for (d in MARINER_DIR_NAMES) dir.create(file.path(dir, d))
+  dir
+}
+
+test_that("all three folders make a directory a root, with no .Rproj", {
+  dir <- local_bare_project()
+  expect_true(has_mariner_layout(dir))
+  expect_equal(mariner_project_root(dir), normalizePath(dir, winslash = "/"))
+})
+
+test_that("the walk finds the layout from a subdirectory", {
+  # The case that produced two zip_files/ directories: process_file() resolves
+  # the root from the INPUT's directory, which is reports/.
+  dir <- local_bare_project()
+  expect_equal(
+    mariner_project_root(file.path(dir, "reports")),
+    normalizePath(dir, winslash = "/")
+  )
+})
+
+test_that("a bundle lands in the project's zip_files, not the reports one", {
+  # The bug, stated as the behaviour it broke.
+  dir <- local_bare_project()
+  expect_equal(
+    mariner_dirs(mariner_project_root(file.path(dir, "reports")))$zips,
+    file.path(normalizePath(dir, winslash = "/"), "zip_files")
+  )
+})
+
+test_that("one or two of the folders is not a layout", {
+  # `reports/` alone is an ordinary directory name. The full set is what this
+  # package creates and what nothing else does.
+  dir <- withr::local_tempdir()
+  expect_false(has_mariner_layout(dir))
+
+  dir.create(file.path(dir, "reports"))
+  expect_false(has_mariner_layout(dir))
+
+  dir.create(file.path(dir, "assets"))
+  expect_false(has_mariner_layout(dir))
+
+  dir.create(file.path(dir, "zip_files"))
+  expect_true(has_mariner_layout(dir))
+})
+
+test_that("a real marker still beats the layout further up", {
+  # An .Rproj in reports/ would be odd, but the walk must stop at the nearest
+  # marker whichever kind it is.
+  dir <- local_bare_project()
+  file.create(file.path(dir, "reports", "inner.Rproj"))
+
+  expect_equal(
+    mariner_project_root(file.path(dir, "reports")),
+    normalizePath(file.path(dir, "reports"), winslash = "/")
+  )
+})
+
+test_that("setup makes a directory that resolves as its own root", {
+  # The invariant the whole change exists for: scaffold, then find it again.
+  dir <- withr::local_tempdir()
+  suppressMessages(mariner_setup_project(root = dir, template = NULL))
+
+  expect_equal(
+    mariner_project_root(file.path(dir, "reports")),
+    normalizePath(dir, winslash = "/")
+  )
+})

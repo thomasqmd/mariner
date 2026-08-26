@@ -3,6 +3,20 @@
 **mariner** writes one Quarto report per row of a parameter table,
 renders each one, and bundles it into a zip archive.
 
+## 0. Installation
+
+**mariner** installs from GitHub, so R builds it from source.
+
+**Windows needs [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+first.** Match the version to your R — check `R.version.string`, so R
+4.5.x takes Rtools45 — then restart RStudio. Without it the install
+stops at `Could not find tools necessary to compile a package`. macOS
+and Linux need nothing extra.
+
+`# install.packages("pak")`` ``pak``::`[`pak`](https://pak.r-lib.org/reference/pak.html)`(``"thomasqmd/mariner"``, dependencies ``=`` ``TRUE``)`
+
+`dependencies = TRUE` brings the `Suggests` along.
+
 ## 1. System Preflight Check
 
 Check the machine first: Quarto, LaTeX, the fonts.
@@ -11,16 +25,17 @@ Check the machine first: Quarto, LaTeX, the fonts.
 
 Output:
 
-    ── mariner setup ─────────────────────────────────────────────────────────────
-    ✔ Quarto: version 1.4.550
-    ✔ LaTeX: xelatex available
-    ✔ Figure fonts: bundled and available
+    ── mariner setup ───────────────────────────────────────────────────────────────
+    ℹ Project: /Users/you/classes/stat3010
+    ✔ Quarto: version 1.10.18
+    ✔ LaTeX: TinyTeX
+    ✔ Figure fonts: all three families installed
     ✔ Zip archives: created and read back
-    ✔ Project folders: present
-    ✔ Theme in reports/: present and complete
+    ✔ Project folders: assets/, reports/, zip_files/
+    ✔ Theme in reports/: _extensions/mariner
     ✔ Figure theme: theme_mariner() builds
     ✔ Template packages: all 1 installed
-    ✔ Setup check complete: ready to render reports.
+    ✔ Everything checks out.
 
 A `warn` on the fonts means the figures in a PDF will come out in the
 device’s default typeface while the page text does not. Fix it with:
@@ -58,7 +73,8 @@ Write the `.qmd` files from the built-in template:
 
 Output:
 
-    [1] "reports/Report-1_1.qmd" "reports/Report-1_2.qmd"
+    [1] "/Users/you/classes/stat3010/reports/Report-1_1.qmd"
+    [2] "/Users/you/classes/stat3010/reports/Report-1_2.qmd"
 
 The names come from `file_name`, a [glue](https://glue.tidyverse.org)
 template over the columns of `params_df`. It defaults to
@@ -77,7 +93,12 @@ Each archive in `zip_files/` holds:
 
 - the `.qmd` source,
 - the purled `.R` script,
-- the rendered `.pdf`.
+- the rendered `.pdf`,
+- whatever else the render left behind, such as the `.tex` the starter
+  template keeps.
+
+The `include` argument selects among those four. See
+[`?process_file`](https://thomasqmd.github.io/mariner/reference/process_file.md).
 
 A file that fails to render does not stop the batch. It comes back as
 `NA` and its error message is named in the summary.
