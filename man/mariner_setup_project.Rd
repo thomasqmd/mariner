@@ -13,8 +13,8 @@ mariner_setup_project(
 }
 \arguments{
 \item{root}{Project root. \code{NULL} (the default) resolves it with
-\code{\link[=mariner_project_root]{mariner_project_root()}}, so a call from a subdirectory scaffolds the
-project rather than the subdirectory. Pass a path to override.}
+\code{\link[=mariner_project_root]{mariner_project_root()}}, which is the working directory unless that is
+one of the mariner folders. Pass a path to override.}
 
 \item{theme}{One of \link{mariner_themes}.}
 

@@ -21,22 +21,26 @@ beneath, in this order:
 \enumerate{
 \item \code{getOption("mariner.project_root")}, if set. The escape hatch for a
 session whose working directory is not where the reports belong.
-\item The nearest ancestor of \code{path}, \code{path} included, that holds an \code{.Rproj}
-file, a \verb{_quarto.yml}, or a \code{DESCRIPTION}.
-\item A directory holding all three mariner folders, so a project
-\code{\link[=mariner_setup_project]{mariner_setup_project()}} scaffolded is found again without also being an
-RStudio or Quarto project. This one counts at \code{path} itself, and further
-up only when the search climbed out of \verb{assets/}, \verb{reports/} or
-\verb{zip_files/}. Those folders are created for you, so an abandoned set in a
-parent directory does not capture a new project started beneath it.
+\item \code{path} itself, if it holds an \code{.Rproj} file, a \verb{_quarto.yml}, a
+\code{DESCRIPTION}, or all three mariner folders. A project
+\code{\link[=mariner_setup_project]{mariner_setup_project()}} scaffolded is therefore found again without
+also being an RStudio or Quarto project.
+\item An ancestor carrying one of those, reached by climbing out of \verb{assets/},
+\verb{reports/} or \verb{zip_files/} -- so bundling \code{reports/ch1.qmd} resolves to
+the project that holds \verb{reports/}.
 \item \code{path} itself, normalised.
 }
+
+The walk in step 3 goes through mariner folders and nothing else. A marker
+in a parent directory does not claim an unrelated subdirectory: run this
+from \code{project/scratch} and you get \code{project/scratch}, whatever \code{project}
+carries.
 
 \code{.git} is not a marker here, though it is one for
 \code{\link[=mariner_looks_like_project]{mariner_looks_like_project()}}. See the comment in \code{R/setup.R} for why.
 
 A \code{root} argument to \code{\link[=mariner_dirs]{mariner_dirs()}} or \code{\link[=mariner_setup_project]{mariner_setup_project()}} beats all
-three. Those functions call this one only when \code{root} is \code{NULL}.
+of them. Those functions call this one only when \code{root} is \code{NULL}.
 }
 \examples{
 mariner_project_root()

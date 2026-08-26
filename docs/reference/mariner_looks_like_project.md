@@ -2,7 +2,7 @@
 
 The guard `.onAttach()` uses before it creates anything. A directory
 counts as a project root if it holds an `.Rproj` file, a `_quarto.yml`,
-a `DESCRIPTION`, or a `.git` directory.
+a `DESCRIPTION`, a `.git` directory, or all three mariner folders.
 
 ## Usage
 
@@ -21,6 +21,11 @@ mariner_looks_like_project(path = ".")
 `TRUE` or `FALSE`.
 
 ## Details
+
+The last of those is what makes a directory
+[`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
+scaffolded count as a project afterwards, without it also having to be
+an RStudio or Quarto one.
 
 It is exported so the attach behaviour can be checked: if
 [`library(mariner)`](https://thomasqmd.github.io/mariner/) did not

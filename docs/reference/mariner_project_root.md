@@ -24,18 +24,22 @@ A normalised absolute path.
 1.  `getOption("mariner.project_root")`, if set. The escape hatch for a
     session whose working directory is not where the reports belong.
 
-2.  The nearest ancestor of `path`, `path` included, that holds an
-    `.Rproj` file, a `_quarto.yml`, or a `DESCRIPTION`.
-
-3.  A directory holding all three mariner folders, so a project
+2.  `path` itself, if it holds an `.Rproj` file, a `_quarto.yml`, a
+    `DESCRIPTION`, or all three mariner folders. A project
     [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
-    scaffolded is found again without also being an RStudio or Quarto
-    project. This one counts at `path` itself, and further up only when
-    the search climbed out of `assets/`, `reports/` or `zip_files/`.
-    Those folders are created for you, so an abandoned set in a parent
-    directory does not capture a new project started beneath it.
+    scaffolded is therefore found again without also being an RStudio or
+    Quarto project.
+
+3.  An ancestor carrying one of those, reached by climbing out of
+    `assets/`, `reports/` or `zip_files/` – so bundling
+    `reports/ch1.qmd` resolves to the project that holds `reports/`.
 
 4.  `path` itself, normalised.
+
+The walk in step 3 goes through mariner folders and nothing else. A
+marker in a parent directory does not claim an unrelated subdirectory:
+run this from `project/scratch` and you get `project/scratch`, whatever
+`project` carries.
 
 `.git` is not a marker here, though it is one for
 [`mariner_looks_like_project()`](https://thomasqmd.github.io/mariner/reference/mariner_looks_like_project.md).
@@ -45,7 +49,7 @@ A `root` argument to
 [`mariner_dirs()`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md)
 or
 [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
-beats all three. Those functions call this one only when `root` is
+beats all of them. Those functions call this one only when `root` is
 `NULL`.
 
 ## See also
@@ -57,12 +61,12 @@ beats all three. Those functions call this one only when `root` is
 
 ``` r
 mariner_project_root()
-#> [1] "/Users/thomasreinke/Library/CloudStorage/OneDrive-Personal/Personal R Projects/mariner"
+#> [1] "/Users/thomasreinke/Library/CloudStorage/OneDrive-Personal/Personal R Projects/mariner/docs/reference"
 
 # The option wins over the search:
 withr::with_options(
   list(mariner.project_root = tempdir()),
   mariner_project_root()
 )
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpTXSPL8"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpFWzR5s"
 ```

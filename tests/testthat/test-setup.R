@@ -39,12 +39,26 @@ test_that("a nonexistent directory is not a project", {
 
 # --- mariner_project_root ----------------------------------------------------
 
-test_that("the root search walks up to the nearest marker", {
+test_that("the search does not climb out of an ordinary subdirectory", {
+  # The walk exists for process_file(), which resolves the root from the input
+  # file's directory. It is not a general "find my project" search: a marker in
+  # a parent does not claim `a/b/c`, and the answer a person expects standing
+  # there is `a/b/c`.
   root <- make_project("DESCRIPTION")
   deep <- file.path(root, "a", "b", "c")
   dir.create(deep, recursive = TRUE)
 
-  expect_equal(mariner_project_root(deep), root)
+  expect_equal(mariner_project_root(deep), normalizePath(deep, winslash = "/"))
+})
+
+test_that("the search climbs out of a mariner folder to a marked parent", {
+  # The one case the walk is for. `reports/` under an .Rproj resolves to the
+  # project, so a bundle lands in the project's zip_files/.
+  root <- make_project("DESCRIPTION")
+  reports <- file.path(root, "reports")
+  dir.create(reports)
+
+  expect_equal(mariner_project_root(reports), root)
 })
 
 test_that("the nearest marker wins over a further one", {
@@ -508,14 +522,14 @@ test_that("an abandoned layout in a parent does not capture a project below it",
   expect_equal(mariner_project_root(fresh), normalizePath(fresh, winslash = "/"))
 })
 
-test_that("a marker in a parent still captures, layout or not", {
-  # The restriction is on the LAYOUT, not on the walk. An .Rproj above still
-  # means "this is the project", which is the documented behaviour.
+test_that("a marker in a parent does not capture an ordinary subdirectory", {
+  # Symmetric with the layout rule. Standing in `project/sub`, the root is
+  # `project/sub` -- whatever `project` carries.
   outer <- make_project("DESCRIPTION")
   inner <- file.path(outer, "sub")
   dir.create(inner)
 
-  expect_equal(mariner_project_root(inner), outer)
+  expect_equal(mariner_project_root(inner), normalizePath(inner, winslash = "/"))
 })
 
 test_that("the walk climbs out of any of the three folders", {
@@ -539,12 +553,49 @@ test_that("a subdirectory of reports/ still reaches the project", {
   expect_equal(mariner_project_root(deep), normalizePath(dir, winslash = "/"))
 })
 
-test_that("accepts_layout answers where it started and what it climbed out of", {
+test_that("accepts_root answers where it started and what it climbed out of", {
   dir <- local_bare_project()
 
-  expect_true(accepts_layout(dir, NULL))
-  expect_true(accepts_layout(dir, file.path(dir, "reports")))
-  expect_false(accepts_layout(dir, file.path(dir, "new folder")))
+  expect_true(accepts_root(dir, NULL))
+  expect_true(accepts_root(dir, file.path(dir, "reports")))
+  expect_false(accepts_root(dir, file.path(dir, "new folder")))
   # No layout, no answer, whatever it climbed out of.
-  expect_false(accepts_layout(withr::local_tempdir(), NULL))
+  expect_false(accepts_root(withr::local_tempdir(), NULL))
+})
+
+test_that("a marked parent is reached out of any mariner folder, and only those", {
+  # The full rule, both halves in one place: `assets/`, `reports/` and
+  # `zip_files/` climb; anything else stands still.
+  root <- make_project("DESCRIPTION")
+  for (d in MARINER_DIR_NAMES) {
+    dir.create(file.path(root, d), showWarnings = FALSE)
+    expect_equal(mariner_project_root(file.path(root, d)), root, info = d)
+  }
+
+  for (d in c("scratch", "data", "new folder")) {
+    other <- file.path(root, d)
+    dir.create(other, showWarnings = FALSE)
+    expect_equal(
+      mariner_project_root(other),
+      normalizePath(other, winslash = "/"),
+      info = d
+    )
+  }
+})
+
+test_that("a scaffolded directory looks like a project afterwards", {
+  # Setup used to leave a directory that WAS a root and did not LOOK like a
+  # project. The guard would then decline to restore a folder deleted out of it.
+  dir <- withr::local_tempdir()
+  expect_false(mariner_looks_like_project(dir))
+
+  suppressMessages(mariner_setup_project(root = dir, template = NULL))
+  expect_true(mariner_looks_like_project(dir))
+})
+
+test_that("a directory with no marker and no layout is still not a project", {
+  # The guard creates directories without being asked, so it stays demanding.
+  dir <- withr::local_tempdir()
+  dir.create(file.path(dir, "reports"))
+  expect_false(mariner_looks_like_project(dir))
 })

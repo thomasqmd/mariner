@@ -15,9 +15,13 @@ mariner_looks_like_project(path = ".")
 \description{
 The guard \code{.onAttach()} uses before it creates anything. A directory counts
 as a project root if it holds an \code{.Rproj} file, a \verb{_quarto.yml}, a
-\code{DESCRIPTION}, or a \code{.git} directory.
+\code{DESCRIPTION}, a \code{.git} directory, or all three mariner folders.
 }
 \details{
+The last of those is what makes a directory \code{\link[=mariner_setup_project]{mariner_setup_project()}}
+scaffolded count as a project afterwards, without it also having to be an
+RStudio or Quarto one.
+
 It is exported so the attach behaviour can be checked: if \code{library(mariner)}
 did not create the folders you expected, this says why.
 }

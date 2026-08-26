@@ -64,19 +64,22 @@ directory.</p></dd>
 
 <ol><li><p><code>getOption("mariner.project_root")</code>, if set. The escape hatch for a
 session whose working directory is not where the reports belong.</p></li>
-<li><p>The nearest ancestor of <code>path</code>, <code>path</code> included, that holds an <code>.Rproj</code>
-file, a <code>_quarto.yml</code>, or a <code>DESCRIPTION</code>.</p></li>
-<li><p>A directory holding all three mariner folders, so a project
-<code><a href="mariner_setup_project.html">mariner_setup_project()</a></code> scaffolded is found again without also being an
-RStudio or Quarto project. This one counts at <code>path</code> itself, and further
-up only when the search climbed out of <code>assets/</code>, <code>reports/</code> or
-<code>zip_files/</code>. Those folders are created for you, so an abandoned set in a
-parent directory does not capture a new project started beneath it.</p></li>
+<li><p><code>path</code> itself, if it holds an <code>.Rproj</code> file, a <code>_quarto.yml</code>, a
+<code>DESCRIPTION</code>, or all three mariner folders. A project
+<code><a href="mariner_setup_project.html">mariner_setup_project()</a></code> scaffolded is therefore found again without
+also being an RStudio or Quarto project.</p></li>
+<li><p>An ancestor carrying one of those, reached by climbing out of <code>assets/</code>,
+<code>reports/</code> or <code>zip_files/</code> – so bundling <code>reports/ch1.qmd</code> resolves to
+the project that holds <code>reports/</code>.</p></li>
 <li><p><code>path</code> itself, normalised.</p></li>
-</ol><p><code>.git</code> is not a marker here, though it is one for
+</ol><p>The walk in step 3 goes through mariner folders and nothing else. A marker
+in a parent directory does not claim an unrelated subdirectory: run this
+from <code>project/scratch</code> and you get <code>project/scratch</code>, whatever <code>project</code>
+carries.</p>
+<p><code>.git</code> is not a marker here, though it is one for
 <code><a href="mariner_looks_like_project.html">mariner_looks_like_project()</a></code>. See the comment in <code>R/setup.R</code> for why.</p>
 <p>A <code>root</code> argument to <code><a href="mariner_dirs.html">mariner_dirs()</a></code> or <code><a href="mariner_setup_project.html">mariner_setup_project()</a></code> beats all
-three. Those functions call this one only when <code>root</code> is <code>NULL</code>.</p>
+of them. Those functions call this one only when <code>root</code> is <code>NULL</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -86,14 +89,14 @@ three. Those functions call this one only when <code>root</code> is <code>NULL</
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">mariner_project_root</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/Users/thomasreinke/Library/CloudStorage/OneDrive-Personal/Personal R Projects/mariner"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/Users/thomasreinke/Library/CloudStorage/OneDrive-Personal/Personal R Projects/mariner/docs/reference"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The option wins over the search:</span></span></span>
 <span class="r-in"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_options.html" class="external-link">with_options</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mariner.project_root <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  <span class="fu">mariner_project_root</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpTXSPL8"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpFWzR5s"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

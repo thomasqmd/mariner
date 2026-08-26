@@ -21,8 +21,8 @@ mariner_setup_project(
 
   Project root. `NULL` (the default) resolves it with
   [`mariner_project_root()`](https://thomasqmd.github.io/mariner/reference/mariner_project_root.md),
-  so a call from a subdirectory scaffolds the project rather than the
-  subdirectory. Pass a path to override.
+  which is the working directory unless that is one of the mariner
+  folders. Pass a path to override.
 
 - theme:
 

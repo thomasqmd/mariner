@@ -22,12 +22,15 @@ MARINER_DIR_NAMES <- c(
 #
 # Two lists, and the asymmetry is deliberate.
 #
-# ROOT_MARKERS drives the ancestor WALK, which travels upward an arbitrary
-# distance. `.git` is left out of it because it is the marker most likely to sit
-# far above where the work actually is: someone whose home directory is under
-# version control -- dotfiles repos are not rare -- would get
-# mariner_project_root() returning `~`, and every default path in the package
-# would point at their home directory.
+# ROOT_MARKERS drives the ancestor walk. `.git` is left out of it because it is
+# the marker most likely to sit far above where the work actually is: someone
+# whose home directory is under version control -- dotfiles repos are not rare
+# -- would get mariner_project_root() returning `~`, and every default path in
+# the package would point at their home directory.
+#
+# The walk itself is narrow, and deliberately so: see accepts_root(). It climbs
+# only out of the three mariner folders, so a marker in a parent directory does
+# not capture an unrelated directory beneath it.
 #
 # PROJECT_MARKERS drives the attach GUARD, which only ever asks about ONE
 # directory: the working directory, right now. It never walks. A `.git` in the
@@ -69,24 +72,30 @@ has_mariner_layout <- function(path) {
   all(dir.exists(file.path(path, MARINER_DIR_NAMES)))
 }
 
-# Does the layout at `current` count as a root, having arrived from `from`?
-# `from` is NULL when `current` is where the search started.
+# Is `current` the root, having arrived from `from`? `from` is NULL when
+# `current` is where the search started.
 #
-# The file markers are DELIBERATE: someone made an RStudio project, or wrote a
-# DESCRIPTION. The three folders are not -- `library(mariner)` creates them on
-# attach, and mariner_setup_project() creates them wherever it is pointed. A
-# signal that appears on its own must not be allowed to capture everything
-# beneath it, or a new project started inside an abandoned one is silently
-# swallowed by the parent: `folder/new folder` scaffolded itself into `folder`,
-# because `folder` still held the folders from a run that had been given up on.
+# A marker is necessary and NOT sufficient. The walk climbs only out of the
+# three mariner folders, so a marker one level up claims a directory beneath it
+# only when that directory is `assets/`, `reports/` or `zip_files/`.
 #
-# So the layout counts where the search STARTS, and on the way up only when we
-# climbed out of one of the three folders it names. That second case is the one
-# that matters and the only one that is unambiguous -- process_file() resolves
-# the root from `reports/ch1.qmd`, and a file sitting in a project's `reports/`
-# belongs to that project by construction.
-accepts_layout <- function(current, from) {
-  if (!has_mariner_layout(current)) return(FALSE)
+# WHY THE WALK IS THIS NARROW. It exists for one caller: process_file()
+# resolves the root from the INPUT FILE's directory, so bundling
+# `reports/ch1.qmd` has to reach the project holding `reports/`. That case is
+# unambiguous -- a file in a project's reports/ belongs to that project by
+# construction. Nothing else is.
+#
+# An unrestricted walk got this wrong twice in one afternoon, once for each
+# kind of marker. The mariner layout is created FOR you -- library(mariner)
+# makes it on attach -- so `folder/` left over from an abandoned run swallowed
+# the `folder/new folder/` started in its place. And an `.Rproj` two levels up
+# meant a working directory that is plainly not the project was scaffolded as
+# though it were. In both cases the answer a person expects is the directory
+# they are standing in.
+accepts_root <- function(current, from) {
+  if (!has_markers(current, ROOT_MARKERS) && !has_mariner_layout(current)) {
+    return(FALSE)
+  }
   is.null(from) || basename(from) %in% MARINER_DIR_NAMES
 }
 
@@ -94,7 +103,11 @@ accepts_layout <- function(current, from) {
 #'
 #' The guard `.onAttach()` uses before it creates anything. A directory counts
 #' as a project root if it holds an `.Rproj` file, a `_quarto.yml`, a
-#' `DESCRIPTION`, or a `.git` directory.
+#' `DESCRIPTION`, a `.git` directory, or all three mariner folders.
+#'
+#' The last of those is what makes a directory [mariner_setup_project()]
+#' scaffolded count as a project afterwards, without it also having to be an
+#' RStudio or Quarto one.
 #'
 #' It is exported so the attach behaviour can be checked: if `library(mariner)`
 #' did not create the folders you expected, this says why.
@@ -110,7 +123,16 @@ accepts_layout <- function(current, from) {
 #' # An empty temporary directory is not a project:
 #' mariner_looks_like_project(tempdir())
 mariner_looks_like_project <- function(path = ".") {
-  dir.exists(path) && has_markers(path, PROJECT_MARKERS)
+  # The layout counts here for the same reason it counts in
+  # mariner_project_root(): a directory this package scaffolded is a mariner
+  # project, whatever else it is or is not. Without it, setup left behind a
+  # directory that was a root and did not look like a project -- and the guard
+  # would decline to restore a folder a student had deleted out of it.
+  #
+  # Unlike the walk, there is no ancestor to get wrong: this only ever asks
+  # about ONE directory.
+  dir.exists(path) &&
+    (has_markers(path, PROJECT_MARKERS) || has_mariner_layout(path))
 }
 
 #' Locate the project root
@@ -120,21 +142,25 @@ mariner_looks_like_project <- function(path = ".") {
 #'
 #' 1. `getOption("mariner.project_root")`, if set. The escape hatch for a
 #'    session whose working directory is not where the reports belong.
-#' 2. The nearest ancestor of `path`, `path` included, that holds an `.Rproj`
-#'    file, a `_quarto.yml`, or a `DESCRIPTION`.
-#' 3. A directory holding all three mariner folders, so a project
-#'    [mariner_setup_project()] scaffolded is found again without also being an
-#'    RStudio or Quarto project. This one counts at `path` itself, and further
-#'    up only when the search climbed out of `assets/`, `reports/` or
-#'    `zip_files/`. Those folders are created for you, so an abandoned set in a
-#'    parent directory does not capture a new project started beneath it.
+#' 2. `path` itself, if it holds an `.Rproj` file, a `_quarto.yml`, a
+#'    `DESCRIPTION`, or all three mariner folders. A project
+#'    [mariner_setup_project()] scaffolded is therefore found again without
+#'    also being an RStudio or Quarto project.
+#' 3. An ancestor carrying one of those, reached by climbing out of `assets/`,
+#'    `reports/` or `zip_files/` -- so bundling `reports/ch1.qmd` resolves to
+#'    the project that holds `reports/`.
 #' 4. `path` itself, normalised.
+#'
+#' The walk in step 3 goes through mariner folders and nothing else. A marker
+#' in a parent directory does not claim an unrelated subdirectory: run this
+#' from `project/scratch` and you get `project/scratch`, whatever `project`
+#' carries.
 #'
 #' `.git` is not a marker here, though it is one for
 #' [mariner_looks_like_project()]. See the comment in `R/setup.R` for why.
 #'
 #' A `root` argument to [mariner_dirs()] or [mariner_setup_project()] beats all
-#' three. Those functions call this one only when `root` is `NULL`.
+#' of them. Those functions call this one only when `root` is `NULL`.
 #'
 #' @param path Directory to search upward from. Defaults to the working
 #'   directory.
@@ -157,7 +183,7 @@ mariner_project_root <- function(path = ".") {
 
   current <- normalizePath(path, winslash = "/", mustWork = FALSE)
   # The directory we climbed out of to reach `current`. NULL on the first pass,
-  # which is how accepts_layout() tells "where the search started" from "some
+  # which is how accepts_root() tells "where the search started" from "some
   # ancestor".
   from <- NULL
 
@@ -165,9 +191,7 @@ mariner_project_root <- function(path = ".") {
   # "/" and dirname("C:/") is "C:/", so the fixed point is the loop's only
   # terminator -- there is no depth limit to get wrong.
   repeat {
-    if (has_markers(current, ROOT_MARKERS) || accepts_layout(current, from)) {
-      return(current)
-    }
+    if (accepts_root(current, from)) return(current)
     from <- current
     parent <- dirname(current)
     if (identical(parent, current)) break
@@ -238,8 +262,8 @@ mariner_dirs <- function(root = NULL) {
 #' stale against what it was built from.
 #'
 #' @param root Project root. `NULL` (the default) resolves it with
-#'   [mariner_project_root()], so a call from a subdirectory scaffolds the
-#'   project rather than the subdirectory. Pass a path to override.
+#'   [mariner_project_root()], which is the working directory unless that is
+#'   one of the mariner folders. Pass a path to override.
 #' @param theme One of [mariner_themes].
 #' @param template Starter template to copy into `reports/`. `NULL` for no
 #'   starter document.
