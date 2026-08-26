@@ -1,0 +1,332 @@
+---
+title: "Theming and Scales"
+format: html
+vignette: >
+  %\VignetteIndexEntry{Theming and Scales}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6.5,
+  fig.height = 3.5,
+  fig.align = "center"
+)
+library(ggplot2)
+library(mariner)
+```
+
+```{=html}
+<!--
+Hand-rolled tabs, because Quarto's `::: {.panel-tabset}` does not survive the
+vignette build. The quarto::html vignette engine renders with `document-css:
+false` and no Bootstrap, so a panel-tabset comes out as a bare class on stacked
+divs with no nav, no panes and no JS -- the tabs silently become five headings
+in a row. This is ~30 lines and depends on nothing.
+
+Each panel is `::: {.mar-tab data-title="..."}` inside a `::: {.mar-tabs}`; the nav
+is built from the data-title attributes at load.
+
+The class names must NOT contain the substring "tabset". pkgdown finds tabsets
+with the XPath `//div[contains(@class, 'tabset')]` -- a substring match, not a
+class match -- so an earlier `.mtabset` was picked up by pkgdown's own tabset
+rewriter, which replaced the first panel with a Bootstrap `tab-pane` carrying
+another section's id and broke the set.
+-->
+<style>
+.mar-tabs { margin: 1.25em 0; }
+.mar-tabs-nav {
+  display: flex; flex-wrap: wrap; gap: 0.15rem;
+  border-bottom: 1px solid #c2c8c4; margin-bottom: 1rem;
+}
+.mar-tabs-nav button {
+  font: inherit; background: none; border: 0; cursor: pointer;
+  padding: 0.45em 0.9em; color: #6f7671;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.mar-tabs-nav button:hover { color: #154734; }
+.mar-tabs-nav button[aria-selected="true"] {
+  color: #154734; border-bottom-color: #154734; font-weight: 600;
+}
+.mar-tabs > .mar-tab { display: none; }
+.mar-tabs > .mar-tab.is-active { display: block; }
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".mar-tabs").forEach(function (set) {
+    var tabs = Array.prototype.filter.call(
+      set.children, function (el) { return el.classList.contains("mar-tab"); }
+    );
+    if (!tabs.length) return;
+    var nav = document.createElement("div");
+    nav.className = "mar-tabs-nav";
+    nav.setAttribute("role", "tablist");
+    tabs.forEach(function (tab, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.textContent = tab.getAttribute("data-title") || "Tab " + (i + 1);
+      b.setAttribute("aria-selected", i === 0 ? "true" : "false");
+      b.addEventListener("click", function () {
+        tabs.forEach(function (t) { t.classList.remove("is-active"); });
+        nav.querySelectorAll("button").forEach(function (x) {
+          x.setAttribute("aria-selected", "false");
+        });
+        tab.classList.add("is-active");
+        b.setAttribute("aria-selected", "true");
+      });
+      if (i === 0) tab.classList.add("is-active");
+      nav.appendChild(b);
+    });
+    set.insertBefore(nav, tabs[0]);
+  });
+});
+</script>
+```
+
+**mariner** ships a document theme and a matching palette for **ggplot2**.
+
+## 1. Brand Palette and Chrome
+
+The brand colours split in two.
+
+* **Chrome roles**: the page background, headings, rules and link text.
+* **Data series**: the colours a figure draws with. Each one clears a contrast
+  threshold against the background and stays separable under colour vision
+  deficiency.
+
+`mariner_colors()` returns every colour the theme defines, by name:
+
+```{r brand-colors}
+names(mariner_colors())
+
+mariner_colors()[c("background", "ink", "primary", "secondary", "link")]
+```
+
+### Brand Chrome Roles
+
+```{r chrome-swatch, fig.height = 1.8, echo = FALSE}
+chrome_roles  <- c("primary", "secondary", "accent-ink", "accent-rule",
+                   "link", "ink", "ink-muted")
+chrome_labels <- c("Primary", "Secondary", "Accent Ink", "Accent Rule",
+                   "Link", "Ink", "Muted Ink")
+
+chrome_df <- data.frame(
+  Slot  = seq_along(chrome_roles),
+  Role  = factor(chrome_labels, levels = chrome_labels),
+  Color = unname(mariner_colors()[chrome_roles])
+)
+
+ggplot(chrome_df, aes(Slot, 1, fill = Color)) +
+  geom_tile(color = mariner_colors()[["background"]],
+            linewidth = 1.2, width = 0.88, height = 0.88) +
+  scale_fill_identity() +
+  scale_x_continuous(breaks = chrome_df$Slot, labels = chrome_df$Role,
+                     position = "top", expand = c(0.02, 0.02)) +
+  scale_y_continuous(breaks = NULL, expand = c(0.04, 0.04)) +
+  coord_fixed() +
+  labs(x = NULL, y = NULL) +
+  theme_mariner() +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.y = element_blank()
+  )
+```
+
+## 2. Palette Families
+
+`mariner_pal()` covers four families:
+
+1. **Discrete (`"discrete"`)**: categories, up to 8 classes.
+2. **Sequential (`"sequential"`)**: magnitude.
+3. **Ordinal (`"ordinal"`)**: ordered factors.
+4. **Diverging (`"diverging"`)**: values around a neutral midpoint.
+
+The last row below is not a family. Chart chrome is a set of *roles* from
+`mariner_colors()` — the ink and rules a panel is drawn with. It is here because
+a figure uses those colours without being asked.
+
+```{r palette-swatches, fig.height = 2.6, echo = FALSE}
+fams <- list(
+  "Categorical (8)"  = mariner_pal(family = "discrete",   n = 8),
+  "Sequential (7)"   = mariner_pal(family = "sequential", n = 7),
+  "Ordinal (5)"      = mariner_pal(family = "ordinal",    n = 5),
+  "Diverging (7)"    = mariner_pal(family = "diverging",  n = 7),
+  "Chart chrome (5)" = unname(mariner_colors()[
+    c("ink", "ink-secondary", "ink-muted", "rule-axis", "rule-grid")])
+)
+
+swatches <- do.call(rbind, lapply(names(fams), function(f) {
+  data.frame(Family = f, Step = seq_along(fams[[f]]), Color = fams[[f]])
+}))
+swatches$Family <- factor(swatches$Family, levels = rev(names(fams)))
+
+ggplot(swatches, aes(Step, Family, fill = Color)) +
+  geom_tile(color = mariner_colors()[["background"]],
+            linewidth = 1.2, height = 0.72) +
+  scale_fill_identity() +
+  scale_x_continuous(breaks = NULL, expand = c(0.01, 0.01)) +
+  labs(x = NULL, y = NULL) +
+  theme_mariner() +
+  theme(
+    panel.grid = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(face = "bold")
+  )
+```
+
+## 3. Scale Functions
+
+Five scale families reach four palettes. Sequential is spent twice:
+`scale_*_mariner_c()` runs it as a gradient, `scale_*_mariner_b()` cuts it into
+steps. The rest map one to one — `_d()` to discrete, `_o()` to ordinal, `_div()`
+to diverging. Each has a `colour` and a `fill` form, and `scale_color_*` works
+everywhere `scale_colour_*` does.
+
+One dataset throughout, fuel economy for 234 vehicle models, so a difference
+between two tabs is the scale rather than a change of subject. The
+[gallery PDF](https://thomasqmd.github.io/mariner/mariner-gallery.pdf) carries the same figures.
+
+```{r scale-data}
+mpg_data <- ggplot2::mpg
+mpg_data$class <- factor(mpg_data$class)
+
+# Ordinal needs an ordered variable, so displacement is cut into ranked bands.
+mpg_data$size <- cut(mpg_data$displ, 3,
+                     labels = c("Small", "Medium", "Large"))
+
+class_summary <- aggregate(cbind(cty, hwy) ~ class, data = mpg_data, FUN = mean)
+class_summary$delta <- class_summary$hwy - mean(mpg_data$hwy)
+class_summary <- class_summary[order(class_summary$delta), ]
+class_summary$class <- factor(class_summary$class, levels = class_summary$class)
+```
+
+::: {.mar-tabs}
+
+::: {.mar-tab data-title="Discrete"}
+
+`scale_colour_mariner_d()` — categories with no order. The observations
+themselves rather than a boxplot, which would summarise them and hide how many
+models sit behind each class.
+
+```{r scale-discrete}
+ggplot(mpg_data, aes(class, hwy, colour = class)) +
+  geom_jitter(width = 0.22, height = 0, alpha = 0.75, size = 1.8) +
+  scale_colour_mariner_d() +
+  labs(x = NULL, y = "Highway mpg") +
+  theme_mariner() +
+  theme(legend.position = "none")
+```
+
+:::
+
+::: {.mar-tab data-title="Continuous"}
+
+`scale_colour_mariner_c()` — magnitude on one hue, as a smooth gradient.
+
+```{r scale-continuous}
+ggplot(mpg_data, aes(displ, hwy, colour = cty)) +
+  geom_point(size = 2.2, alpha = 0.9) +
+  scale_colour_mariner_c() +
+  labs(x = "Engine displacement (L)", y = "Highway mpg", colour = "City mpg") +
+  theme_mariner()
+```
+
+:::
+
+::: {.mar-tab data-title="Ordinal"}
+
+`scale_fill_mariner_o()` — a few ranked levels. The palette ramps rather than
+contrasts, so the colours carry the order.
+
+```{r scale-ordinal}
+ggplot(mpg_data, aes(size, fill = size)) +
+  geom_bar(width = 0.6) +
+  scale_fill_mariner_o() +
+  labs(x = "Engine size band", y = "Models") +
+  theme_mariner() +
+  theme(legend.position = "none")
+```
+
+:::
+
+::: {.mar-tab data-title="Diverging"}
+
+`scale_fill_mariner_div()` — a signed quantity, where the neutral step means
+*no difference*. The limits are symmetric on purpose. Without that, the neutral
+step lands wherever the data straddles and the scale misplaces zero.
+
+```{r scale-diverging}
+lim <- max(abs(class_summary$delta))
+
+ggplot(class_summary, aes(class, delta, fill = delta)) +
+  geom_col(width = 0.7) +
+  scale_fill_mariner_div(limits = c(-lim, lim)) +
+  labs(x = NULL, y = "Difference from overall mean (mpg)") +
+  theme_mariner() +
+  theme(legend.position = "none")
+```
+
+:::
+
+::: {.mar-tab data-title="Binned"}
+
+`scale_colour_mariner_b()` — the sequential palette cut into steps. Use it when
+a reader has to name the band a point falls in, not just rank two points by
+eye.
+
+```{r scale-binned}
+ggplot(mpg_data, aes(displ, hwy, colour = cty)) +
+  geom_point(size = 2.2, alpha = 0.9) +
+  scale_colour_mariner_b() +
+  labs(x = "Engine displacement (L)", y = "Highway mpg", colour = "City mpg") +
+  theme_mariner()
+```
+
+:::
+
+:::
+
+## 4. Knitr Chunk Configuration
+
+In the setup chunk of a report, `mariner_knitr_setup()` sets the chunk options
+and the ggplot2 theme:
+
+```r
+mariner_knitr_setup("pdf")
+```
+
+## 5. Document Markup and Callouts
+
+The theme gives a report two more things. Both act on **PDF output only**: a
+Lua filter in the Quarto extension carries them, so they do nothing in this HTML
+vignette. The [gallery PDF](https://thomasqmd.github.io/mariner/mariner-gallery.pdf) has them typeset.
+
+**Markup for defined terms and blocks:**
+
+| Written | Renders as |
+|---|---|
+| `[formal sum]{.defn}` | a defined term — underlined italic, brand primary |
+| `[basis]{.term}` | a key term — bold, brand primary |
+| `[combination]{.termref}` | a reference back to one — italic, brand primary |
+| `[unreduced]{.emph}` | strong emphasis — underlined bold italic |
+| `[A B C]{.font-headings}` | a specimen set in the heading face |
+| `[A B C]{.font-body}` | a specimen set in the body face |
+| `::: {.def}` … `:::` | a definition block, indented under a rule |
+| `::: {.thm}` … `:::` | a theorem block, ruled above and below |
+
+An identifier on a `.defn` — `[support]{.defn #support}` — also plants a
+cross-reference target.
+
+Markdown `*italics*` are untouched. `.emph` is its own mark, not a restyling of
+emphasis.
+
+**Callouts.** Quarto's five — `::: {.callout-note}`, `.callout-tip`,
+`.callout-warning`, `.callout-important` and `.callout-caution` — work as usual
+and take the brand colours on their border and title.

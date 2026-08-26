@@ -1,30 +1,43 @@
 # .github/workflows/r.yml
-    
+
 name: R
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  check:
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+
     strategy:
+      fail-fast: false
       matrix:
-        r-version: [ '4.5' ]
+        config:
+          - { os: ubuntu-latest,  r: '4.6.1' }
+          - { os: macos-latest,   r: '4.6.1' }
+          - { os: windows-latest, r: '4.6.1' }
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up R ${{ matrix.r-version }}
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - name: Set up R ${{ matrix.config.r }}
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: ${{ matrix.r-version }}
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
@@ -35,14 +48,61 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: |
-            any::rcmdcheck
-            any::covr
+          extra-packages: any::rcmdcheck
           needs: check
+
+      # Installed into the DEFAULT library, ahead of the check that installs it
+      # into a temporary one.
+      #
+      # `R CMD build` rebuilds the vignettes, and the quarto engine reaches R
+      # through two process hops: R -> quarto.exe -> a fresh R for knitr. That
+      # last process does not see the temporary library on Windows, so
+      # `library(mariner)` in theming.qmd failed with "there is no package
+      # called 'mariner'" and the build exited 1. macOS and Ubuntu pass the
+      # environment down the same chain and were unaffected.
+      #
+      # Installing here puts the package on the grandchild's ordinary
+      # .libPaths(), which needs no environment to survive the hops. The copy
+      # `R CMD check` makes for itself still takes precedence for the check
+      # proper -- this one exists for the vignette render alone.
+      - name: Install the package for vignette rendering
+        run: R CMD INSTALL .
+        shell: bash
+
+      - name: Check
+        uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.6.1'
+          use-public-rspm: true
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Install LaTeX
+        uses: r-lib/actions/setup-tinytex@v2
+
+      - name: Install dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::covr
+          needs: coverage
 
       - name: Test coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: |
-          covr::codecov()
+        run: covr::codecov()
         shell: Rscript {0}

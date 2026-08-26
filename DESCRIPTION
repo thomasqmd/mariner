@@ -1,8 +1,8 @@
 Package: mariner
 Type: Package
-Title: Streamline Quarto and R Markdown Report Generation and Bundling for Dr. Seaman's Classes
-Version: 0.1.3
-Depends: R (>= 4.1.0)
+Title: Streamline Quarto Report Generation and Bundling for Dr. Seaman's Classes
+Version: 0.2.0
+Depends: R (>= 4.2.0)
 Authors@R: c(
     person(
       "Thomas", "Reinke",
@@ -10,31 +10,47 @@ Authors@R: c(
       role = c("aut", "cre")
     )
   )
-Description: Provides a set of functions to simplify and automate the
-    process of rendering and packaging Quarto and R Markdown documents. The package
-    allows users to generate multiple reports from a single parameterized
-    template and to bundle Quarto and R Markdown files along with their outputs, such
-    as PDFs, TeX files, and purled R scripts, into a single, easily
-    shareable zip archive.
+Description: Turns one parameterized Quarto template into a set of reports,
+    renders them, and bundles each source, PDF, TeX file and purled R script
+    into a zip archive. The package carries its own Quarto PDF theme, with
+    bundled fonts and a palette tested for contrast and for separation under
+    colour vision deficiency, so a report and its figures use one set of
+    colours and there is nothing else to install.
 License: MIT + file LICENSE
+URL: https://thomasqmd.github.io/mariner/, https://github.com/thomasqmd/mariner
+BugReports: https://github.com/thomasqmd/mariner/issues
 Encoding: UTF-8
-LazyData: true
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Imports: 
+SystemRequirements: Quarto (>= 1.4), a LaTeX distribution providing xelatex
+Imports:
+    cli,
     fs,
     furrr,
     future,
+    ggplot2,
+    glue,
+    grDevices,
     knitr,
     purrr,
     quarto,
-    rmarkdown,
+    rlang,
+    stats,
+    systemfonts (>= 1.1.0),
+    tools,
     utils,
-    withr
-Suggests: 
+    withr,
+    yaml,
+    zip
+Suggests:
     testthat (>= 3.0.0),
+    pkgload,
     tidyr,
-    tidyverse,
+    progressr,
+    tinytex,
     conflicted,
-    patchwork
+    dplyr,
+    patchwork,
+    tidyverse
 Config/testthat/edition: 3
-VignetteBuilder: knitr
+VignetteBuilder: quarto

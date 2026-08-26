@@ -4,33 +4,54 @@
 \name{mariner-package}
 \alias{mariner}
 \alias{mariner-package}
-\title{mariner: Streamline R Markdown and Quarto Report Generation}
+\title{mariner: Streamline Quarto Report Generation and Bundling}
 \description{
-The `mariner` package simplifies and automates the process of creating and
-packaging R Markdown (.Rmd) and Quarto (.qmd) documents. It provides a
-cohesive workflow for first generating multiple document source files from
-a single parameterized template, and then bundling those source files
-along with all their rendered outputs (e.g., PDFs, scripts, and
-dependency files) into easily shareable zip archives.
+mariner turns one parameterized Quarto template into a set of \code{.qmd} reports,
+renders them, and bundles each source, R script and PDF into a zip archive.
+
+The package carries its own Quarto PDF theme. A report is typeset in the
+bundled fonts, and its figures use the palette the page does.
 }
 \section{Core Workflow}{
 
-The typical workflow involves two main steps:
 \enumerate{
-  \item Use \code{\link{generate_reports}} to create multiple,
-    parameterized `.Rmd` or `.qmd` source files from a template.
-  \item Use \code{\link{process_files}} to render each source file
-    and bundle the source, R script, and all outputs into a zip archive.
+\item \code{\link{mariner_check_setup}} confirms this machine has what a
+report needs: Quarto, a LaTeX engine, the fonts. It changes nothing and
+prints the fix for whatever is missing.
+\item \code{\link{mariner_setup_project}} creates the project folders and
+installs the theme into them. Run it once.
+\item \code{\link{generate_reports}} writes one \code{.qmd} per row of a
+parameter data frame into \verb{reports/}.
+\item \code{\link{process_files}} renders each one and bundles the source,
+the R script and the outputs into \verb{zip_files/}.
 }
 }
 
-\seealso{
-Useful functions:
-\itemize{
-  \item \code{\link{generate_reports}}
-  \item \code{\link{process_files}}
-  \item \code{\link{process_file}}
+\section{Project Folders}{
+
+mariner works in three directories beneath the project root. See
+\code{\link{mariner_dirs}}.
+
+\describe{
+\item{\verb{assets/}}{The Quarto extension, assembled once.}
+\item{\verb{reports/}}{The \code{.qmd} sources, their PDFs, and a copy of the
+extension beside them.}
+\item{\verb{zip_files/}}{The bundles you hand out.}
 }
+
+\code{library(mariner)} creates the three folders when the working directory looks
+like a project root. See \code{\link{mariner_looks_like_project}}. Set
+\code{options(mariner.auto_setup = FALSE)} to turn that off.
+}
+
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://thomasqmd.github.io/mariner/}
+  \item \url{https://github.com/thomasqmd/mariner}
+  \item Report bugs at \url{https://github.com/thomasqmd/mariner/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Thomas Reinke \email{thomas_reinke1@baylor.edu}

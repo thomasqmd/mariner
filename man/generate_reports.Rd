@@ -2,95 +2,91 @@
 % Please edit documentation in R/generate_reports.R
 \name{generate_reports}
 \alias{generate_reports}
-\title{Create R Markdown or Quarto Source Files from a Template}
+\title{Create Quarto sources from a template}
 \usage{
 generate_reports(
   params_df,
-  template_name = "simple_report",
+  template_name = "report",
   template_package = "mariner",
-  output_dir = ".",
-  template_path = NULL
+  output_dir = mariner_dirs()$reports,
+  template_path = NULL,
+  file_name = "Report-{chapter}_{problem_numbers}"
 )
 }
 \arguments{
-\item{params_df}{A data frame where each row represents a report to be
-created. Column names must match the parameter names in the template's
-YAML header (e.g., "chapter", "problem_numbers", "author").}
+\item{params_df}{A data frame, one row per report. Column names match the
+parameter names in the template's \verb{params:} block.}
 
-\item{template_name}{The name of the template directory inside
-`inst/rmarkdown/templates`. This is ignored if `template_path` is provided.}
+\item{template_name}{A template directory that \code{template_package} ships.
+Ignored when \code{template_path} is given.}
 
-\item{template_package}{The name of the installed package where the template
-is located. Defaults to "mariner".}
+\item{template_package}{Installed package to look for \code{template_name} in.}
 
-\item{output_dir}{The directory where the final .Rmd or .qmd files will be saved.}
+\item{output_dir}{Where the \code{.qmd} files go. Defaults to the project's
+\verb{reports/} folder. See \code{\link[=mariner_dirs]{mariner_dirs()}}. Created if it is missing.}
 
-\item{template_path}{An optional path to a single `.Rmd` or `.qmd` template
-file. If provided, this template will be used instead of one from a package.}
+\item{template_path}{A \code{.qmd} path to use instead of a packaged template.}
+
+\item{file_name}{A \code{\link[glue:glue]{glue::glue()}} template for the output names, evaluated
+against each row of \code{params_df}. Leave off the \code{.qmd} extension; mariner
+adds it. Every column that varies has to appear here, or two rows resolve to
+one name and the second overwrites the first.}
 }
 \value{
-Invisibly returns a character vector of the output file paths for
-  the newly created .Rmd or .qmd files.
+Invisibly, a character vector of the paths written.
 }
 \description{
-Creates multiple R Markdown (.Rmd) or Quarto (.qmd) source files from a
-parameterized template. The template can be located within a package or
-provided as a direct file path.
+Writes one Quarto (\code{.qmd}) source file per row of \code{params_df}. Each file gets
+that row's values in its YAML \verb{params:} block.
+
+The template is either one a package ships or a \code{.qmd} path.
 }
+\details{
+mariner parses the template front matter as YAML, merges the row into its
+\code{params} entry, and re-emits it. Only \code{params} changes. \code{title}, \code{format} and
+the rest come across untouched, inline R included:
+\code{title: "`r paste('Report', params$chapter)`"}.
+
+A column of \code{params_df} with no counterpart in the template's \code{params} block
+is not substituted, and warns. That case is a typo or a template mismatch,
+and the old behaviour dropped it in silence.
+}
+\section{Project settings}{
+
+A \verb{_mariner.yml} at the project root fills any parameter of the same name
+that the template declares. It holds what does not vary between reports.
+\code{author} is the case it exists for: one person runs a batch, and it is their
+name on every report in it.
+
+Precedence, lowest to highest: the template's own default, \verb{_mariner.yml},
+then the \code{params_df} column. Write the file with
+\code{mariner_setup_project(author = "Your Name")}.
+}
+
 \examples{
-\dontrun{
-# --- Example 1: Using the default package template (finds .qmd or .Rmd) ---
-temp_dir_pkg <- tempfile("pkg-example-")
-dir.create(temp_dir_pkg)
+temp_dir <- tempfile("mariner-example-")
 
-report_params <- tidyr::expand_grid(
+# One row per report. Only what VARIES between them belongs here; the author
+# is a project setting -- see mariner_setup_project(author = ).
+report_params <- data.frame(
   chapter = 1,
-  problem_numbers = 1:2,
-  author = "Firstname Lastname"
+  problem_numbers = 1:2
 )
 
-rmd_files <- generate_reports(
+qmd_files <- generate_reports(
   params_df = report_params,
-  template_name = "simple_report",
-  output_dir = temp_dir_pkg
+  template_name = "report",
+  output_dir = temp_dir
 )
 
-list.files(temp_dir_pkg) # Will be .qmd if skeleton.qmd exists
+basename(qmd_files)
 
-# --- Example 2: Using an external .Rmd template file ---
-temp_dir_ext <- tempfile("ext-example-")
-dir.create(temp_dir_ext)
-
-# Create a custom template on the fly
-custom_template_path <- file.path(temp_dir_ext, "custom.Rmd")
-writeLines(
-  c(
-    "---",
-    "title: Custom Report",
-    "params:",
-    "  region: Midwest",
-    "---",
-    "This report is for the `r params$region` region."
-  ),
-  custom_template_path
-)
-
-custom_params <- data.frame(
-  chapter = 1,
-  problem_numbers = 1,
-  region = c("East", "West")
-)
-
+# A different naming scheme:
 generate_reports(
-  params_df = custom_params,
-  template_path = custom_template_path,
-  output_dir = temp_dir_ext
-)
+  params_df = report_params,
+  output_dir = temp_dir,
+  file_name = "ch{chapter}-prob{problem_numbers}"
+) |> basename()
 
-list.files(temp_dir_ext) # Will be .Rmd
-
-# --- Cleanup ---
-unlink(temp_dir_pkg, recursive = TRUE)
-unlink(temp_dir_ext, recursive = TRUE)
-}
+unlink(temp_dir, recursive = TRUE)
 }

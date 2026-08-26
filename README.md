@@ -5,71 +5,95 @@
 [![codecov](https://codecov.io/github/thomasqmd/mariner/graph/badge.svg?token=A4PDZWC3IL)](https://codecov.io/github/thomasqmd/mariner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The **mariner** package simplifies and automates the process of creating and zipping reports for Dr. Seaman's Class. It provides a cohesive workflow to first generate multiple Quarto or R Markdown source files from a single parameterized template, and then zips the source files and all rendered outputs into easily shareable zip archives. See the reference website [here](https://thomasqmd.github.io/mariner/).
+**mariner** turns one parameterized Quarto template into a set of reports, renders them, and bundles each one into a zip archive. It carries its own Quarto PDF theme: typography, brand colours, and matching **ggplot2** scales.
+
+Documentation: [https://thomasqmd.github.io/mariner/](https://thomasqmd.github.io/mariner/).
 
 ## Installation
 
-You can install the current version of mariner from [GitHub](https://github.com/thomasqmd/mariner) with:
+**mariner** installs from GitHub, so R builds it from source.
+
+**Windows needs [Rtools](https://cran.r-project.org/bin/windows/Rtools/) first.**
+Match the version to your R — check `R.version.string`, so R 4.5.x takes Rtools45 —
+then restart RStudio. Without it the install stops at
+`Could not find tools necessary to compile a package`. macOS and Linux need
+nothing extra.
 
 ```r
 # install.packages("pak")
-pak::pak("thomasqmd/mariner")
-
+pak::pak("thomasqmd/mariner", dependencies = TRUE)
 ```
 
-## Workflow
+`dependencies = TRUE` brings the `Suggests` along — **tidyverse**, **patchwork**,
+**tinytex** and the rest — which is what a course usually wants. Leave it off to
+install only what mariner itself needs.
 
-The typical workflow involves two main steps: using `generate_reports()` to create parameterized `.qmd` or `.Rmd` files, and then using `process_files()` to render and bundle them.
+## Folder Structure
 
-### Generate Reports
+mariner works in three project directories:
 
-Use `generate_reports` to create multiple report files base on a template.
+```
+your-project/
+├── assets/          # the Quarto theme, assembled once
+├── reports/         # the .qmd sources, their PDFs, and _extensions/
+└── zip_files/       # one archive per report: PDF, source, R script
+```
+
+## Quickstart
 
 ```r
 library(mariner)
-library(tidyr)
 
-# --- 1. Setup: Create a temporary directory for the output ---
-temp_dir <- tempfile("mariner-example-")
-dir.create(temp_dir)
+# 1. Create the folders, install the Quarto theme, set the author
+mariner_setup_project(author = "Alice Smith")
 
-# --- 2. Define the parameters for each report ---
-# Each row in the data frame corresponds to one report.
-report_params <- expand_grid(
-  chapter = 1, 
-  problem_numbers = 1:2, 
-  author = "Firstname Lastname"
+# 2. One row per report; only what varies between them belongs here
+report_params <- expand.grid(
+  chapter = 1,
+  problem_numbers = 1:2,
+  stringsAsFactors = FALSE
 )
 
-# --- 3. Generate the .qmd source files ---
-qmd_files <- generate_reports(
-  params_df = report_params,
-  template_name = "simple_report",
-  output_dir = temp_dir
-)
-#> Generating 2 Qmd files...
-#> Rmd file generation complete.
+# 3. Write the .qmd files into reports/
+qmd_files <- generate_reports(report_params)
+
+# 4. Render and bundle into zip_files/
+zip_files <- process_files(qmd_files)
 ```
 
-### Proccess Reports
+Every column that varies has to appear in the file name template, which defaults to `"Report-{chapter}_{problem_numbers}"`. Otherwise two rows resolve to one name and the second overwrites the first.
 
-Then you will have two `.qmd` files in your temporary directory, named `Report-1_1.qmd` and `Report-1_2.qmd`, each containing the parameters specified. After editing the reports as needed, you can proceed to render and zip them with `process_file` or `process_files` as shown below.
+The author is not a column. The setup call above writes it to `_mariner.yml`, and from there it fills the template's `author` parameter for every report in the project: one person runs the batch, and it is their name on all of it. A `params_df` column of the same name still wins, for the batch whose author does vary.
+
+## Theming
+
+`theme_mariner()` and the `scale_*_mariner_*()` families draw a figure in the same colours as the page:
 
 ```r
-# --- 4. Render the reports and bundle them into zip archives ---
-# This can be run in parallel by setting a future plan.
-process_files(qmd_files)
-#> Starting bundling process...
-#> Progress: ────────────────────────────────── 100%
-#> Successfully created bundle: Report-1_1.zip
-#> Successfully created bundle: Report-1_2.zip
-#> Bundling complete. Success: 2, Failures: 0.
+library(ggplot2)
 
-# --- 5. View the final output ---
-# The directory now contains the source Rmd files and their zip archives.
-list.files(temp_dir)
-#> [1] "Report-1_1.qmd" "Report-1_1.zip" "Report-1_2.qmd" "Report-1_2.zip"
+ggplot(mpg, aes(class, hwy, color = class)) +
+  geom_jitter(width = 0.2, height = 0, size = 2) +
+  scale_colour_mariner_d() +
+  labs(
+    title = "Fuel Economy by Vehicle Class",
+    x = "Vehicle Class",
+    y = "Highway MPG"
+  ) +
+  theme_mariner() +
+  theme(legend.position = "none")
+```
 
-# --- Cleanup ---
-unlink(temp_dir, recursive = TRUE)
+## If It Does Not Work
+
+`mariner_check_setup()` reports on Quarto, LaTeX, the fonts, the folders and the theme, and prints the fix for anything missing:
+
+```r
+mariner_check_setup()
+```
+
+If the fonts are missing:
+
+```r
+mariner_install_fonts()
 ```

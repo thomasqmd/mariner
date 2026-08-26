@@ -1,266 +1,217 @@
-# tests/testthat/test-generate_reports.R
+# generate_reports(): YAML-aware param splicing and glue file naming.
 
-# Test Case 1: Successful .qmd file generation (new default)
-test_that("generate_reports creates valid .qmd files by default", {
-  # --- 1. Setup ---
-  temp_output_dir <- tempfile(pattern = "test-reports-")
-  dir.create(temp_output_dir)
-  on.exit(unlink(temp_output_dir, recursive = TRUE), add = TRUE)
+# front_matter() and local_dir() come from helper-front-matter.R.
 
-  report_params <- data.frame(
-    chapter = 1,
-    problem_numbers = 1:2,
-    author = "Test Author"
+# --- the happy path ----------------------------------------------------------
+
+test_that("generate_reports splices params into .qmd files", {
+  dir <- local_dir()
+  params <- data.frame(
+    chapter = 1, problem_numbers = 1:2, author = "Test Author"
   )
 
-  # --- 2. Execute ---
-  suppressMessages({
-    output_files <- generate_reports(
-      params_df = report_params,
-      template_name = "simple_report",
-      template_package = "mariner",
-      output_dir = temp_output_dir
-    )
-  })
+  files <- suppressMessages(generate_reports(
+    params_df = params,
+    template_name = "report",
+    template_package = "mariner",
+    output_dir = dir
+  ))
 
-  # --- 3. Assertions ---
-  # Expected filenames are now .qmd
-  expected_filenames <- paste0(
-    "Report-",
-    report_params$chapter,
-    "_",
-    report_params$problem_numbers,
-    ".qmd"
-  )
-  expect_equal(length(output_files), nrow(report_params))
-  expect_true(all(file.exists(output_files)))
-  expect_equal(basename(output_files), expected_filenames)
+  expect_length(files, 2L)
+  expect_true(all(file.exists(files)))
+  expect_equal(basename(files), c("Report-1_1.qmd", "Report-1_2.qmd"))
 
-  first_file_content <- readLines(output_files[1])
-  expect_true(any(grepl(
-    'author: "Test Author"',
-    first_file_content,
-    fixed = TRUE
-  )))
-  expect_true(any(grepl("chapter: 1", first_file_content, fixed = TRUE)))
-  expect_true(any(grepl(
-    "problem_numbers: 1",
-    first_file_content,
-    fixed = TRUE
-  )))
+  fm <- front_matter(files[[1]])
+  expect_equal(fm$params$author, "Test Author")
+  expect_equal(fm$params$chapter, 1L)
+  expect_equal(fm$params$problem_numbers, 1L)
+
+  expect_equal(front_matter(files[[2]])$params$problem_numbers, 2L)
 })
 
-# ---
-# Test Case 2: Graceful failure with invalid inputs (Unchanged)
-test_that("generate_reports errors correctly with bad inputs", {
-  temp_output_dir <- tempfile(pattern = "bad-inputs-")
-  dir.create(temp_output_dir)
-  on.exit(unlink(temp_output_dir, recursive = TRUE), add = TRUE)
+test_that("the returned paths are the ones actually written", {
+  # The old implementation recomputed the return value from two hardcoded
+  # columns instead of collecting it from the map, so the two could disagree.
+  dir <- local_dir()
+  files <- suppressMessages(generate_reports(
+    params_df = data.frame(chapter = 2, problem_numbers = 5, author = "A"),
+    output_dir = dir
+  ))
 
-  valid_params <- data.frame(chapter = 1, problem_numbers = 1, author = "Test")
+  expect_equal(normalizePath(files), normalizePath(list.files(dir, full.names = TRUE)))
+})
 
+# --- warnings and errors -----------------------------------------------------
+
+test_that("an unmatched params_df column warns instead of vanishing", {
+  dir <- local_dir()
+
+  expect_warning(
+    suppressMessages(generate_reports(
+      params_df = data.frame(chapter = 1, problem_numbers = 1, authr = "Typo"),
+      output_dir = dir
+    )),
+    "authr"
+  )
+})
+
+test_that("unmatched columns warn once, not once per row", {
+  dir <- local_dir()
+  warnings <- testthat::capture_warnings(
+    suppressMessages(generate_reports(
+      params_df = data.frame(chapter = 1, problem_numbers = 1:5, authr = "Typo"),
+      output_dir = dir
+    ))
+  )
+  expect_length(warnings, 1L)
+})
+
+test_that("an unmatched column is still usable in file_name", {
+  dir <- local_dir()
+  files <- suppressWarnings(suppressMessages(generate_reports(
+    params_df = data.frame(chapter = 1, problem_numbers = 1, section = "b"),
+    output_dir = dir,
+    file_name = "Ch{chapter}-{section}"
+  )))
+  expect_equal(basename(files), "Ch1-b.qmd")
+})
+
+# --- file naming -------------------------------------------------------------
+
+test_that("file_name is a glue template over each row", {
+  dir <- local_dir()
+  files <- suppressMessages(generate_reports(
+    params_df = data.frame(
+      chapter = c(1, 2), problem_numbers = c(3, 4), author = "A"
+    ),
+    output_dir = dir,
+    file_name = "ch{chapter}-prob{problem_numbers}"
+  ))
+
+  expect_equal(basename(files), c("ch1-prob3.qmd", "ch2-prob4.qmd"))
+})
+
+test_that("a params_df without chapter or problem_numbers is an error, not Report-_.qmd", {
+  # The old hardcoded name silently produced "Report-_.qmd" -- and every row
+  # produced the SAME name, so n rows left one file.
+  dir <- local_dir()
+  expect_error(
+    suppressWarnings(suppressMessages(generate_reports(
+      params_df = data.frame(region = "West"),
+      output_dir = dir
+    ))),
+    "chapter"
+  )
+  expect_length(list.files(dir), 0L)
+})
+
+test_that("a file_name that resolves to nothing is refused", {
+  # The stem, not the columns: this one names no column at all, so glue
+  # succeeds and hands back an empty string. Writing it would produce ".qmd",
+  # and every row would produce the same one.
+  dir <- local_dir()
+  expect_error(
+    suppressMessages(generate_reports(
+      params_df = data.frame(chapter = 1, problem_numbers = 1),
+      output_dir = dir,
+      file_name = ""
+    )),
+    "produced an empty file name"
+  )
+  expect_length(list.files(dir), 0L)
+})
+
+test_that("a file_name of nothing but whitespace is refused too", {
+  # "  .qmd" is a legal filename and an unusable one.
+  dir <- local_dir()
+  expect_error(
+    suppressMessages(generate_reports(
+      params_df = data.frame(chapter = 1, problem_numbers = 1),
+      output_dir = dir,
+      file_name = "   "
+    )),
+    "produced an empty file name"
+  )
+  expect_length(list.files(dir), 0L)
+})
+
+# --- template resolution -----------------------------------------------------
+
+test_that("an unknown template names the ones that exist", {
   expect_error(
     generate_reports(
-      params_df = valid_params,
+      params_df = data.frame(chapter = 1, problem_numbers = 1),
       template_name = "nonexistent_template",
-      output_dir = temp_output_dir
-    )
+      output_dir = local_dir()
+    ),
+    "report"
   )
+})
+
+test_that("a missing template_path errors", {
+  expect_error(
+    generate_reports(
+      params_df = data.frame(chapter = 1, problem_numbers = 1),
+      template_path = "non_existent_file.qmd",
+      output_dir = local_dir()
+    ),
+    "not found"
+  )
+})
+
+test_that("a .Rmd template is refused outright", {
+  dir <- local_dir()
+  legacy <- file.path(dir, "legacy.Rmd")
+  writeLines(c("---", "title: Legacy", "---", "Hello."), legacy)
 
   expect_error(
     generate_reports(
-      params_df = valid_params,
-      template_path = "non_existent_file.Rmd",
-      output_dir = temp_output_dir
-    )
-  )
-})
-
-# ---
-# Test Case 3: Successful generation from an external .Rmd template_path (Unchanged)
-test_that("generate_reports works with a valid .Rmd template_path", {
-  # --- 1. Setup ---
-  temp_dir <- tempfile("template-path-test-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  custom_template_path <- file.path(temp_dir, "custom_template.Rmd")
-  writeLines(
-    c(
-      "---",
-      "params:",
-      "  region: Midwest",
-      "  author: Default",
-      "---",
-      "Region: `r params$region`"
+      params_df = data.frame(chapter = 1, problem_numbers = 1),
+      template_path = legacy, output_dir = dir
     ),
-    custom_template_path
-  )
-
-  report_params <- data.frame(
-    chapter = 1,
-    problem_numbers = 1,
-    region = "West",
-    author = "Custom Author"
-  )
-
-  # --- 2. Execute ---
-  suppressMessages({
-    output_files <- generate_reports(
-      params_df = report_params,
-      template_path = custom_template_path,
-      output_dir = temp_dir
-    )
-  })
-
-  # --- 3. Assertions ---
-  expect_true(file.exists(output_files[1]))
-  expect_equal(tools::file_ext(output_files[1]), "Rmd")
-  file_content <- readLines(output_files[1])
-  expect_true(any(grepl('region: "West"', file_content, fixed = TRUE)))
-  expect_true(any(grepl('author: "Custom Author"', file_content, fixed = TRUE)))
-})
-
-
-# ---
-# Test Case 4: Handling of extra columns in params_df (Unchanged)
-# This test now implicitly uses the .qmd template, which is good.
-test_that("generate_reports ignores extra columns in params_df", {
-  temp_dir <- tempfile("extra-cols-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  report_params <- data.frame(
-    chapter = 1,
-    problem_numbers = 1,
-    author = "Test Author",
-    extra_col = "should be ignored"
-  )
-
-  expect_no_error({
-    suppressMessages({
-      output_files <- generate_reports(
-        params_df = report_params,
-        template_name = "simple_report",
-        output_dir = temp_dir
-      )
-    })
-    expect_true(file.exists(output_files[1]))
-  })
-})
-
-# ---
-# Test Case 5: Handling of missing columns in params_df (Unchanged)
-# This test now implicitly uses the .qmd template, which is good.
-test_that("generate_reports uses template defaults for missing columns", {
-  temp_dir <- tempfile("missing-cols-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  report_params <- data.frame(chapter = 1, problem_numbers = 1)
-
-  suppressMessages({
-    output_files <- generate_reports(
-      params_df = report_params,
-      template_name = "simple_report",
-      output_dir = temp_dir
-    )
-  })
-
-  expect_true(file.exists(output_files[1]))
-  file_content <- readLines(output_files[1])
-
-  expect_true(any(grepl("chapter: 1", file_content, fixed = TRUE)))
-  expect_true(any(grepl("problem_numbers: 1", file_content, fixed = TRUE)))
-  # Check against the default in skeleton.qmd
-  expect_true(any(grepl(
-    'author: "Default Author Name"',
-    file_content,
+    "must be a .qmd file",
     fixed = TRUE
-  )))
-})
-
-# ---
-# Test Case 6: Correctly substitutes author when provided (Unchanged)
-# This test now implicitly uses the .qmd template, which is good.
-test_that("generate_reports correctly substitutes the author", {
-  temp_dir <- tempfile("author-test-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  report_params <- data.frame(
-    chapter = 1,
-    problem_numbers = 1,
-    author = "New Author Name"
   )
-
-  suppressMessages({
-    output_files <- generate_reports(
-      params_df = report_params,
-      template_name = "simple_report",
-      output_dir = temp_dir
-    )
-  })
-
-  expect_true(file.exists(output_files[1]))
-  file_content <- readLines(output_files[1])
-  expect_true(any(grepl(
-    'author: "New Author Name"',
-    file_content,
-    fixed = TRUE
-  )))
-  expect_false(any(grepl(
-    'author: "Default Author Name"',
-    file_content,
-    fixed = TRUE
-  )))
 })
 
-# ---
-# Test Case 7: Successful generation from an external .qmd template_path (NEW)
-test_that("generate_reports works with a valid .qmd template_path", {
-  # --- 1. Setup ---
-  temp_dir <- tempfile("template-path-qmd-")
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  custom_template_path <- file.path(temp_dir, "custom_template.qmd")
+test_that("a custom template_path works", {
+  dir <- local_dir()
+  template <- file.path(dir, "custom.qmd")
   writeLines(
-    c(
-      "---",
-      "params:",
-      "  region: Midwest",
-      "  author: Default",
-      "---",
-      "Region: `r params$region`"
-    ),
-    custom_template_path
+    c("---", "params:", "  region: Midwest", "  author: Default", "---",
+      "Region: `r params$region`"),
+    template
   )
 
-  report_params <- data.frame(
-    chapter = 1,
-    problem_numbers = 1,
-    region = "East",
-    author = "Custom QMD Author"
-  )
+  file <- suppressMessages(generate_reports(
+    params_df = data.frame(region = "West", author = "Custom Author"),
+    template_path = template,
+    output_dir = dir,
+    file_name = "{region}"
+  ))
 
-  # --- 2. Execute ---
-  suppressMessages({
-    output_files <- generate_reports(
-      params_df = report_params,
-      template_path = custom_template_path,
-      output_dir = temp_dir
-    )
-  })
+  fm <- front_matter(file)
+  expect_equal(fm$params$region, "West")
+  expect_equal(fm$params$author, "Custom Author")
+})
 
-  # --- 3. Assertions ---
-  expect_true(file.exists(output_files[1]))
-  expect_equal(tools::file_ext(output_files[1]), "qmd")
-  file_content <- readLines(output_files[1])
-  expect_true(any(grepl('region: "East"', file_content, fixed = TRUE)))
-  expect_true(any(grepl(
-    'author: "Custom QMD Author"',
-    file_content,
-    fixed = TRUE
-  )))
+test_that("missing columns fall back to the template's defaults", {
+  dir <- local_dir()
+  file <- suppressMessages(generate_reports(
+    params_df = data.frame(chapter = 1, problem_numbers = 1),
+    output_dir = dir
+  ))
+
+  fm <- front_matter(file)
+  expect_equal(fm$params$chapter, 1L)
+  expect_equal(fm$params$author, "Default Author Name")
+})
+
+test_that("output_dir is created if absent", {
+  dir <- file.path(local_dir(), "nested", "reports")
+  files <- suppressMessages(generate_reports(
+    params_df = data.frame(chapter = 1, problem_numbers = 1, author = "A"),
+    output_dir = dir
+  ))
+  expect_true(file.exists(files))
 })

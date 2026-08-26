@@ -5,3 +5,11 @@
 .github
 docs
 ^_pkgdown\.yml$
+^data-raw$
+^dev$
+^assets$
+^reports$
+^zip_files$
+^vignettes/\.quarto$
+^\.quarto$
+^pkgdown$

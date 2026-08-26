@@ -1,97 +1,134 @@
-#' Bundle Multiple R Markdown or Quarto Files Sequentially or in Parallel
+#' Bundle many Quarto files, in sequence or in parallel
 #'
 #' @description
-#' A wrapper around `process_file()` to process a list of R Markdown (.Rmd) or
-#' Quarto (.qmd) files. Execution is sequential by default but can be run in
-#' parallel by setting a `future` plan (e.g., `future::plan(future::multisession)`).
+#' [process_file()] over a vector of Quarto (`.qmd`) files. The batch runs
+#' sequentially by default, and in parallel under a **future** plan such as
+#' `future::plan(future::multisession)`.
 #'
-#' @param input_files A character vector of paths to the `.Rmd` or `.qmd` files.
-#' @param output_dir An optional path to a directory where the output zip
-#'   archives will be saved. If `NULL` (the default), each zip is created in
-#'   the same directory as its corresponding input file.
+#' @details
+#' A file that fails to render does not stop the batch. It comes back as `NA`,
+#' and its error message is named in the summary. Each render owns a scratch
+#' directory, so parallel workers cannot collide.
 #'
-#' @return Invisibly returns a character vector of paths to the successfully
-#'   created zip archives. Any file that fails to process will be represented
-#'   by an `NA` in the output vector.
+#' @param input_files A character vector of `.qmd` paths.
+#' @param output_dir Where the archives go. Defaults to the project's
+#'   `zip_files/` folder. See [mariner_dirs()].
+#' @param theme One of [mariner_themes].
+#' @param assets_dir Directory that holds a built extension. Resolved once here
+#'   and handed to every worker, so a batch of fifty reports stages the theme
+#'   from one place.
+#' @param include Which categories to bundle. See [process_file()].
+#'
+#' @return Invisibly, a character vector of the archives created, with `NA` in
+#'   the position of any file that failed.
 #' @export
-#' @importFrom purrr possibly map_chr
-#' @importFrom furrr future_map2_chr
+#' @importFrom purrr map_chr
+#' @importFrom furrr future_map2
 #' @importFrom future plan multisession
 #' @importFrom fs path_ext_set file_exists dir_create path_file
 #'
 #' @examples
 #' \dontrun{
-#' # --- Setup: Create a temporary directory and generate document files ---
 #' temp_dir <- tempfile("example-")
-#' dir.create(temp_dir)
 #'
-#' report_params <- tidyr::expand_grid(
-#'   chapter = 1,
-#'   problem_numbers = 1:2,
-#'   author = "Firstname Lastname"
-#' )
-#'
-#' # This will now likely create .qmd files
 #' doc_files <- generate_reports(
-#'   params_df = report_params,
-#'   template_name = "simple_report",
+#'   params_df = data.frame(chapter = 1, problem_numbers = 1:2),
 #'   output_dir = temp_dir
 #' )
 #'
-#' # --- Example 1: Default behavior (zips next to source files) ---
-#' process_files(doc_files)
-#' list.files(temp_dir)
+#' process_files(doc_files, output_dir = file.path(temp_dir, "zips"))
 #'
-#' # --- Example 2: Specifying an output directory ---
-#' zip_output_dir <- file.path(temp_dir, "zips")
-#' process_files(doc_files, output_dir = zip_output_dir)
-#' list.files(zip_output_dir)
+#' # In parallel:
+#' future::plan(future::multisession, workers = 2)
+#' process_files(doc_files, output_dir = file.path(temp_dir, "zips"))
+#' future::plan(future::sequential)
 #'
-#' # --- Cleanup ---
 #' unlink(temp_dir, recursive = TRUE)
 #' }
-process_files <- function(input_files, output_dir = NULL) {
-  safe_bundle <- purrr::possibly(process_file, otherwise = NA_character_)
+process_files <- function(input_files,
+                          output_dir = NULL,
+                          theme = mariner_themes,
+                          assets_dir = mariner_dirs()$assets,
+                          include = INCLUDE_KINDS) {
+  theme <- check_theme(theme)
+  include <- rlang::arg_match(include, INCLUDE_KINDS, multiple = TRUE)
 
-  # Determine the output paths for each file
-  if (is.null(output_dir)) {
-    # If no output dir, zips are created next to the input files
-    output_zip_paths <- purrr::map_chr(
-      input_files,
-      ~ fs::path_ext_set(.x, ".zip")
-    )
+  # A NULL output_dir is passed THROUGH as a NULL output_zip rather than being
+  # resolved here. process_file() resolves it from each input's own directory,
+  # so a batch spanning two projects lands each bundle in its own zip_files/
+  # instead of all of them in whichever project getwd() happened to name.
+  output_zip_paths <- if (is.null(output_dir)) {
+    vector("list", length(input_files))
   } else {
-    # If output dir is specified, create it and define paths there
-    if (!fs::file_exists(output_dir)) {
-      fs::dir_create(output_dir)
-    }
-    output_zip_paths <- purrr::map_chr(
+    fs::dir_create(output_dir)
+    as.list(purrr::map_chr(
       input_files,
-      ~ {
-        file.path(output_dir, fs::path_file(fs::path_ext_set(.x, ".zip")))
-      }
+      function(f) file.path(output_dir, fs::path_file(fs::path_ext_set(f, ".zip")))
+    ))
+  }
+
+  bundle_one <- function(input, output) {
+    # Registered inside the WORKER, not once in the parent.
+    #
+    # mariner_register_fonts() populates a per-session systemfonts registry. A
+    # multisession worker is a fresh R process, so it starts without one and its
+    # figures fall back to the device default -- silently, and only in parallel,
+    # because the parent that ran the sequential test looks perfect. .onLoad()
+    # does call this when the worker attaches the package; asserting it here
+    # costs nothing and does not depend on that staying true.
+    mariner_register_fonts(quiet = TRUE)
+
+    tryCatch(
+      list(path = process_file(
+        input_file = input,
+        output_zip = output,
+        theme = theme,
+        assets_dir = assets_dir,
+        include = include
+      ), error = NULL),
+      # purrr::possibly()'s NA-on-failure semantics, but the message is KEPT.
+      # Discarding it left "Failures: 1" as the entire account of what went
+      # wrong, and the only way to find out was to re-run the file by hand.
+      error = function(e) list(path = NA_character_, error = conditionMessage(e))
     )
   }
 
-  message("Starting bundling process...")
-  # Use furrr::future_map2_chr to iterate over both inputs and outputs
-  output_paths <- furrr::future_map2_chr(
+  cli::cli_alert_info("Bundling {length(input_files)} file{?s}...")
+
+  # .progress = TRUE is deprecated in furrr's docs in favour of progressr, but
+  # no warning fires on furrr 0.4.0. Housekeeping for a quiet moment, not a fire.
+  results <- furrr::future_map2(
     .x = input_files,
     .y = output_zip_paths,
-    .f = ~ safe_bundle(input_file = .x, output_zip = .y),
+    .f = bundle_one,
     .progress = TRUE
   )
 
-  success_count <- sum(!is.na(output_paths))
-  failure_count <- sum(is.na(output_paths))
+  output_paths <- purrr::map_chr(results, function(r) r$path)
+  failed <- is.na(output_paths)
 
-  message(
-    "Bundling complete. Success: ",
-    success_count,
-    ", Failures: ",
-    failure_count,
-    "."
-  )
+  # Where they LANDED, not where they were told to go: with output_dir = NULL
+  # that was decided per file, and reporting the request rather than the result
+  # would name a directory that may not be the one holding the archives.
+  landed <- unique(dirname(output_paths[!failed]))
+  if (length(landed) == 1L) {
+    cli::cli_alert_success("Bundled {sum(!failed)} file{?s} to {.file {landed}}")
+  } else {
+    cli::cli_alert_success("Bundled {sum(!failed)} file{?s}.")
+  }
+
+  if (any(failed)) {
+    reasons <- purrr::map_chr(results[failed], function(r) r$error)
+    names <- fs::path_file(input_files[failed])
+    cli::cli_alert_danger("Failed on {sum(failed)} file{?s}:")
+    # One bullet per failure, interpolating the message as a VALUE rather than
+    # pasting it into the format string. A quarto error containing a brace --
+    # any R error mentioning a `{` block does -- would otherwise be re-parsed as
+    # glue syntax and throw while reporting the original throw.
+    for (i in seq_along(reasons)) {
+      cli::cli_bullets(c(x = "{.file {names[i]}}: {reasons[i]}"))
+    }
+  }
 
   invisible(output_paths)
 }

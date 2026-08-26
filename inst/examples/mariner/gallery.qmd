@@ -1,0 +1,340 @@
+---
+title: "mariner Report Theme"
+author:
+  - name: Thomas Reinke
+format:
+  mariner-pdf:
+    keep-tex: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(ggplot2)
+library(mariner)
+
+mariner_knitr_setup("pdf")
+mariner_set_theme()
+```
+
+# Colour
+
+Every colour below comes from the theme rather than from this document.
+`_brand.yml` is the only file in the package where a hex is typed, and both the
+page and the figures on it resolve back to it.
+
+## Brand chrome
+
+Chrome dresses the document: headings, rules, links, body ink. Neither official
+colour can carry a data series. The green reads as near-black in a plot, and the
+gold is too light against the page to carry text. The theme ships a darkened
+gold for ink and another for rules, each walked along the gold's own hue until
+it clears its contrast threshold.
+
+```{r}
+#| label: fig-chrome
+#| fig-height: 2.0
+#| fig-cap: "Brand chrome, by the role each colour plays."
+chrome_roles  <- c("primary", "secondary", "accent-ink", "accent-rule",
+                   "link", "ink", "ink-muted")
+chrome_labels <- c("Primary", "Secondary", "Accent ink", "Accent rule",
+                   "Link", "Ink", "Muted ink")
+
+chrome <- data.frame(
+  Slot  = seq_along(chrome_roles),
+  Role  = factor(chrome_labels, levels = chrome_labels),
+  Colour = unname(mariner_colors()[chrome_roles])
+)
+
+ggplot(chrome, aes(Slot, 1, fill = Colour)) +
+  geom_tile(color = mariner_colors()[["background"]],
+            linewidth = 1.2, width = 0.88, height = 0.88) +
+  scale_fill_identity() +
+  # Labels above the blocks rather than beside them, and coord_fixed() so a
+  # block stays square whatever width the page gives the figure.
+  scale_x_continuous(breaks = chrome$Slot, labels = chrome$Role,
+                     position = "top", expand = c(0.02, 0.02)) +
+  scale_y_continuous(breaks = NULL, expand = c(0.04, 0.04)) +
+  coord_fixed() +
+  labs(x = NULL, y = NULL) +
+  theme(
+    # Blanking panel.grid alone is not enough: theme_mariner() sets the .x and
+    # .y children explicitly, and an explicitly-set child survives its parent
+    # being blanked -- the gridlines then show as stubs above and below each
+    # block, in the panel space coord_fixed() leaves around them.
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.ticks.length = grid::unit(0, "pt"),
+    axis.text.x = element_text(face = "bold", size = 8, margin = margin(b = 4)),
+    axis.text.y = element_blank()
+  )
+```
+
+## The four palette families
+
+Each family answers a different question about the data.
+
+```{r}
+#| label: fig-swatches
+#| fig-cap: "The four palette families, as swatches."
+#| fig-height: 2.8
+fams <- list(
+  "Categorical (8)" = mariner_pal(family = "discrete", n = 8),
+  "Sequential (7)"  = mariner_pal(family = "sequential", n = 7),
+  "Ordinal (5)"     = mariner_pal(family = "ordinal", n = 5),
+  "Diverging (7)"   = mariner_pal(family = "diverging", n = 7)
+)
+
+swatches <- do.call(rbind, lapply(names(fams), function(nm) {
+  cols <- fams[[nm]]
+  data.frame(Family = nm, Slot = seq_along(cols), Colour = unname(cols))
+}))
+swatches$Family <- factor(swatches$Family, levels = rev(names(fams)))
+
+ggplot(swatches, aes(Slot, Family, fill = Colour)) +
+  geom_tile(color = mariner_colors()[["background"]],
+            linewidth = 1.2, width = 0.94, height = 0.8) +
+  scale_fill_identity() +
+  scale_x_continuous(breaks = NULL, expand = c(0.01, 0.01)) +
+  labs(x = NULL, y = NULL) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.ticks.length = grid::unit(0, "pt"),
+    axis.text.y = element_text(face = "bold", size = 8)
+  )
+```
+
+Categorical separates things that have no order. Sequential carries magnitude
+on one hue. Ordinal is sequential over a few ranked levels. Diverging needs its
+neutral step to mean *no difference*, which is why the section below sets
+symmetric limits rather than letting the data decide.
+
+Five scale families reach these four palettes. Sequential is spent twice:
+`scale_*_mariner_c()` runs it as a gradient, `scale_*_mariner_b()` cuts it into
+steps. The rest map one to one — `_d()` to categorical, `_o()` to ordinal,
+`_div()` to diverging.
+
+# Typography
+
+One type system, and each face does something the other cannot.
+
+::: {.def}
+**Atkinson Hyperlegible** — headings, and every figure label
+
+[A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+0 1 2 3 4 5 6 7 8 9 — **I l 1** · **0 O** · **rn m**]{.font-headings}
+:::
+
+::: {.def}
+**Lora** — body copy
+
+[A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+0 1 2 3 4 5 6 7 8 9 — *Italic*, **Bold**, ***Bold Italic***]{.font-body}
+:::
+
+::: {.def}
+**JetBrains Mono** — code
+
+`A B C D E F G H I J K L M N O P Q R S T U V W X Y Z`
+`a b c d e f g h i j k l m n o p q r s t u v w x y z`
+`0 1 2 3 4 5 6 7 8 9 — I l 1 · 0 O · rn m`
+:::
+
+The pairs in bold are why Atkinson carries the structure: `I l 1`, `0 O` and
+`rn m` collapse at small sizes, and a figure axis is nothing but small text.
+Lora keeps the body. A serif tracks the eye from line to line, and it sets
+narrower, which is what a dense table needs.
+
+# Mathematics and notation
+
+These pages exercise the markup vocabulary: defined terms, definition and
+theorem blocks, and cross-reference anchors.
+
+::: {.def}
+**Definition (Formal sum).** Let $\mathcal{M}$ be a set of abstract basis
+elements and let $\mathcal{F}$ be a field. A [formal sum]{.defn #formal-sum} is
+a function $\phi : \mathcal{M} \to \mathcal{F}$ with finite support, where the
+[support]{.defn #support} of $\phi$ is
+$$\operatorname{supp}(\phi) \;=\; \{\, m \in \mathcal{M} \;\mid\; \phi(m) \neq 0 \,\}.$$
+The finite-support condition is what guarantees that every combination below
+has finitely many non-zero terms.
+:::
+
+::: {.def}
+**Definition (Formal linear combination).** A
+[formal linear combination]{.defn #flc} $c_\phi \in \mathcal{V}$ pairs
+coefficients $a_i = \phi(m_i) \in \mathcal{F}$ with elements
+$m_i \in \mathcal{M}$:
+$$c_\phi \;=\; \sum_{i=1}^{n} \phi(m_i)\, m_i \;=\; \sum_{i=1}^{n} a_i m_i .$$
+The terms remain [unreduced]{.emph} symbolic expressions.
+:::
+
+::: {.thm}
+**Theorem.** The set of functions $\phi : \mathcal{M} \to \mathcal{F}$ with
+finite support forms a vector space $\mathcal{V}$ under pointwise addition and
+scalar multiplication:
+$$(\phi_1 + \phi_2)(m) \;=\; \phi_1(m) + \phi_2(m),
+\qquad (a \cdot \phi)(m) \;=\; a \cdot \phi(m).$$
+:::
+
+## A worked example
+
+Fix $\mathcal{M} = \{v_0, v_1, v_2\}$ and $\mathcal{F} = \mathbb{R}$, and take
+two maps out of $\mathcal{M}$:
+$$
+\phi(v_0) = 3, \quad \phi(v_1) = -2.5, \quad \phi(v_2) = 0,
+\qquad
+\psi(v_0) = -1, \quad \psi(v_1) = 0, \quad \psi(v_2) = 4 .
+$$
+
+Both have finite support, so both are formal sums:
+$$
+\operatorname{supp}(\phi) = \{v_0, v_1\},
+\qquad
+\operatorname{supp}(\psi) = \{v_0, v_2\} .
+$$
+
+Reading the coefficients off each map gives the two
+[formal linear combinations]{.termref}
+$$
+c_\phi = 3v_0 - 2.5v_1,
+\qquad
+c_\psi = -v_0 + 4v_2 .
+$$
+Neither simplifies further. $v_0$, $v_1$ and $v_2$ are distinct [basis]{.term}
+elements, so $3v_0 - 2.5v_1$ is already in lowest terms in a way that
+$3 - 2.5$ is not.
+
+**Addition is pointwise.** Adding coefficient by coefficient,
+$$
+(\phi + \psi)(v_0) = 3 + (-1) = 2, \qquad
+(\phi + \psi)(v_1) = -2.5, \qquad
+(\phi + \psi)(v_2) = 4,
+$$
+so $c_{\phi + \psi} = 2v_0 - 2.5v_1 + 4v_2$. Here the supports union, but in
+general only the containment
+$$\operatorname{supp}(\phi + \psi) \;\subseteq\; \operatorname{supp}(\phi) \cup \operatorname{supp}(\psi)$$
+holds, and it can be [strict]{.emph}: a coefficient that cancels drops out of
+the support entirely.
+
+**Cancellation supplies the inverses.** Taking $a = -1$ and adding,
+$$\bigl(\phi + (-1) \cdot \phi\bigr)(m) \;=\; \phi(m) - \phi(m) \;=\; 0
+\qquad \text{for every } m \in \mathcal{M},$$
+so the combination is the empty sum $0$. Every element of $\mathcal{V}$
+therefore has an additive inverse — the last axiom the theorem needs, and the
+reason the finite-support condition had to be there from the start.
+
+# Data
+
+One dataset for the whole section, fuel economy for 234 vehicle models, so a
+difference between two figures is the palette rather than a change of subject.
+
+```{r}
+#| label: data
+#| include: false
+mpg_data <- ggplot2::mpg
+mpg_data$class <- factor(mpg_data$class)
+
+class_summary <- aggregate(
+  cbind(cty, hwy) ~ class, data = mpg_data, FUN = mean
+)
+class_summary$delta <- class_summary$hwy - mean(mpg_data$hwy)
+class_summary <- class_summary[order(class_summary$delta), ]
+class_summary$class <- factor(class_summary$class, levels = class_summary$class)
+```
+
+## Categorical — economy by vehicle class
+
+The observations themselves rather than a boxplot, which would summarise them
+and hide how many models sit behind each class.
+
+```{r}
+#| label: fig-categorical
+#| fig-cap: "Highway economy by class, one point per model."
+ggplot(mpg_data, aes(class, hwy, colour = class)) +
+  geom_jitter(width = 0.22, height = 0, alpha = 0.75, size = 1.6) +
+  scale_colour_mariner_d() +
+  labs(x = NULL, y = "Highway mpg") +
+  theme(legend.position = "none")
+```
+
+## Sequential — city economy across the range
+
+Magnitude on one hue, carried by the marks themselves.
+
+```{r}
+#| label: fig-sequential
+#| fig-cap: "Displacement against highway economy, shaded by city economy."
+ggplot(mpg_data, aes(displ, hwy, colour = cty)) +
+  geom_point(size = 1.9, alpha = 0.9) +
+  scale_colour_mariner_c() +
+  labs(x = "Engine displacement (L)", y = "Highway mpg", colour = "City mpg")
+```
+
+## Diverging — each class against the overall mean
+
+A signed quantity, where the neutral step means "no difference". The limits are
+symmetric on purpose. Without that, the neutral step lands wherever the data
+straddles and the scale misplaces zero.
+
+```{r}
+#| label: fig-diverging
+#| fig-cap: "Mean highway economy per class, as a difference from the overall mean."
+lim <- max(abs(class_summary$delta))
+
+ggplot(class_summary, aes(class, delta, fill = delta)) +
+  geom_col(width = 0.7) +
+  scale_fill_mariner_div(limits = c(-lim, lim)) +
+  labs(x = NULL, y = "Difference from overall mean (mpg)", fill = NULL) +
+  theme(legend.position = "none")
+```
+
+## The classes, summarised
+
+```{r}
+#| label: tbl-classes
+#| tbl-cap: "Mean economy by class, ordered as the figure above."
+knitr::kable(
+  class_summary[, c("class", "cty", "hwy", "delta")],
+  col.names = c("Class", "City", "Highway", "Δ vs mean"),
+  digits = 1,
+  row.names = FALSE
+)
+```
+
+# Callouts
+
+All five, because a callout style that breaks shows up nowhere else.
+
+::: {.callout-note}
+Note callouts take the primary brand colour on their border and header.
+:::
+
+::: {.callout-tip}
+Tip callouts are for the thing the reader would otherwise have to work out.
+:::
+
+::: {.callout-warning}
+Warning callouts keep semantic amber rather than a brand colour.
+:::
+
+::: {.callout-important}
+Important callouts are the strongest emphasis available before shouting.
+:::
+
+::: {.callout-caution}
+Caution callouts complete the set.
+:::
