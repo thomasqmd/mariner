@@ -177,6 +177,27 @@ test_that("what build_tokens writes is byte-for-byte what the generator returns"
   }
 })
 
+test_that("generated files are written with LF endings on every platform", {
+  # The byte comparison above catches this too, but only on a machine whose
+  # text-mode connections translate -- so on macOS and Linux it passes for a
+  # reason unrelated to what it is checking, and the failure surfaces on a
+  # Windows CI runner as an opaque "0d 0a" vs "0a" diff. This says the thing
+  # directly.
+  #
+  # CR is not legal content here: both generated files are ASCII source that
+  # the generators build with "\n" throughout.
+  root <- withr::local_tempdir()
+  written <- build_tokens(root = root, quiet = TRUE)
+
+  for (path in written) {
+    bytes <- readBin(path, "raw", file.size(path))
+    expect_false(
+      as.raw(13) %in% bytes,
+      label = paste0("CR byte in ", basename(path))
+    )
+  }
+})
+
 test_that("build_tokens names each file it wrote unless told to be quiet", {
   root <- withr::local_tempdir()
   said <- paste(capture_messages(build_tokens(root = root)), collapse = "")

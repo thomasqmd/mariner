@@ -388,10 +388,29 @@ build_tokens <- function(root = ".", quiet = FALSE) {
     for (spec in generated_files(theme)) {
       path <- file.path(root, spec$path)
       dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-      # cat(), not writeLines(): the generators already end their output with a
-      # newline, and writeLines() would add a second one. The drift test compares
-      # bytes, so that stray byte is the difference between pass and fail.
-      cat(spec$fn(theme), file = path)
+      # Written as BYTES through a binary connection, not with cat() or
+      # writeLines() to a path.
+      #
+      # Two separate things would corrupt the output otherwise, and each one is
+      # a byte:
+      #
+      #   * writeLines() appends a newline. The generators already end their
+      #     output with one, so it would write a second.
+      #   * cat() to a path opens the connection in TEXT mode, and on Windows
+      #     that translates every \n into \r\n. The generated file then differs
+      #     from the string the generator returned -- by 60-odd bytes for
+      #     brand-preamble.tex -- while being identical on macOS and Linux.
+      #
+      # The second one is why this is writeBin(). Byte-stability across
+      # platforms is the premise the whole token design rests on: `_brand.yml`
+      # is the only place a hex is typed, the artefacts are generated from it,
+      # and test-no-drift.R proves they are current by comparing bytes. A
+      # generator whose output depends on the platform makes that comparison
+      # unanswerable -- and it makes a Windows contributor's regenerated
+      # artefacts a whole-file diff against the committed ones.
+      con <- file(path, open = "wb")
+      writeBin(charToRaw(spec$fn(theme)), con)
+      close(con)
       written <- c(written, path)
       if (!quiet) cli::cli_alert_success("wrote {.file {spec$path}}")
     }
