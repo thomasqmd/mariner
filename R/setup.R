@@ -69,6 +69,27 @@ has_mariner_layout <- function(path) {
   all(dir.exists(file.path(path, MARINER_DIR_NAMES)))
 }
 
+# Does the layout at `current` count as a root, having arrived from `from`?
+# `from` is NULL when `current` is where the search started.
+#
+# The file markers are DELIBERATE: someone made an RStudio project, or wrote a
+# DESCRIPTION. The three folders are not -- `library(mariner)` creates them on
+# attach, and mariner_setup_project() creates them wherever it is pointed. A
+# signal that appears on its own must not be allowed to capture everything
+# beneath it, or a new project started inside an abandoned one is silently
+# swallowed by the parent: `folder/new folder` scaffolded itself into `folder`,
+# because `folder` still held the folders from a run that had been given up on.
+#
+# So the layout counts where the search STARTS, and on the way up only when we
+# climbed out of one of the three folders it names. That second case is the one
+# that matters and the only one that is unambiguous -- process_file() resolves
+# the root from `reports/ch1.qmd`, and a file sitting in a project's `reports/`
+# belongs to that project by construction.
+accepts_layout <- function(current, from) {
+  if (!has_mariner_layout(current)) return(FALSE)
+  is.null(from) || basename(from) %in% MARINER_DIR_NAMES
+}
+
 #' Does this directory look like a project root?
 #'
 #' The guard `.onAttach()` uses before it creates anything. A directory counts
@@ -100,10 +121,14 @@ mariner_looks_like_project <- function(path = ".") {
 #' 1. `getOption("mariner.project_root")`, if set. The escape hatch for a
 #'    session whose working directory is not where the reports belong.
 #' 2. The nearest ancestor of `path`, `path` included, that holds an `.Rproj`
-#'    file, a `_quarto.yml`, or a `DESCRIPTION` -- or that holds all three
-#'    mariner folders, so a project [mariner_setup_project()] scaffolded is
-#'    found again without also being an RStudio or Quarto project.
-#' 3. `path` itself, normalised.
+#'    file, a `_quarto.yml`, or a `DESCRIPTION`.
+#' 3. A directory holding all three mariner folders, so a project
+#'    [mariner_setup_project()] scaffolded is found again without also being an
+#'    RStudio or Quarto project. This one counts at `path` itself, and further
+#'    up only when the search climbed out of `assets/`, `reports/` or
+#'    `zip_files/`. Those folders are created for you, so an abandoned set in a
+#'    parent directory does not capture a new project started beneath it.
+#' 4. `path` itself, normalised.
 #'
 #' `.git` is not a marker here, though it is one for
 #' [mariner_looks_like_project()]. See the comment in `R/setup.R` for why.
@@ -131,14 +156,19 @@ mariner_project_root <- function(path = ".") {
   }
 
   current <- normalizePath(path, winslash = "/", mustWork = FALSE)
+  # The directory we climbed out of to reach `current`. NULL on the first pass,
+  # which is how accepts_layout() tells "where the search started" from "some
+  # ancestor".
+  from <- NULL
 
   # Walk up until a marker turns up or the path stops changing. dirname("/") is
   # "/" and dirname("C:/") is "C:/", so the fixed point is the loop's only
   # terminator -- there is no depth limit to get wrong.
   repeat {
-    if (has_markers(current, ROOT_MARKERS) || has_mariner_layout(current)) {
+    if (has_markers(current, ROOT_MARKERS) || accepts_layout(current, from)) {
       return(current)
     }
+    from <- current
     parent <- dirname(current)
     if (identical(parent, current)) break
     current <- parent

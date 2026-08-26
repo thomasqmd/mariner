@@ -65,9 +65,13 @@ directory.</p></dd>
 <ol><li><p><code>getOption("mariner.project_root")</code>, if set. The escape hatch for a
 session whose working directory is not where the reports belong.</p></li>
 <li><p>The nearest ancestor of <code>path</code>, <code>path</code> included, that holds an <code>.Rproj</code>
-file, a <code>_quarto.yml</code>, or a <code>DESCRIPTION</code> – or that holds all three
-mariner folders, so a project <code><a href="mariner_setup_project.html">mariner_setup_project()</a></code> scaffolded is
-found again without also being an RStudio or Quarto project.</p></li>
+file, a <code>_quarto.yml</code>, or a <code>DESCRIPTION</code>.</p></li>
+<li><p>A directory holding all three mariner folders, so a project
+<code><a href="mariner_setup_project.html">mariner_setup_project()</a></code> scaffolded is found again without also being an
+RStudio or Quarto project. This one counts at <code>path</code> itself, and further
+up only when the search climbed out of <code>assets/</code>, <code>reports/</code> or
+<code>zip_files/</code>. Those folders are created for you, so an abandoned set in a
+parent directory does not capture a new project started beneath it.</p></li>
 <li><p><code>path</code> itself, normalised.</p></li>
 </ol><p><code>.git</code> is not a marker here, though it is one for
 <code><a href="mariner_looks_like_project.html">mariner_looks_like_project()</a></code>. See the comment in <code>R/setup.R</code> for why.</p>
@@ -89,7 +93,7 @@ three. Those functions call this one only when <code>root</code> is <code>NULL</
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mariner.project_root <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  <span class="fu">mariner_project_root</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpDjwOKV"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpTXSPL8"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

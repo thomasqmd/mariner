@@ -104,7 +104,11 @@
   [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md)
   walked up from `reports/ch1.qmd`, found no marker, fell back to
   `reports/` itself, and wrote `reports/zip_files/`. A directory holding
-  all three mariner folders is now a root in its own right.
+  all three mariner folders is now a root in its own right – at the
+  directory you are in, and further up only when the search climbed out
+  of `assets/`, `reports/` or `zip_files/`. Those folders are created
+  for you, so an abandoned set in a parent directory does not capture a
+  new project started beneath it.
 
 - **The staged theme link is removed on Windows.** Teardown used
   `unlink(recursive = FALSE)`, which Windows refuses on a directory

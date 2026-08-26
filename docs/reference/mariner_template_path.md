@@ -35,5 +35,5 @@ An absolute path to the template's `skeleton.qmd`.
 
 ``` r
 mariner_template_path("report")
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpKLq8Um/temp_libpath8a4014d1e981/mariner/templates/report/skeleton.qmd"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpKLq8Um/temp_libpath8a403c768b31/mariner/templates/report/skeleton.qmd"
 ```

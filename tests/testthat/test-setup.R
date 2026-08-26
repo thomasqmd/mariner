@@ -496,3 +496,55 @@ test_that("setup makes a directory that resolves as its own root", {
     normalizePath(dir, winslash = "/")
   )
 })
+
+test_that("an abandoned layout in a parent does not capture a project below it", {
+  # The file markers are deliberate; the three folders are created for you. So
+  # a `folder/` left over from a run someone gave up on must not swallow the
+  # `folder/new folder/` they started instead.
+  dir <- local_bare_project()
+  fresh <- file.path(dir, "new folder")
+  dir.create(fresh)
+
+  expect_equal(mariner_project_root(fresh), normalizePath(fresh, winslash = "/"))
+})
+
+test_that("a marker in a parent still captures, layout or not", {
+  # The restriction is on the LAYOUT, not on the walk. An .Rproj above still
+  # means "this is the project", which is the documented behaviour.
+  outer <- make_project("DESCRIPTION")
+  inner <- file.path(outer, "sub")
+  dir.create(inner)
+
+  expect_equal(mariner_project_root(inner), outer)
+})
+
+test_that("the walk climbs out of any of the three folders", {
+  # process_file() resolves from reports/, but a file in the project's assets/
+  # or zip_files/ belongs to it by the same argument.
+  dir <- local_bare_project()
+  for (d in MARINER_DIR_NAMES) {
+    expect_equal(
+      mariner_project_root(file.path(dir, d)),
+      normalizePath(dir, winslash = "/"),
+      info = d
+    )
+  }
+})
+
+test_that("a subdirectory of reports/ still reaches the project", {
+  dir <- local_bare_project()
+  deep <- file.path(dir, "reports", "chapter-1")
+  dir.create(deep, recursive = TRUE)
+
+  expect_equal(mariner_project_root(deep), normalizePath(dir, winslash = "/"))
+})
+
+test_that("accepts_layout answers where it started and what it climbed out of", {
+  dir <- local_bare_project()
+
+  expect_true(accepts_layout(dir, NULL))
+  expect_true(accepts_layout(dir, file.path(dir, "reports")))
+  expect_false(accepts_layout(dir, file.path(dir, "new folder")))
+  # No layout, no answer, whatever it climbed out of.
+  expect_false(accepts_layout(withr::local_tempdir(), NULL))
+})

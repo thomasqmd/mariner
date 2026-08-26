@@ -64,7 +64,11 @@
   disagreed about where the project was: setup created `zip_files/` beside the
   three folders, while `process_file()` walked up from `reports/ch1.qmd`, found
   no marker, fell back to `reports/` itself, and wrote `reports/zip_files/`. A
-  directory holding all three mariner folders is now a root in its own right.
+  directory holding all three mariner folders is now a root in its own right --
+  at the directory you are in, and further up only when the search climbed out
+  of `assets/`, `reports/` or `zip_files/`. Those folders are created for you,
+  so an abandoned set in a parent directory does not capture a new project
+  started beneath it.
 * **The staged theme link is removed on Windows.** Teardown used
   `unlink(recursive = FALSE)`, which Windows refuses on a directory reparse
   point — `mismatch between the tag specified in the request and the tag present

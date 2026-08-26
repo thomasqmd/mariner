@@ -25,13 +25,17 @@ A normalised absolute path.
     session whose working directory is not where the reports belong.
 
 2.  The nearest ancestor of `path`, `path` included, that holds an
-    `.Rproj` file, a `_quarto.yml`, or a `DESCRIPTION` – or that holds
-    all three mariner folders, so a project
+    `.Rproj` file, a `_quarto.yml`, or a `DESCRIPTION`.
+
+3.  A directory holding all three mariner folders, so a project
     [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
     scaffolded is found again without also being an RStudio or Quarto
-    project.
+    project. This one counts at `path` itself, and further up only when
+    the search climbed out of `assets/`, `reports/` or `zip_files/`.
+    Those folders are created for you, so an abandoned set in a parent
+    directory does not capture a new project started beneath it.
 
-3.  `path` itself, normalised.
+4.  `path` itself, normalised.
 
 `.git` is not a marker here, though it is one for
 [`mariner_looks_like_project()`](https://thomasqmd.github.io/mariner/reference/mariner_looks_like_project.md).
@@ -60,5 +64,5 @@ withr::with_options(
   list(mariner.project_root = tempdir()),
   mariner_project_root()
 )
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpDjwOKV"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpTXSPL8"
 ```

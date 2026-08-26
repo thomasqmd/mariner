@@ -22,9 +22,13 @@ beneath, in this order:
 \item \code{getOption("mariner.project_root")}, if set. The escape hatch for a
 session whose working directory is not where the reports belong.
 \item The nearest ancestor of \code{path}, \code{path} included, that holds an \code{.Rproj}
-file, a \verb{_quarto.yml}, or a \code{DESCRIPTION} -- or that holds all three
-mariner folders, so a project \code{\link[=mariner_setup_project]{mariner_setup_project()}} scaffolded is
-found again without also being an RStudio or Quarto project.
+file, a \verb{_quarto.yml}, or a \code{DESCRIPTION}.
+\item A directory holding all three mariner folders, so a project
+\code{\link[=mariner_setup_project]{mariner_setup_project()}} scaffolded is found again without also being an
+RStudio or Quarto project. This one counts at \code{path} itself, and further
+up only when the search climbed out of \verb{assets/}, \verb{reports/} or
+\verb{zip_files/}. Those folders are created for you, so an abandoned set in a
+parent directory does not capture a new project started beneath it.
 \item \code{path} itself, normalised.
 }
 
