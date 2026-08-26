@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/github/thomasqmd/mariner/graph/badge.svg?token=A4PDZWC3IL)](https://codecov.io/github/thomasqmd/mariner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**mariner** turns one parameterized Quarto template into a set of reports, renders them, and bundles each one into a zip archive. It carries its own Quarto PDF theme: typography, brand colours, and matching `ggplot2` scales.
+**mariner** turns one parameterized Quarto template into a set of reports, renders them, and bundles each one into a zip archive. It carries its own Quarto PDF theme: typography, brand colours, and matching **ggplot2** scales.
 
 Documentation: [https://thomasqmd.github.io/mariner/](https://thomasqmd.github.io/mariner/).
 
@@ -16,6 +16,14 @@ The development version, from GitHub:
 ```r
 # install.packages("pak")
 pak::pak("thomasqmd/mariner")
+```
+
+That installs what mariner itself needs. To also get the packages a course
+typically uses alongside it — **tidyverse**, **patchwork**, **tinytex** and the
+rest of `Suggests`:
+
+```r
+pak::pak("thomasqmd/mariner", dependencies = TRUE)
 ```
 
 ## Folder Structure
@@ -33,16 +41,16 @@ your-project/
 
 ```r
 library(mariner)
-library(tidyr)
 
 # 1. Create the folders and install the Quarto theme
 mariner_setup_project()
 
 # 2. One row per report
-report_params <- expand_grid(
+report_params <- expand.grid(
   chapter = 1,
   problem_numbers = 1:2,
-  author = "Alice Smith"
+  author = "Alice Smith",
+  stringsAsFactors = FALSE
 )
 
 # 3. Write the .qmd files into reports/

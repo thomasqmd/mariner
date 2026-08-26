@@ -49,8 +49,8 @@ tex_name <- function(key) {
 #' Generate the LaTeX preamble for a theme
 #'
 #' Quarto's `brand:` support does not reach LaTeX pdf, so the colours are
-#' emitted as `\definecolor` and wired into KOMA's heading fonts, `hyperref`
-#' link colours and `booktabs` rules here.
+#' emitted as `\definecolor` and wired into KOMA's heading fonts, **hyperref**
+#' link colours and **booktabs** rules here.
 #'
 #' @param theme One of [mariner_themes].
 #' @return The file's contents, as a single string.
@@ -304,7 +304,11 @@ build_extension_yml <- function(theme = mariner_themes) {
     "# Edit the generator, not this file.\n\n",
     "title: Mariner PDF\n",
     "author: Thomas Reinke\n",
-    "version: 0.2.0\n",
+    # Read from DESCRIPTION, not typed. This was a literal "0.2.0", which made
+    # the paragraph above ("the version has to match the package's") false: the
+    # next version bump would have left the extension claiming the old one, and
+    # nothing anywhere would have said so.
+    "version: ", as.character(utils::packageVersion("mariner")), "\n",
     'quarto-required: ">=1.4.0"\n',
     "contributes:\n",
     "  formats:\n",

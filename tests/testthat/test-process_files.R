@@ -105,6 +105,7 @@ test_that("process_files works in parallel", {
   # requireNamespace() is no good as the test: pkgload registers the namespace,
   # so it answers TRUE for a source load too. Asking pkgload directly is the
   # question that actually distinguishes the two.
+  skip_on_covr()
   skip_if(
     isTRUE(pkgload::is_dev_package("mariner")),
     "mariner is loaded from source; a multisession worker cannot attach it"

@@ -24,7 +24,7 @@
   [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md)
   and
   [`process_files()`](https://thomasqmd.github.io/mariner/reference/process_files.md)
-  take `.qmd` only, and refuse a `.Rmd` with a message. `rmarkdown` is
+  take `.qmd` only, and refuse a `.Rmd` with a message. **rmarkdown** is
   no longer a dependency, and the `simple_report` template no longer
   carries a `skeleton.Rmd`.
 
@@ -40,7 +40,7 @@
   in the brand colours. A `.defn` with an identifier —
   `[support]{.defn #support}` — also plants a cross-reference target.
   Quarto’s callouts work alongside them.
-- **`ggplot2` theming and scales.**
+- **ggplot2 theming and scales.**
   [`theme_mariner()`](https://thomasqmd.github.io/mariner/reference/theme_mariner.md),
   [`mariner_set_theme()`](https://thomasqmd.github.io/mariner/reference/mariner_set_theme.md),
   [`mariner_colors()`](https://thomasqmd.github.io/mariner/reference/mariner_colors.md)
@@ -145,7 +145,7 @@
   [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md)
   and
   [`process_files()`](https://thomasqmd.github.io/mariner/reference/process_files.md)
-  goes through `cli`.
+  goes through **cli**.
   [`process_files()`](https://thomasqmd.github.io/mariner/reference/process_files.md)
   names the files that failed rather than counting them.
 - A render happens in an
@@ -153,13 +153,14 @@
   scratch directory, so the path the Quarto CLI receives is the one the
   filesystem agrees on: symlinks resolved, Windows 8.3 short names
   expanded.
-- `systemfonts (>= 1.1.0)` is now required. `match_font()` is
+- **systemfonts** (\>= 1.1.0) is now required. `match_font()` is
   soft-deprecated there and would print a deprecation warning in the
   middle of a setup report.
-- `progressr` and `tinytex` added to `Suggests`; `tidyverse` and
-  `conflicted` restored to it, because the packaged template loads them
-  and a test now enforces that. `LazyData: true` removed — there is no
-  `data/`.
+- **progressr** and **tinytex** added to `Suggests`; **tidyverse** and
+  **conflicted** restored to it. A test now checks that every package
+  the starter template loads is declared, so the list cannot fall behind
+  the template.
+- `LazyData: true` removed — there is no `data/`.
 
 ## mariner 0.1.3
 
@@ -191,7 +192,7 @@ the default.
   and
   [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md).
 - Added CI setup with GitHub Actions to test against R 4.5, install
-  Quarto, and run `covr`.
+  Quarto, and run **covr**.
 
 ## mariner 0.1.2
 
@@ -206,7 +207,7 @@ the default.
 - Expand testing suite for all functions.
 - Add parallel processing support in
   [`process_files()`](https://thomasqmd.github.io/mariner/reference/process_files.md)
-  using `future` and `furrr`.
+  using **future** and **furrr**.
 
 ## mariner 0.1.0
 

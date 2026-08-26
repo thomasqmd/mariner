@@ -10,7 +10,7 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 **mariner** turns one parameterized Quarto template into a set of
 reports, renders them, and bundles each one into a zip archive. It
 carries its own Quarto PDF theme: typography, brand colours, and
-matching `ggplot2` scales.
+matching **ggplot2** scales.
 
 Documentation: <https://thomasqmd.github.io/mariner/>.
 
@@ -19,6 +19,12 @@ Documentation: <https://thomasqmd.github.io/mariner/>.
 The development version, from GitHub:
 
 `# install.packages("pak")`` ``pak``::`[`pak`](https://pak.r-lib.org/reference/pak.html)`(``"thomasqmd/mariner"``)`
+
+That installs what mariner itself needs. To also get the packages a
+course typically uses alongside it — **tidyverse**, **patchwork**,
+**tinytex** and the rest of `Suggests`:
+
+`pak``::`[`pak`](https://pak.r-lib.org/reference/pak.html)`(``"thomasqmd/mariner"``, dependencies ``=`` ``TRUE``)`
 
 ## Folder Structure
 
@@ -31,7 +37,7 @@ mariner works in three project directories:
 
 ## Quickstart
 
-[`library`](https://rdrr.io/r/base/library.html)`(`[`mariner`](https://thomasqmd.github.io/mariner/)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`tidyr`](https://tidyr.tidyverse.org)`)`` `` ``# 1. Create the folders and install the Quarto theme`` `[`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)`(``)`` `` ``# 2. One row per report`` ``report_params`` ``<-`` `[`expand_grid`](https://tidyr.tidyverse.org/reference/expand_grid.html)`(`` `` chapter ``=`` ``1``,`` `` problem_numbers ``=`` ``1``:``2``,`` `` author ``=`` ``"Alice Smith"`` ``)`` `` ``# 3. Write the .qmd files into reports/`` ``qmd_files`` ``<-`` `[`generate_reports`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)`(``report_params``)`` `` ``# 4. Render and bundle into zip_files/`` ``zip_files`` ``<-`` `[`process_files`](https://thomasqmd.github.io/mariner/reference/process_files.md)`(``qmd_files``)`
+[`library`](https://rdrr.io/r/base/library.html)`(`[`mariner`](https://thomasqmd.github.io/mariner/)`)`` `` ``# 1. Create the folders and install the Quarto theme`` `[`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)`(``)`` `` ``# 2. One row per report`` ``report_params`` ``<-`` `[`expand.grid`](https://rdrr.io/r/base/expand.grid.html)`(`` `` chapter ``=`` ``1``,`` `` problem_numbers ``=`` ``1``:``2``,`` `` author ``=`` ``"Alice Smith"``,`` `` stringsAsFactors ``=`` ``FALSE`` ``)`` `` ``# 3. Write the .qmd files into reports/`` ``qmd_files`` ``<-`` `[`generate_reports`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)`(``report_params``)`` `` ``# 4. Render and bundle into zip_files/`` ``zip_files`` ``<-`` `[`process_files`](https://thomasqmd.github.io/mariner/reference/process_files.md)`(``qmd_files``)`
 
 Every column that varies has to appear in the file name template, which
 defaults to `"Report-{chapter}_{problem_numbers}"`. Otherwise two rows

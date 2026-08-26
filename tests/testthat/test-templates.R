@@ -32,3 +32,31 @@ test_that("mariner_template_path validates input argument", {
   expect_error(mariner_template_path(c("a", "b")))
   expect_error(mariner_template_path(""))
 })
+
+test_that("a package with no templates directory lists none", {
+  # system.file() returns "" on a miss, and "" is not a directory.
+  expect_identical(mariner_templates(package = "stats"), character())
+})
+
+test_that("a template is only a template if it has a skeleton", {
+  # The registry reports what generate_reports() can actually read.
+  for (name in mariner_templates()) {
+    expect_true(file.exists(mariner_template_path(name)))
+    expect_identical(basename(mariner_template_path(name)), "skeleton.qmd")
+  }
+})
+
+test_that("mariner_template_path says so when a package ships none at all", {
+  expect_error(
+    mariner_template_path("report", package = "stats"),
+    "ships no mariner templates"
+  )
+})
+
+test_that("mariner_template_path rejects a template name that is not one string", {
+  expect_error(mariner_template_path(character()), "single non-empty string")
+  expect_error(mariner_template_path(c("a", "b")), "single non-empty string")
+  expect_error(mariner_template_path(""), "single non-empty string")
+  expect_error(mariner_template_path(NA_character_), "single non-empty string")
+  expect_error(mariner_template_path(1), "single non-empty string")
+})

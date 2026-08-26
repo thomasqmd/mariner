@@ -74,8 +74,11 @@ template_packages <- function(path) {
 
 # --- the individual checks ---------------------------------------------------
 
-check_quarto <- function() {
-  path <- tryCatch(quarto::quarto_path(), error = function(e) NULL)
+# The two facts are arguments, for the reason check_fonts()'s are: the answer
+# belongs to the machine, so a test reading the real ones would assert something
+# about the runner rather than about this function.
+check_quarto <- function(path = tryCatch(quarto::quarto_path(), error = function(e) NULL),
+                         version = tryCatch(quarto::quarto_version(), error = function(e) NULL)) {
   if (is.null(path) || !nzchar(path) || !file.exists(path)) {
     return(check_row(
       "Quarto", "fail", "not found on this machine",
@@ -83,7 +86,8 @@ check_quarto <- function() {
     ))
   }
 
-  version <- tryCatch(quarto::quarto_version(), error = function(e) NULL)
+  # `version` is a promise until here, so a machine with no Quarto is never
+  # asked for one -- the guard above returns first.
   if (is.null(version)) {
     return(check_row("Quarto", "warn", "found, but its version could not be read"))
   }
@@ -99,15 +103,17 @@ check_quarto <- function() {
   check_row("Quarto", "ok", paste0("version ", version))
 }
 
-check_latex <- function() {
-  # Both, because neither alone is sufficient. TinyTeX installs into the user's
-  # home directory and is put on the PATH by the tinytex package at load time,
-  # so it can be present and invisible to Sys.which() in a session that has not
-  # loaded it; a system TeX Live is on the PATH and invisible to is_tinytex().
-  tiny <- requireNamespace("tinytex", quietly = TRUE) &&
-    isTRUE(tryCatch(tinytex::is_tinytex(), error = function(e) FALSE))
-  xelatex <- Sys.which("xelatex")
-
+# Is there an engine that can typeset the preamble this package emits?
+#
+# Both, because neither alone is sufficient. TinyTeX installs into the user's
+# home directory and is put on the PATH by the tinytex package at load time, so
+# it can be present and invisible to Sys.which() in a session that has not
+# loaded it; a system TeX Live is on the PATH and invisible to is_tinytex().
+#
+# Arguments, for the reason check_fonts()'s are.
+check_latex <- function(tiny = requireNamespace("tinytex", quietly = TRUE) &&
+                          isTRUE(tryCatch(tinytex::is_tinytex(), error = function(e) FALSE)),
+                        xelatex = Sys.which("xelatex")) {
   # xelatex specifically, not "a LaTeX engine". brand-preamble.tex loads
   # fontspec and points it at .ttf files by path, which pdflatex cannot do at
   # all -- a distribution with only pdflatex fails on the first \setmainfont.

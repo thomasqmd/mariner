@@ -34,7 +34,11 @@ brand_family <- function(brand, prefix) {
   # "series-1-green" -> "green"; "seq-1" -> "1"
   labels <- sub(paste0("^", prefix, "-(\\d+)-?"), "", keys)
   labels[labels == ""] <- sub(paste0("^", prefix, "-"), "", keys[labels == ""])
-  stats::setNames(unlist(pal[keys], use.names = FALSE), labels)
+  # unlist() of nothing is NULL, and setNames() on NULL is an error rather than
+  # an empty vector -- so a theme that omits a family would take down every
+  # caller instead of returning no colours.
+  values <- unlist(pal[keys], use.names = FALSE)
+  stats::setNames(values %||% character(), labels)
 }
 
 # Every colour token a generator emits, flattened to name -> hex, in a fixed

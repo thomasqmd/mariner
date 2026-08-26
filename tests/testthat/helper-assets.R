@@ -8,7 +8,8 @@
 # loop, and there is nothing to regenerate from in a tarball.
 pkg_root <- function() {
   candidate <- testthat::test_path("..", "..")
-  if (file.exists(file.path(candidate, "DESCRIPTION"))) {
+  if (file.exists(file.path(candidate, "DESCRIPTION")) &&
+      dir.exists(file.path(candidate, "inst"))) {
     return(normalizePath(candidate))
   }
   NULL

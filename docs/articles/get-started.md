@@ -1,7 +1,7 @@
 # Get Started with mariner
 
-mariner writes one Quarto report per row of a parameter table, renders
-each one, and bundles it into a zip archive.
+**mariner** writes one Quarto report per row of a parameter table,
+renders each one, and bundles it into a zip archive.
 
 ## 1. System Preflight Check
 

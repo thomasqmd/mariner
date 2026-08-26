@@ -256,3 +256,138 @@ test_that("mariner_check_setup prints without evaluating what it prints", {
 test_that("mariner_check_setup rejects an unknown theme", {
   expect_error(mariner_check_setup(root = local_dir(), theme = "not-a-theme"))
 })
+
+# --- quarto and latex --------------------------------------------------------
+#
+# Both take the machine's answer as an argument, for the reason check_fonts()
+# does: the answer belongs to the runner, and a test reading the real one would
+# assert something about it.
+
+test_that("check_quarto reports an absent Quarto without asking for a version", {
+  # The version argument is a promise. Forcing it on a machine with no Quarto
+  # would be a second failed lookup reported as the wrong problem.
+  expect_equal(check_quarto(path = NULL)$status, "fail")
+  expect_equal(check_quarto(path = "")$status, "fail")
+  expect_equal(check_quarto(path = tempfile())$status, "fail")
+
+  row <- check_quarto(path = NULL)
+  expect_match(row$detail, "not found")
+  expect_match(row$remedy, "quarto.org")
+})
+
+test_that("check_quarto warns when the binary is there and the version is not", {
+  here <- withr::local_tempfile()
+  file.create(here)
+
+  row <- check_quarto(path = here, version = NULL)
+  expect_equal(row$status, "warn")
+  expect_match(row$detail, "version could not be read")
+  # A warn with no remedy: there is nothing to paste.
+  expect_identical(row$remedy, "")
+})
+
+test_that("check_quarto fails below 1.4 and passes at or above it", {
+  # 1.4 is where the extension format this package emits settled. Older Quarto
+  # ignores what it does not recognise, so the failure is a document that
+  # renders WITHOUT the theme rather than an error.
+  here <- withr::local_tempfile()
+  file.create(here)
+
+  old <- check_quarto(path = here, version = package_version("1.3.450"))
+  expect_equal(old$status, "fail")
+  expect_match(old$detail, "1.4 or newer")
+  expect_match(old$remedy, "quarto.org")
+
+  expect_equal(check_quarto(path = here, version = package_version("1.4.0"))$status, "ok")
+  expect_equal(check_quarto(path = here, version = package_version("1.6.42"))$status, "ok")
+  expect_match(check_quarto(path = here, version = package_version("1.6.42"))$detail, "1.6.42")
+})
+
+test_that("check_latex accepts TinyTeX or a system xelatex, and nothing else", {
+  # xelatex specifically: brand-preamble.tex points fontspec at .ttf files by
+  # path, which pdflatex cannot do at all.
+  expect_equal(check_latex(tiny = TRUE, xelatex = "")$status, "ok")
+  expect_equal(check_latex(tiny = TRUE, xelatex = "")$detail, "TinyTeX")
+
+  found <- check_latex(tiny = FALSE, xelatex = "/usr/local/bin/xelatex")
+  expect_equal(found$status, "ok")
+  expect_match(found$detail, "/usr/local/bin/xelatex", fixed = TRUE)
+
+  none <- check_latex(tiny = FALSE, xelatex = "")
+  expect_equal(none$status, "fail")
+  expect_match(none$remedy, "install_tinytex", fixed = TRUE)
+})
+
+# --- template packages -------------------------------------------------------
+
+test_that("check_template_packages passes when every package is installed", {
+  # A template naming a package this test suite already needs, so the answer is
+  # not a property of the runner.
+  dir <- local_dir()
+  path <- file.path(dir, "t.qmd")
+  writeLines(c("```{r}", "library(testthat)", "```"), path)
+  local_mocked_bindings(mariner_template_path = function(...) path)
+
+  row <- check_template_packages("report")
+  expect_equal(row$status, "ok")
+  expect_match(row$detail, "all 1 installed")
+  expect_identical(row$remedy, "")
+})
+
+test_that("the packaged template reports in the vocabulary either way", {
+  # Whether the template's Suggests are installed is the runner's business;
+  # that the row is well formed is not.
+  row <- check_template_packages("report")
+  expect_true(row$status %in% c("ok", "warn"))
+  expect_false(is.na(row$remedy))
+})
+
+test_that("check_template_packages names what is missing and how to get it", {
+  dir <- local_dir()
+  path <- file.path(dir, "t.qmd")
+  writeLines(c("```{r}", "library(definitelyNotAPackage8827)", "```"), path)
+  local_mocked_bindings(mariner_template_path = function(...) path)
+
+  row <- check_template_packages("report")
+  expect_equal(row$status, "warn")
+  expect_match(row$detail, "definitelyNotAPackage8827")
+  expect_match(row$remedy, "install.packages", fixed = TRUE)
+})
+
+test_that("a template that does not exist is a warning, not a crash", {
+  expect_equal(check_template_packages("not-a-template")$status, "warn")
+  expect_match(check_template_packages("not-a-template")$detail, "not found")
+})
+
+# --- the printer -------------------------------------------------------------
+
+test_that("the printer closes with the worst status it was given", {
+  ok <- rbind(check_row("A", "ok", "fine"), check_row("B", "ok", "fine"))
+  expect_match(paste(capture_messages(print_check_setup(ok, tempdir())), collapse = ""),
+               "Everything checks out")
+
+  warned <- rbind(check_row("A", "ok", "fine"), check_row("B", "warn", "not quite"))
+  expect_match(paste(capture_messages(print_check_setup(warned, tempdir())), collapse = ""),
+               "still render")
+
+  failed <- rbind(check_row("A", "warn", "not quite"), check_row("B", "fail", "no"))
+  expect_match(paste(capture_messages(print_check_setup(failed, tempdir())), collapse = ""),
+               "blocking")
+})
+
+test_that("the printer prints a remedy only where there is one", {
+  rows <- rbind(check_row("A", "fail", "no", "do_this()"), check_row("B", "ok", "fine"))
+  said <- paste(capture_messages(print_check_setup(rows, tempdir())), collapse = "")
+  expect_match(said, "do_this()", fixed = TRUE)
+})
+
+test_that("print_check_setup returns its input", {
+  rows <- check_row("A", "ok", "fine")
+  expect_identical(suppressMessages(print_check_setup(rows, tempdir())), rows)
+})
+
+test_that("mariner_check_setup prints by default and is silent when told to be", {
+  dir <- local_dir()
+  expect_message(mariner_check_setup(root = dir), "mariner setup")
+  expect_no_message(mariner_check_setup(root = dir, quiet = TRUE))
+})

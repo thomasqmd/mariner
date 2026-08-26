@@ -48,3 +48,54 @@ test_that("mariner_pal() warns when discrete n exceeds 8", {
 test_that("mariner_pal() returns empty vector on n <= 0", {
   expect_equal(mariner_pal("mariner", "discrete", n = 0), character(0))
 })
+
+test_that("mariner_pal reverses whichever family it is asked for", {
+  for (fam in c("sequential", "ordinal", "diverging")) {
+    forward <- mariner_pal(family = fam, n = 5)
+    expect_identical(mariner_pal(family = fam, n = 5, reverse = TRUE), rev(forward))
+  }
+})
+
+test_that("a reversed palette function reverses at call time too", {
+  pal <- mariner_pal(family = "sequential", reverse = TRUE)
+  expect_identical(pal(4), rev(mariner_pal(family = "sequential", n = 4)))
+})
+
+test_that("a palette function called with no argument returns the whole family", {
+  # The default is the slot count, which is what the discrete scales rely on.
+  expect_length(mariner_pal(family = "discrete")(), 8L)
+  expect_length(mariner_pal(family = "sequential")(), 7L)
+  expect_length(mariner_pal(family = "ordinal")(), 5L)
+  expect_length(mariner_pal(family = "diverging")(), 7L)
+})
+
+test_that("a NULL n is the same as no n", {
+  pal <- mariner_pal(family = "discrete")
+  expect_identical(pal(NULL), pal())
+})
+
+test_that("the continuous families interpolate rather than warn", {
+  # Only the discrete family is capped: its colours are chosen to separate, and
+  # interpolating between them undoes that. A ramp has no such property to lose.
+  expect_silent(mariner_pal(family = "sequential", n = 100))
+  expect_length(mariner_pal(family = "diverging", n = 101), 101L)
+})
+
+test_that("the discrete family returns its own colours unchanged below the cap", {
+  cols <- mariner_pal(family = "discrete", n = 8)
+  expect_identical(cols, unname(brand_family(read_brand("mariner"), "series")))
+})
+
+test_that("mariner_pal rejects a family it does not have", {
+  expect_error(mariner_pal(family = "categorical"))
+})
+
+test_that("mariner_colors puts every palette key and every role in one vector", {
+  cols <- mariner_colors("mariner")
+  brand <- read_brand("mariner")
+
+  expect_true(all(names(brand$color$palette) %in% names(cols)))
+  expect_identical(cols[["background"]], brand$color$background)
+  expect_identical(cols[["mariner-green"]], brand$color$palette[["mariner-green"]])
+  expect_equal(anyDuplicated(names(cols)), 0L)
+})

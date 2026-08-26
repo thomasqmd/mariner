@@ -296,3 +296,123 @@ test_that("copy_dir_safe restores a deleted file while sparing an edited one", {
   expect_equal(readLines(file.path(dst, "a.txt")), "edited")
   expect_equal(readLines(file.path(dst, "b.txt")), "b")
 })
+
+# --- has_markers -------------------------------------------------------------
+
+test_that(".Rproj is matched as an extension, the rest as exact names", {
+  # The project file is named after the project, so there is no fixed filename
+  # to test for.
+  dir <- withr::local_tempdir()
+  expect_false(has_markers(dir, ROOT_MARKERS))
+
+  file.create(file.path(dir, "Whatever.Rproj"))
+  expect_true(has_markers(dir, ROOT_MARKERS))
+})
+
+test_that("a file merely mentioning a marker is not one", {
+  dir <- withr::local_tempdir()
+  file.create(file.path(dir, "DESCRIPTION.bak"))
+  file.create(file.path(dir, "Rproj"))
+  expect_false(has_markers(dir, ROOT_MARKERS))
+})
+
+test_that("has_markers takes the markers it is given", {
+  dir <- withr::local_tempdir()
+  dir.create(file.path(dir, ".git"))
+  expect_false(has_markers(dir, ROOT_MARKERS))
+  expect_true(has_markers(dir, PROJECT_MARKERS))
+})
+
+# --- append_gitignore --------------------------------------------------------
+
+test_that("append_gitignore creates the file when there is none", {
+  dir <- withr::local_tempdir()
+  added <- append_gitignore(dir, c("zip_files/", "assets/_extensions/"))
+
+  expect_identical(added, c("zip_files/", "assets/_extensions/"))
+  expect_identical(
+    readLines(file.path(dir, ".gitignore")),
+    c("# mariner build outputs", "zip_files/", "assets/_extensions/")
+  )
+})
+
+test_that("append_gitignore separates its block from existing content", {
+  # Appending to a file whose last line is an entry would glue the first new
+  # entry onto it.
+  dir <- withr::local_tempdir()
+  path <- file.path(dir, ".gitignore")
+  writeLines(c(".Rhistory", ".Rproj.user"), path)
+
+  append_gitignore(dir, "zip_files/")
+  expect_identical(
+    readLines(path),
+    c(".Rhistory", ".Rproj.user", "", "# mariner build outputs", "zip_files/")
+  )
+})
+
+test_that("append_gitignore does not add a second blank line", {
+  dir <- withr::local_tempdir()
+  path <- file.path(dir, ".gitignore")
+  writeLines(c(".Rhistory", ""), path)
+
+  append_gitignore(dir, "zip_files/")
+  expect_identical(
+    readLines(path),
+    c(".Rhistory", "", "# mariner build outputs", "zip_files/")
+  )
+})
+
+test_that("append_gitignore recognises an entry a student wrote with a stray space", {
+  dir <- withr::local_tempdir()
+  path <- file.path(dir, ".gitignore")
+  writeLines(c("zip_files/ ", "  assets/_extensions/"), path)
+
+  expect_identical(append_gitignore(dir, c("zip_files/", "assets/_extensions/")), character())
+  expect_length(readLines(path), 2L)
+})
+
+test_that("append_gitignore adds only the entries that are missing", {
+  dir <- withr::local_tempdir()
+  path <- file.path(dir, ".gitignore")
+  writeLines("zip_files/", path)
+
+  expect_identical(
+    append_gitignore(dir, c("zip_files/", "reports/_extensions/")),
+    "reports/_extensions/"
+  )
+})
+
+# --- setup_template_path -----------------------------------------------------
+
+test_that("setup_template_path resolves a packaged skeleton and rejects the rest", {
+  expect_true(file.exists(setup_template_path("report")))
+  expect_error(setup_template_path("not-a-template"), "No template named")
+})
+
+# --- .onAttach ---------------------------------------------------------------
+
+test_that(".onAttach creates nothing outside a project directory", {
+  # The guard that holds whether or not the session is interactive, which is
+  # what makes this the one to assert unconditionally: devtools::test() in
+  # RStudio is interactive, and R CMD check is not.
+  dir <- withr::local_tempdir()
+  withr::local_dir(dir)
+
+  expect_null(.onAttach("lib", "mariner"))
+  expect_false(any(dir.exists(unlist(mariner_dirs(dir), use.names = FALSE))))
+})
+
+test_that(".onAttach does nothing in a non-interactive session", {
+  # Rscript in CI, a future multisession worker and R CMD check all attach this
+  # package, and none of them is a person opening a project. The guard under
+  # test is `!interactive()`, so there is nothing to assert from a session that
+  # is one.
+  skip_if(interactive(), "this session is interactive")
+
+  dir <- withr::local_tempdir()
+  file.create(file.path(dir, "p.Rproj"))
+  withr::local_dir(dir)
+
+  expect_null(.onAttach("lib", "mariner"))
+  expect_false(any(dir.exists(unlist(mariner_dirs(dir), use.names = FALSE))))
+})

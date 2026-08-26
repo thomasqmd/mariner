@@ -1,6 +1,7 @@
 # Theming and Scales
 
-mariner ships a document theme and a matching palette for `ggplot2`.
+**mariner** ships a document theme and a matching palette for
+**ggplot2**.
 
 ## 1. Brand Palette and Chrome
 

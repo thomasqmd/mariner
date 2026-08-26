@@ -44,7 +44,7 @@
 <li>
 <strong>Output names come from a <code>file_name</code> glue template</strong>, <code>"Report-{chapter}_{problem_numbers}"</code> by default. A <code>params_df</code> without those columns used to give every row the name <code>Report-_.qmd</code>, so <code>n</code> rows left one file. It is now an error that names the available columns.</li>
 <li>
-<strong>R Markdown support is removed.</strong> <code><a href="../reference/generate_reports.html">generate_reports()</a></code>, <code><a href="../reference/process_file.html">process_file()</a></code> and <code><a href="../reference/process_files.html">process_files()</a></code> take <code>.qmd</code> only, and refuse a <code>.Rmd</code> with a message. <code>rmarkdown</code> is no longer a dependency, and the <code>simple_report</code> template no longer carries a <code>skeleton.Rmd</code>.</li>
+<strong>R Markdown support is removed.</strong> <code><a href="../reference/generate_reports.html">generate_reports()</a></code>, <code><a href="../reference/process_file.html">process_file()</a></code> and <code><a href="../reference/process_files.html">process_files()</a></code> take <code>.qmd</code> only, and refuse a <code>.Rmd</code> with a message. <strong>rmarkdown</strong> is no longer a dependency, and the <code>simple_report</code> template no longer carries a <code>skeleton.Rmd</code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-0-2-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-2-0"></a></h3>
@@ -53,7 +53,7 @@
 <li>
 <strong>Document markup.</strong> The spans <code>[x]{.defn}</code>, <code>[x]{.term}</code>, <code>[x]{.termref}</code> and <code>[x]{.emph}</code>, and the blocks <code>::: {.def}</code> and <code>::: {.thm}</code>, mark defined terms and set off definitions and theorems in the brand colours. A <code>.defn</code> with an identifier — <code>[support]{.defn #support}</code> — also plants a cross-reference target. Quarto’s callouts work alongside them.</li>
 <li>
-<strong><code>ggplot2</code> theming and scales.</strong> <code><a href="../reference/theme_mariner.html">theme_mariner()</a></code>, <code><a href="../reference/mariner_set_theme.html">mariner_set_theme()</a></code>, <code><a href="../reference/mariner_colors.html">mariner_colors()</a></code> and <code><a href="../reference/mariner_pal.html">mariner_pal()</a></code>, plus <code>colour</code> and <code>fill</code> scales in five families: <code>scale_*_mariner_d()</code>, <code>_c()</code>, <code>_o()</code>, <code>_div()</code> and <code>_b()</code>.</li>
+<strong>ggplot2 theming and scales.</strong> <code><a href="../reference/theme_mariner.html">theme_mariner()</a></code>, <code><a href="../reference/mariner_set_theme.html">mariner_set_theme()</a></code>, <code><a href="../reference/mariner_colors.html">mariner_colors()</a></code> and <code><a href="../reference/mariner_pal.html">mariner_pal()</a></code>, plus <code>colour</code> and <code>fill</code> scales in five families: <code>scale_*_mariner_d()</code>, <code>_c()</code>, <code>_o()</code>, <code>_div()</code> and <code>_b()</code>.</li>
 <li>
 <strong>Project scaffolding.</strong> <code><a href="../reference/mariner_setup_project.html">mariner_setup_project()</a></code> creates <code>assets/</code>, <code>reports/</code> and <code>zip_files/</code>, assembles the theme into <code>assets/</code>, copies it beside the documents in <code>reports/</code>, drops in a starter report, and gitignores the build outputs. Run it twice and nothing changes.</li>
 <li>
@@ -86,12 +86,14 @@
 </ul></div>
 <div class="section level3">
 <h3 id="minor-changes-0-2-0">Minor Changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-2-0"></a></h3>
-<ul><li>User-facing output from <code><a href="../reference/generate_reports.html">generate_reports()</a></code>, <code><a href="../reference/process_file.html">process_file()</a></code> and <code><a href="../reference/process_files.html">process_files()</a></code> goes through <code>cli</code>. <code><a href="../reference/process_files.html">process_files()</a></code> names the files that failed rather than counting them.</li>
+<ul><li>User-facing output from <code><a href="../reference/generate_reports.html">generate_reports()</a></code>, <code><a href="../reference/process_file.html">process_file()</a></code> and <code><a href="../reference/process_files.html">process_files()</a></code> goes through <strong>cli</strong>. <code><a href="../reference/process_files.html">process_files()</a></code> names the files that failed rather than counting them.</li>
 <li>A render happens in an <code><a href="https://fs.r-lib.org/reference/path_math.html" class="external-link">fs::path_real()</a></code>-resolved scratch directory, so the path the Quarto CLI receives is the one the filesystem agrees on: symlinks resolved, Windows 8.3 short names expanded.</li>
 <li>
-<code>systemfonts (&gt;= 1.1.0)</code> is now required. <code>match_font()</code> is soft-deprecated there and would print a deprecation warning in the middle of a setup report.</li>
+<strong>systemfonts</strong> (&gt;= 1.1.0) is now required. <code>match_font()</code> is soft-deprecated there and would print a deprecation warning in the middle of a setup report.</li>
 <li>
-<code>progressr</code> and <code>tinytex</code> added to <code>Suggests</code>; <code>tidyverse</code> and <code>conflicted</code> restored to it, because the packaged template loads them and a test now enforces that. <code>LazyData: true</code> removed — there is no <code>data/</code>.</li>
+<strong>progressr</strong> and <strong>tinytex</strong> added to <code>Suggests</code>; <strong>tidyverse</strong> and <strong>conflicted</strong> restored to it. A test now checks that every package the starter template loads is declared, so the list cannot fall behind the template.</li>
+<li>
+<code>LazyData: true</code> removed — there is no <code>data/</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -111,7 +113,7 @@
 <div class="section level3">
 <h3 id="minor-changes-0-1-3">Minor Changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-1-3"></a></h3>
 <ul><li>Unit tests have been updated to test for <code>.qmd</code> and <code>.Rmd</code> file handling in both <code><a href="../reference/generate_reports.html">generate_reports()</a></code> and <code><a href="../reference/process_file.html">process_file()</a></code>.</li>
-<li>Added CI setup with GitHub Actions to test against R 4.5, install Quarto, and run <code>covr</code>.</li>
+<li>Added CI setup with GitHub Actions to test against R 4.5, install Quarto, and run <strong>covr</strong>.</li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -123,7 +125,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="mariner-011">mariner 0.1.1<a class="anchor" aria-label="anchor" href="#mariner-011"></a></h2>
 <ul><li>Expand testing suite for all functions.</li>
-<li>Add parallel processing support in <code><a href="../reference/process_files.html">process_files()</a></code> using <code>future</code> and <code>furrr</code>.</li>
+<li>Add parallel processing support in <code><a href="../reference/process_files.html">process_files()</a></code> using <strong>future</strong> and <strong>furrr</strong>.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="mariner-010">mariner 0.1.0<a class="anchor" aria-label="anchor" href="#mariner-010"></a></h2>

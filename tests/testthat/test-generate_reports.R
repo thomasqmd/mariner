@@ -120,6 +120,36 @@ test_that("a params_df without chapter or problem_numbers is an error, not Repor
   expect_length(list.files(dir), 0L)
 })
 
+test_that("a file_name that resolves to nothing is refused", {
+  # The stem, not the columns: this one names no column at all, so glue
+  # succeeds and hands back an empty string. Writing it would produce ".qmd",
+  # and every row would produce the same one.
+  dir <- local_dir()
+  expect_error(
+    suppressMessages(generate_reports(
+      params_df = data.frame(chapter = 1, problem_numbers = 1),
+      output_dir = dir,
+      file_name = ""
+    )),
+    "produced an empty file name"
+  )
+  expect_length(list.files(dir), 0L)
+})
+
+test_that("a file_name of nothing but whitespace is refused too", {
+  # "  .qmd" is a legal filename and an unusable one.
+  dir <- local_dir()
+  expect_error(
+    suppressMessages(generate_reports(
+      params_df = data.frame(chapter = 1, problem_numbers = 1),
+      output_dir = dir,
+      file_name = "   "
+    )),
+    "produced an empty file name"
+  )
+  expect_length(list.files(dir), 0L)
+})
+
 # --- template resolution -----------------------------------------------------
 
 test_that("an unknown template names the ones that exist", {

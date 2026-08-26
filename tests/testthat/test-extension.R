@@ -97,3 +97,84 @@ test_that("the package ships no second copy of any theme asset", {
     )
   )
 })
+
+# --- the manifest and what is missing from it --------------------------------
+
+test_that("extension_missing calls an absent directory wholly missing", {
+  # Not an empty answer: nothing is there, so everything is.
+  want <- extension_manifest("mariner")
+  expect_identical(extension_missing(file.path(tempdir(), "no-such-ext")), want)
+  expect_gt(length(want), 20L)
+})
+
+test_that("extension_missing names the file that was deleted, and only that one", {
+  dest <- withr::local_tempdir()
+  ext <- mariner_build_extension(dest, "mariner", quiet = TRUE)
+  expect_identical(extension_missing(ext), character())
+
+  unlink(file.path(ext, "fonts", "Lora-Bold.ttf"))
+  expect_identical(extension_missing(ext), file.path("fonts", "Lora-Bold.ttf"))
+})
+
+test_that("the manifest lists the generated half by what is on disk", {
+  # build_tokens() decides what it writes, so a checker with its own list of
+  # expected filenames goes stale the first time that changes.
+  want <- extension_manifest("mariner")
+  expect_true(all(c("_extension.yml", "brand-preamble.tex") %in% want))
+  expect_true(all(c("_macros.tex", "mariner-markup.lua") %in% want))
+  expect_true(file.path("logos", mariner_logo_name("mariner", "medium")) %in% want)
+})
+
+test_that("extension_manifest validates the theme name", {
+  expect_error(extension_manifest("not-a-theme"))
+})
+
+# --- building ----------------------------------------------------------------
+
+test_that("mariner_build_extension says what it built unless told to be quiet", {
+  dest <- withr::local_tempdir()
+  said <- paste(capture_messages(mariner_build_extension(dest, "mariner")), collapse = "")
+  expect_match(said, "mariner")
+  expect_match(said, "files")
+})
+
+test_that("overwrite = FALSE leaves a file a student edited alone", {
+  dest <- withr::local_tempdir()
+  ext <- mariner_build_extension(dest, "mariner", quiet = TRUE)
+
+  edited <- file.path(ext, "_macros.tex")
+  writeLines("% mine", edited)
+  mariner_build_extension(dest, "mariner", overwrite = FALSE, quiet = TRUE)
+
+  expect_identical(readLines(edited), "% mine")
+})
+
+test_that("overwrite = TRUE restores it", {
+  dest <- withr::local_tempdir()
+  ext <- mariner_build_extension(dest, "mariner", quiet = TRUE)
+
+  edited <- file.path(ext, "_macros.tex")
+  writeLines("% mine", edited)
+  mariner_build_extension(dest, "mariner", quiet = TRUE)
+
+  expect_false(identical(readLines(edited), "% mine"))
+})
+
+test_that("an install with no generated files is reported as an install problem", {
+  # The generated half is the one part of the extension that is not shipped as a
+  # source file, so its absence means a partial install rather than a bad call.
+  real <- mariner_path
+  empty <- withr::local_tempdir()
+  local_mocked_bindings(mariner_path = function(...) {
+    if (identical(..1, "generated")) empty else real(...)
+  })
+
+  expect_error(
+    mariner_build_extension(withr::local_tempdir(), "mariner", quiet = TRUE),
+    "No generated token files"
+  )
+})
+
+test_that("mariner_build_extension validates the theme name", {
+  expect_error(mariner_build_extension(withr::local_tempdir(), "not-a-theme"))
+})

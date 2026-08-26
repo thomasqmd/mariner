@@ -56,5 +56,5 @@ withr::with_options(
   list(mariner.project_root = tempdir()),
   mariner_project_root()
 )
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/Rtmpuujief"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmppcfIpk"
 ```

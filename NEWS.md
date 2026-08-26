@@ -14,7 +14,7 @@
   the available columns.
 * **R Markdown support is removed.** `generate_reports()`, `process_file()` and
   `process_files()` take `.qmd` only, and refuse a `.Rmd` with a message.
-  `rmarkdown` is no longer a dependency, and the `simple_report` template no
+  **rmarkdown** is no longer a dependency, and the `simple_report` template no
   longer carries a `skeleton.Rmd`.
 
 ## New Features
@@ -28,7 +28,7 @@
   and set off definitions and theorems in the brand colours. A `.defn` with an
   identifier — `[support]{.defn #support}` — also plants a cross-reference
   target. Quarto's callouts work alongside them.
-* **`ggplot2` theming and scales.** `theme_mariner()`, `mariner_set_theme()`,
+* **ggplot2 theming and scales.** `theme_mariner()`, `mariner_set_theme()`,
   `mariner_colors()` and `mariner_pal()`, plus `colour` and `fill` scales in
   five families: `scale_*_mariner_d()`, `_c()`, `_o()`, `_div()` and `_b()`.
 * **Project scaffolding.** `mariner_setup_project()` creates `assets/`,
@@ -95,16 +95,18 @@
 ## Minor Changes
 
 * User-facing output from `generate_reports()`, `process_file()` and
-  `process_files()` goes through `cli`. `process_files()` names the files that
+  `process_files()` goes through **cli**. `process_files()` names the files that
   failed rather than counting them.
 * A render happens in an `fs::path_real()`-resolved scratch directory, so the
   path the Quarto CLI receives is the one the filesystem agrees on: symlinks
   resolved, Windows 8.3 short names expanded.
-* `systemfonts (>= 1.1.0)` is now required. `match_font()` is soft-deprecated
+* **systemfonts** (>= 1.1.0) is now required. `match_font()` is soft-deprecated
   there and would print a deprecation warning in the middle of a setup report.
-* `progressr` and `tinytex` added to `Suggests`; `tidyverse` and `conflicted`
-  restored to it, because the packaged template loads them and a test now
-  enforces that. `LazyData: true` removed — there is no `data/`.
+* **progressr** and **tinytex** added to `Suggests`; **tidyverse** and
+  **conflicted** restored to it. A test now checks that every package the
+  starter template loads is declared, so the list cannot fall behind the
+  template.
+* `LazyData: true` removed — there is no `data/`.
 
 # mariner 0.1.3
 
@@ -120,7 +122,7 @@ This version introduces support for Quarto (`.qmd`) files, which is now the defa
 ## Minor Changes
 
 * Unit tests have been updated to test for `.qmd` and `.Rmd` file handling in both `generate_reports()` and `process_file()`.
-* Added CI setup with GitHub Actions to test against R 4.5, install Quarto, and run `covr`.
+* Added CI setup with GitHub Actions to test against R 4.5, install Quarto, and run **covr**.
 
 # mariner 0.1.2
 
@@ -131,7 +133,7 @@ This version introduces support for Quarto (`.qmd`) files, which is now the defa
 # mariner 0.1.1
 
 * Expand testing suite for all functions.
-* Add parallel processing support in `process_files()` using `future` and `furrr`.
+* Add parallel processing support in `process_files()` using **future** and **furrr**.
 
 # mariner 0.1.0
 

@@ -32,7 +32,7 @@ the position of any file that failed.
 }
 \description{
 \code{\link[=process_file]{process_file()}} over a vector of Quarto (\code{.qmd}) files. The batch runs
-sequentially by default, and in parallel under a \code{future} plan such as
+sequentially by default, and in parallel under a \strong{future} plan such as
 \code{future::plan(future::multisession)}.
 }
 \details{

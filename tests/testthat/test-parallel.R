@@ -18,6 +18,7 @@ write_qmd <- function(dir, name, format = "pdf", body = "Hello world.") {
 
 test_that("process_files executes across parallel workers", {
   skip_if_no_quarto()
+  skip_on_covr()
   skip_if(
     isTRUE(pkgload::is_dev_package("mariner")),
     "mariner is loaded from source; a multisession worker cannot attach it"

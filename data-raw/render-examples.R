@@ -59,7 +59,9 @@ for (theme in mariner_themes) {
   dest <- file.path(dest_dir, paste0(theme, "-gallery.pdf"))
 
   ok <- file.copy(file.path(ext_root, "gallery.pdf"), dest, overwrite = TRUE)
-  if (!ok) cli::cli_abort("Could not copy the rendered gallery to {.file {dest}}.")
+  if (!ok) {
+    cli::cli_abort("Could not copy the rendered gallery to {.file {dest}}.")
+  }
 
   # The rendered PDF stays only at the destination; leaving a second copy beside
   # the source is how the two drift apart.

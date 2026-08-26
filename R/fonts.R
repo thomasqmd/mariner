@@ -93,10 +93,10 @@ mariner_font_dir <- function() {
 #' than falling back. Called automatically when the package is loaded; exported
 #' so it can be re-run after something else clears the registry.
 #'
-#' Registration is read by the svglite and ragg devices. The cairo-backed
-#' `grDevices::svg()` and `cairo_pdf()` consult fontconfig instead and are
-#' unaffected, which is why [mariner_knitr_setup()] selects svglite for the formats
-#' whose figures are svg.
+#' Registration is read by the svglite and ragg devices. `cairo_pdf()` consults
+#' fontconfig instead and does not see it -- and `cairo_pdf()` is the device
+#' that draws a report's figures, which is the gap [mariner_install_fonts()]
+#' exists to close.
 #'
 #' @param quiet Suppress the message naming what was registered.
 #' @return Invisibly, the character vector of family names registered.
@@ -260,11 +260,17 @@ windows_font_value_name <- function(path) {
 }
 
 # Where a per-user font install goes on each platform.
-user_font_dir <- function() {
-  if (Sys.info()[["sysname"]] == "Darwin") {
+#
+# The two probes are arguments, for the reason check_fonts()'s are: a test can
+# then ask what this returns on Windows without being run on Windows. Both
+# branches below are unreachable from any one machine, so without them two
+# thirds of this function could only ever be checked by shipping it.
+user_font_dir <- function(sysname = Sys.info()[["sysname"]],
+                          ostype = .Platform$OS.type) {
+  if (sysname == "Darwin") {
     return(path.expand("~/Library/Fonts"))
   }
-  if (.Platform$OS.type == "windows") {
+  if (ostype == "windows") {
     local <- Sys.getenv("LOCALAPPDATA")
     if (!nzchar(local)) return(NA_character_)
     return(file.path(local, "Microsoft", "Windows", "Fonts"))

@@ -85,7 +85,7 @@ qmd_files <- generate_reports(
   output_dir = temp_dir
 )
 #> ℹ Generating 2 qmd files...
-#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//Rtmpuujief/mariner-example-8262f8f7d4d
+#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//RtmppcfIpk/mariner-example-117977bfe18b4
 
 basename(qmd_files)
 #> [1] "Report-1_1.qmd" "Report-1_2.qmd"
@@ -97,7 +97,7 @@ generate_reports(
   file_name = "ch{chapter}-prob{problem_numbers}"
 ) |> basename()
 #> ℹ Generating 2 qmd files...
-#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//Rtmpuujief/mariner-example-8262f8f7d4d
+#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//RtmppcfIpk/mariner-example-117977bfe18b4
 #> [1] "ch1-prob1.qmd" "ch1-prob2.qmd"
 
 unlink(temp_dir, recursive = TRUE)

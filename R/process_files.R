@@ -2,7 +2,7 @@
 #'
 #' @description
 #' [process_file()] over a vector of Quarto (`.qmd`) files. The batch runs
-#' sequentially by default, and in parallel under a `future` plan such as
+#' sequentially by default, and in parallel under a **future** plan such as
 #' `future::plan(future::multisession)`.
 #'
 #' @details

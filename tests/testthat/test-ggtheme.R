@@ -55,3 +55,96 @@ test_that("mariner_knitr_setup() configures knitr chunk options", {
   # Restore
   knitr::opts_chunk$set(old_opts)
 })
+
+# --- mariner_set_theme -------------------------------------------------------
+
+test_that("mariner_set_theme installs the theme and hands back the old one", {
+  skip_if_not_installed("ggplot2")
+  before <- ggplot2::theme_get()
+
+  old <- mariner_set_theme()
+  withr::defer(ggplot2::theme_set(before))
+
+  expect_s3_class(old, "theme")
+  expect_equal(old, before)
+  expect_equal(ggplot2::theme_get(), theme_mariner())
+})
+
+test_that("mariner_set_theme makes the brand palettes the scale defaults", {
+  skip_if_not_installed("ggplot2")
+  before <- ggplot2::theme_get()
+  withr::defer(ggplot2::theme_set(before))
+  withr::local_options(list(
+    ggplot2.discrete.colour = NULL,
+    ggplot2.discrete.fill = NULL,
+    ggplot2.continuous.colour = NULL,
+    ggplot2.continuous.fill = NULL
+  ))
+
+  mariner_set_theme()
+
+  for (opt in c("ggplot2.discrete.colour", "ggplot2.discrete.fill",
+                "ggplot2.continuous.colour", "ggplot2.continuous.fill")) {
+    expect_true(is.function(getOption(opt)), info = opt)
+  }
+  # The option is a wrapper, so what it builds is what matters.
+  expect_s3_class(getOption("ggplot2.discrete.colour")(), "Scale")
+  expect_s3_class(getOption("ggplot2.continuous.fill")(), "Scale")
+})
+
+test_that("mariner_set_theme forwards its extra arguments to the theme", {
+  skip_if_not_installed("ggplot2")
+  before <- ggplot2::theme_get()
+  withr::defer(ggplot2::theme_set(before))
+
+  mariner_set_theme(base_size = 18)
+  expect_equal(ggplot2::theme_get()$text$size, 18)
+})
+
+test_that("mariner_set_theme validates its theme and format", {
+  expect_error(mariner_set_theme(theme = "not-a-theme"))
+  expect_error(mariner_set_theme(format = "html"))
+})
+
+# --- theme_mariner arguments -------------------------------------------------
+
+test_that("theme_mariner takes an explicit family over the detected one", {
+  skip_if_not_installed("ggplot2")
+  th <- theme_mariner(base_family = "Courier")
+  expect_identical(th$text$family, "Courier")
+})
+
+test_that("theme_mariner forwards extra arguments to ggplot2::theme()", {
+  skip_if_not_installed("ggplot2")
+  th <- theme_mariner(legend.position = "bottom")
+  expect_identical(th$legend.position, "bottom")
+})
+
+test_that("theme_mariner validates its theme and format", {
+  expect_error(theme_mariner(theme = "not-a-theme"))
+  expect_error(theme_mariner(format = "html"))
+})
+
+# --- mariner_fig_dims / mariner_knitr_setup ----------------------------------
+
+test_that("mariner_fig_dims rejects a format the extension does not contribute", {
+  expect_error(mariner_fig_dims("html"))
+})
+
+test_that("mariner_knitr_setup takes the device it is given", {
+  skip_if_not_installed("knitr")
+  old <- mariner_knitr_setup(fig_format = "png", dpi = 96)
+  withr::defer(knitr::opts_chunk$set(old))
+
+  expect_identical(knitr::opts_chunk$get("dev"), "png")
+  expect_equal(knitr::opts_chunk$get("dpi"), 96)
+})
+
+test_that("mariner_knitr_setup passes further chunk options through", {
+  skip_if_not_installed("knitr")
+  old <- mariner_knitr_setup(echo = TRUE, fig.cap = "A caption")
+  withr::defer(knitr::opts_chunk$set(old))
+
+  expect_true(knitr::opts_chunk$get("echo"))
+  expect_identical(knitr::opts_chunk$get("fig.cap"), "A caption")
+})

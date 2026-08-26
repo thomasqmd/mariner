@@ -160,9 +160,8 @@ narrower, which is what a dense table needs.
 
 # Mathematics and notation
 
-Set theory rather than arithmetic, so the notation carries some weight. These
-pages also exercise the markup vocabulary: defined terms, the definition and
-theorem blocks, and the cross-reference anchors.
+These pages exercise the markup vocabulary: defined terms, definition and
+theorem blocks, and cross-reference anchors.
 
 ::: {.def}
 **Definition (Formal sum).** Let $\mathcal{M}$ be a set of abstract basis
