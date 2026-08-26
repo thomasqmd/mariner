@@ -5,15 +5,22 @@ vignette: >
   %\VignetteIndexEntry{Get Started with mariner}
   %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
----
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-library(mariner)
-```
+# NOTE TO EDITORS -- this block is a YAML comment and does not reach the output.
+#
+# There are no executing chunks here, by design. Every code block is a
+# display-only ```r fence, and the outputs beneath them are captured from real
+# runs rather than evaluated at build time.
+#
+# So there is no library(mariner) and no opts_chunk$set(). Both were here. The
+# library call broke R CMD build on Windows: the vignette engine spawns quarto,
+# quarto spawns a fresh R process, and that process cannot see the temporary
+# library R CMD build installs the package into. Loading a package this file
+# never calls is a build dependency bought for nothing.
+#
+# Adding an executing chunk means re-adding a setup chunk -- and it means
+# theming.qmd's Windows problem becomes this file's problem too.
+---
 
 **mariner** writes one Quarto report per row of a parameter table, renders each one,
 and bundles it into a zip archive.

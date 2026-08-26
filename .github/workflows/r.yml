@@ -51,6 +51,24 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      # Installed into the DEFAULT library, ahead of the check that installs it
+      # into a temporary one.
+      #
+      # `R CMD build` rebuilds the vignettes, and the quarto engine reaches R
+      # through two process hops: R -> quarto.exe -> a fresh R for knitr. That
+      # last process does not see the temporary library on Windows, so
+      # `library(mariner)` in theming.qmd failed with "there is no package
+      # called 'mariner'" and the build exited 1. macOS and Ubuntu pass the
+      # environment down the same chain and were unaffected.
+      #
+      # Installing here puts the package on the grandchild's ordinary
+      # .libPaths(), which needs no environment to survive the hops. The copy
+      # `R CMD check` makes for itself still takes precedence for the check
+      # proper -- this one exists for the vignette render alone.
+      - name: Install the package for vignette rendering
+        run: R CMD INSTALL .
+        shell: bash
+
       - name: Check
         uses: r-lib/actions/check-r-package@v2
         with:

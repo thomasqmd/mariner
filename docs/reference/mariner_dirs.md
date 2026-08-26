@@ -56,16 +56,16 @@ and `.onAttach()` create them.
 ``` r
 mariner_dirs(root = tempdir())
 #> $assets
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpARTKnv/assets"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpWsU1oN/assets"
 #> 
 #> $reports
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpARTKnv/reports"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpWsU1oN/reports"
 #> 
 #> $zips
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpARTKnv/zip_files"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpWsU1oN/zip_files"
 #> 
 
 # Every default path in the package is composed from this:
 mariner_dirs(root = tempdir())$reports
-#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpARTKnv/reports"
+#> [1] "/private/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpWsU1oN/reports"
 ```
