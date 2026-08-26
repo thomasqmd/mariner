@@ -32,9 +32,7 @@
 #' temp_dir <- tempfile("example-")
 #'
 #' doc_files <- generate_reports(
-#'   params_df = data.frame(
-#'     chapter = 1, problem_numbers = 1:2, author = "A. Name"
-#'   ),
+#'   params_df = data.frame(chapter = 1, problem_numbers = 1:2),
 #'   output_dir = temp_dir
 #' )
 #'

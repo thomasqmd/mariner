@@ -1,21 +1,6 @@
 # generate_reports(): YAML-aware param splicing and glue file naming.
 
-# Read a generated document's front matter back as a list.
-#
-# The assertions go through this rather than grepping for `author: "Name"`.
-# yaml::as.yaml() quotes only what YAML requires quoting, so the old
-# byte-level assertions were testing the emitter's style choices, not whether
-# the parameter had been substituted -- and they broke the moment the
-# implementation stopped writing the quotes by hand.
-front_matter <- function(path) {
-  lines <- readLines(path, warn = FALSE)
-  fences <- which(grepl("^(---|\\.\\.\\.)\\s*$", lines))
-  yaml::yaml.load(paste(lines[(fences[1] + 1):(fences[2] - 1)], collapse = "\n"))
-}
-
-local_dir <- function(env = parent.frame()) {
-  withr::local_tempdir(.local_envir = env)
-}
+# front_matter() and local_dir() come from helper-front-matter.R.
 
 # --- the happy path ----------------------------------------------------------
 

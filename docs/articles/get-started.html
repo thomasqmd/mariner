@@ -94,9 +94,9 @@
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_install_fonts.html">mariner_install_fonts</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </section><section class="level2"><h2 id="project-scaffolding">2. Project Scaffolding<a class="anchor" aria-label="anchor" href="#project-scaffolding"></a>
 </h2>
-<p>Create the folders and install the Quarto theme:</p>
+<p>Create the folders, install the Quarto theme, and set your name:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_setup_project.html">mariner_setup_project</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_setup_project.html">mariner_setup_project</a></span><span class="op">(</span>author <span class="op">=</span> <span class="st">"Alice Smith"</span><span class="op">)</span></span></code></pre></div>
 <p>You get three directories:</p>
 <ul>
 <li>
@@ -105,23 +105,32 @@
 <code>reports/</code>: the documents, a copy of <code>_extensions/</code>, and a starter <code>report.qmd</code>.</li>
 <li>
 <code>zip_files/</code>: the bundles you hand out.</li>
-</ul></section><section class="level2"><h2 id="define-parameters">3. Define Parameters<a class="anchor" aria-label="anchor" href="#define-parameters"></a>
+</ul>
+<p>and a <code>_mariner.yml</code>, which holds the settings that apply to the whole project:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># mariner project settings. Edit by hand or with mariner_setup_project().</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Values here fill any parameter of the same name that a template</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># declares. A column in generate_reports()'s params_df beats them.</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">author</span><span class="kw">:</span><span class="at"> Alice Smith</span></span></code></pre></div>
+<p>Run setup without an <code>author</code> and it says so. The alternative is a batch of PDFs that carry the template’s placeholder name, from a render that succeeded. To change the name later, make the same call again — this touches nothing else:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mariner_setup_project.html">mariner_setup_project</a></span><span class="op">(</span>author <span class="op">=</span> <span class="st">"A. Smith"</span>, template <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+</section><section class="level2"><h2 id="define-parameters">3. Define Parameters<a class="anchor" aria-label="anchor" href="#define-parameters"></a>
 </h2>
-<p>One row per report:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>One row per report. Only what differs between them belongs here:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">report_params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html" class="external-link">expand_grid</a></span><span class="op">(</span></span>
 <span>  chapter <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  problem_numbers <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span>
-<span>  author <span class="op">=</span> <span class="st">"Alice Smith"</span></span>
+<span>  problem_numbers <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">report_params</span></span></code></pre></div>
-<p><code>author</code> is constant. One person runs the batch, and it is their name on every report. It is a parameter rather than a hard-coded string so the template can print it.</p>
+<p>There is no <code>author</code> column. One person runs the batch, and it is their name on every report, so it belongs in <code>_mariner.yml</code> and not in a data frame column that repeats one value. <code>_mariner.yml</code> fills any template parameter of the same name; a <code>params_df</code> column beats it, for the case where the author does vary.</p>
 </section><section class="level2"><h2 id="generate-report-sources">4. Generate Report Sources<a class="anchor" aria-label="anchor" href="#generate-report-sources"></a>
 </h2>
 <p>Write the <code>.qmd</code> files from the built-in template:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qmd_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_reports.html">generate_reports</a></span><span class="op">(</span></span>
 <span>  params_df <span class="op">=</span> <span class="va">report_params</span>,</span>
 <span>  template_name <span class="op">=</span> <span class="st">"report"</span></span>
@@ -130,11 +139,11 @@
 <p>Output:</p>
 <pre><code>[1] "/Users/you/classes/stat3010/reports/Report-1_1.qmd"
 [2] "/Users/you/classes/stat3010/reports/Report-1_2.qmd"</code></pre>
-<p>The names come from <code>file_name</code>, a <a href="https://glue.tidyverse.org" class="external-link">glue</a> template over the columns of <code>params_df</code>. It defaults to <code>"Report-{chapter}_{problem_numbers}"</code>. <strong>Every column that varies has to appear in it.</strong> Otherwise two rows resolve to one name and the second overwrites the first. That is why the grid above holds <code>author</code> constant: it does not tell one report from another.</p>
+<p>The names come from <code>file_name</code>, a <a href="https://glue.tidyverse.org" class="external-link">glue</a> template over the columns of <code>params_df</code>. It defaults to <code>"Report-{chapter}_{problem_numbers}"</code>. <strong>Every column that varies has to appear in it.</strong> Otherwise two rows resolve to one name and the second overwrites the first.</p>
 </section><section class="level2"><h2 id="render-and-bundle-reports">5. Render and Bundle Reports<a class="anchor" aria-label="anchor" href="#render-and-bundle-reports"></a>
 </h2>
 <p>Render each document and bundle it:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Sequential:</span></span>
 <span><span class="va">zip_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_files.html">process_files</a></span><span class="op">(</span><span class="va">qmd_files</span><span class="op">)</span></span>
 <span></span>

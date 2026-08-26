@@ -51,13 +51,26 @@ A column of \code{params_df} with no counterpart in the template's \code{params}
 is not substituted, and warns. That case is a typo or a template mismatch,
 and the old behaviour dropped it in silence.
 }
+\section{Project settings}{
+
+A \verb{_mariner.yml} at the project root fills any parameter of the same name
+that the template declares. It holds what does not vary between reports.
+\code{author} is the case it exists for: one person runs a batch, and it is their
+name on every report in it.
+
+Precedence, lowest to highest: the template's own default, \verb{_mariner.yml},
+then the \code{params_df} column. Write the file with
+\code{mariner_setup_project(author = "Your Name")}.
+}
+
 \examples{
 temp_dir <- tempfile("mariner-example-")
 
+# One row per report. Only what VARIES between them belongs here; the author
+# is a project setting -- see mariner_setup_project(author = ).
 report_params <- data.frame(
   chapter = 1,
-  problem_numbers = 1:2,
-  author = "Firstname Lastname"
+  problem_numbers = 1:2
 )
 
 qmd_files <- generate_reports(

@@ -35,6 +35,20 @@
   `reports/` and `zip_files/`, assembles the theme into `assets/`, copies it
   beside the documents in `reports/`, drops in a starter report, and gitignores
   the build outputs. Run it twice and nothing changes.
+* **Project settings in `_mariner.yml`.** `mariner_setup_project(author = )`
+  writes the project's author to a `_mariner.yml` at the root, and
+  `generate_reports()` fills any template parameter of the same name from it.
+  Precedence runs template default, then `_mariner.yml`, then the `params_df`
+  column, so a batch whose author does vary can still say so.
+
+  The author was a constant column of `params_df` before this, and it had to be
+  retyped on every call. A call that omitted it produced a batch of PDFs that
+  carried the template's placeholder on every title page, from a render that
+  succeeded. `mariner_setup_project()` now says so when no author is set.
+
+  The file is not a `mariner:` key inside `_quarto.yml`: a `_quarto.yml` at the
+  root turns the directory into a Quarto project, which changes where Quarto
+  resolves the extension from and breaks font lookup.
 * **The folders are also created on attach.** `library(mariner)` creates the
   three directories in an interactive session whose working directory looks like
   a project root — see `mariner_looks_like_project()`. It does not assemble the

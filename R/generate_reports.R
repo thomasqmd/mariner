@@ -138,6 +138,16 @@ as_param_value <- function(x) {
 #' is not substituted, and warns. That case is a typo or a template mismatch,
 #' and the old behaviour dropped it in silence.
 #'
+#' @section Project settings:
+#' A `_mariner.yml` at the project root fills any parameter of the same name
+#' that the template declares. It holds what does not vary between reports.
+#' `author` is the case it exists for: one person runs a batch, and it is their
+#' name on every report in it.
+#'
+#' Precedence, lowest to highest: the template's own default, `_mariner.yml`,
+#' then the `params_df` column. Write the file with
+#' `mariner_setup_project(author = "Your Name")`.
+#'
 #' @param params_df A data frame, one row per report. Column names match the
 #'   parameter names in the template's `params:` block.
 #' @param template_name A template directory that `template_package` ships.
@@ -160,10 +170,11 @@ as_param_value <- function(x) {
 #' @examples
 #' temp_dir <- tempfile("mariner-example-")
 #'
+#' # One row per report. Only what VARIES between them belongs here; the author
+#' # is a project setting -- see mariner_setup_project(author = ).
 #' report_params <- data.frame(
 #'   chapter = 1,
-#'   problem_numbers = 1:2,
-#'   author = "Firstname Lastname"
+#'   problem_numbers = 1:2
 #' )
 #'
 #' qmd_files <- generate_reports(
@@ -226,6 +237,24 @@ generate_reports <- function(
 
   fs::dir_create(output_dir)
 
+  # Project settings, resolved from the OUTPUT directory rather than from
+  # getwd(). generate_reports() writes into a project's reports/, and
+  # mariner_project_root() climbs out of that folder specifically -- so the
+  # settings that apply are the ones belonging to the project being written to,
+  # whatever directory R is sitting in. An output_dir that is not in a project
+  # (a tempdir in an example, a scratch directory in a test) resolves to itself
+  # and finds nothing, which is what makes this hermetic.
+  #
+  # Only params the template DECLARES are filled. A project-wide `author` must
+  # not inject an `author` parameter into a template that has none: that would
+  # add a key to the front matter of a document whose author is deliberately
+  # somewhere else, or nowhere.
+  config <- read_project_config(mariner_project_root(output_dir))
+  from_config <- config[setdiff(
+    intersect(names(config), names(template_params)),
+    matched
+  )]
+
   write_one <- function(...) {
     row <- list(...)
 
@@ -248,9 +277,13 @@ generate_reports <- function(
     }
 
     out_header <- header
-    if (length(matched)) {
+    # Applied in precedence order, lowest first: the template's own defaults
+    # are the base, `_mariner.yml` overrides them, and the row overrides both.
+    # `from_config` already excludes anything `matched` covers, so the two
+    # modifyList() calls cannot fight over the same key.
+    if (length(from_config) || length(matched)) {
       out_header$params <- utils::modifyList(
-        template_params,
+        utils::modifyList(template_params, lapply(from_config, as_param_value)),
         lapply(row[matched], as_param_value)
       )
     }

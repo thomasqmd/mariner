@@ -41,11 +41,17 @@ mariner works in three project directories:
 
 ## Quickstart
 
-[`library`](https://rdrr.io/r/base/library.html)`(`[`mariner`](https://thomasqmd.github.io/mariner/)`)`` `` ``# 1. Create the folders and install the Quarto theme`` `[`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)`(``)`` `` ``# 2. One row per report`` ``report_params`` ``<-`` `[`expand.grid`](https://rdrr.io/r/base/expand.grid.html)`(`` `` chapter ``=`` ``1``,`` `` problem_numbers ``=`` ``1``:``2``,`` `` author ``=`` ``"Alice Smith"``,`` `` stringsAsFactors ``=`` ``FALSE`` ``)`` `` ``# 3. Write the .qmd files into reports/`` ``qmd_files`` ``<-`` `[`generate_reports`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)`(``report_params``)`` `` ``# 4. Render and bundle into zip_files/`` ``zip_files`` ``<-`` `[`process_files`](https://thomasqmd.github.io/mariner/reference/process_files.md)`(``qmd_files``)`
+[`library`](https://rdrr.io/r/base/library.html)`(`[`mariner`](https://thomasqmd.github.io/mariner/)`)`` `` ``# 1. Create the folders, install the Quarto theme, set the author`` `[`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)`(``author ``=`` ``"Alice Smith"``)`` `` ``# 2. One row per report; only what varies between them belongs here`` ``report_params`` ``<-`` `[`expand.grid`](https://rdrr.io/r/base/expand.grid.html)`(`` `` chapter ``=`` ``1``,`` `` problem_numbers ``=`` ``1``:``2``,`` `` stringsAsFactors ``=`` ``FALSE`` ``)`` `` ``# 3. Write the .qmd files into reports/`` ``qmd_files`` ``<-`` `[`generate_reports`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)`(``report_params``)`` `` ``# 4. Render and bundle into zip_files/`` ``zip_files`` ``<-`` `[`process_files`](https://thomasqmd.github.io/mariner/reference/process_files.md)`(``qmd_files``)`
 
 Every column that varies has to appear in the file name template, which
 defaults to `"Report-{chapter}_{problem_numbers}"`. Otherwise two rows
 resolve to one name and the second overwrites the first.
+
+The author is not a column. The setup call above writes it to
+`_mariner.yml`, and from there it fills the template’s `author`
+parameter for every report in the project: one person runs the batch,
+and it is their name on all of it. A `params_df` column of the same name
+still wins, for the batch whose author does vary.
 
 ## Theming
 

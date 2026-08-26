@@ -177,7 +177,7 @@ stage_extension <- function(scratch, theme, assets_dir) {
 #' temp_dir <- tempfile("example-")
 #'
 #' doc <- generate_reports(
-#'   params_df = data.frame(chapter = 1, problem_numbers = 1, author = "A. Name"),
+#'   params_df = data.frame(chapter = 1, problem_numbers = 1),
 #'   output_dir = temp_dir
 #' )
 #'

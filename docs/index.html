@@ -77,14 +77,13 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thomasqmd.github.io/mariner/">mariner</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 1. Create the folders and install the Quarto theme</span></span>
-<span><span class="fu"><a href="reference/mariner_setup_project.html">mariner_setup_project</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># 1. Create the folders, install the Quarto theme, set the author</span></span>
+<span><span class="fu"><a href="reference/mariner_setup_project.html">mariner_setup_project</a></span><span class="op">(</span>author <span class="op">=</span> <span class="st">"Alice Smith"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 2. One row per report</span></span>
+<span><span class="co"># 2. One row per report; only what varies between them belongs here</span></span>
 <span><span class="va">report_params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span></span>
 <span>  chapter <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  problem_numbers <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span>
-<span>  author <span class="op">=</span> <span class="st">"Alice Smith"</span>,</span>
 <span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -94,6 +93,7 @@
 <span><span class="co"># 4. Render and bundle into zip_files/</span></span>
 <span><span class="va">zip_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_files.html">process_files</a></span><span class="op">(</span><span class="va">qmd_files</span><span class="op">)</span></span></code></pre></div>
 <p>Every column that varies has to appear in the file name template, which defaults to <code>"Report-{chapter}_{problem_numbers}"</code>. Otherwise two rows resolve to one name and the second overwrites the first.</p>
+<p>The author is not a column. The setup call above writes it to <code>_mariner.yml</code>, and from there it fills the template’s <code>author</code> parameter for every report in the project: one person runs the batch, and it is their name on all of it. A <code>params_df</code> column of the same name still wins, for the batch whose author does vary.</p>
 </div>
 <div class="section level2">
 <h2 id="theming">Theming<a class="anchor" aria-label="anchor" href="#theming"></a>

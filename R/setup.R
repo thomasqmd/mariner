@@ -243,12 +243,14 @@ mariner_dirs <- function(root = NULL) {
 #' Set up a mariner project
 #'
 #' Creates the folders a mariner workflow uses, installs the Quarto theme into
-#' them, and drops in a starter report. Run it twice and nothing changes:
-#' a file that exists is left alone unless `overwrite = TRUE`.
+#' them, drops in a starter report, and records the project's author. Run it
+#' twice and nothing changes: a file that exists is left alone unless
+#' `overwrite = TRUE`.
 #'
 #' Beneath `root`:
 #'
 #' ```
+#' _mariner.yml                    project settings, when author is given
 #' assets/
 #'   _extensions/mariner/          the theme, assembled once
 #' reports/
@@ -259,7 +261,19 @@ mariner_dirs <- function(root = NULL) {
 #'
 #' `zip_files/`, `assets/_extensions/` and `reports/_extensions/` go into the
 #' project `.gitignore`. All three are build outputs, and a committed copy goes
-#' stale against what it was built from.
+#' stale against what it was built from. `_mariner.yml` is not ignored — it is
+#' a setting, and it belongs with the project.
+#'
+#' @section The author:
+#' `author` is a project setting, not a column of [generate_reports()]'s
+#' `params_df`. One person runs a batch, and it is their name on every report
+#' in it. As a column it had to be retyped on every call, and a call that
+#' omitted it produced a batch of PDFs that carried the template's placeholder
+#' on every title page. The render succeeded, so nothing said so.
+#'
+#' The name goes to `_mariner.yml`, and [generate_reports()] fills any template
+#' parameter that matches it. A `params_df` column still wins, for the batch
+#' whose author does vary.
 #'
 #' @param root Project root. `NULL` (the default) resolves it with
 #'   [mariner_project_root()], which is the working directory unless that is
@@ -267,6 +281,11 @@ mariner_dirs <- function(root = NULL) {
 #' @param theme One of [mariner_themes].
 #' @param template Starter template to copy into `reports/`. `NULL` for no
 #'   starter document.
+#' @param author Name for the project's author, written to `_mariner.yml`. See
+#'   the section below. `NULL` (the default) writes no file and leaves any
+#'   existing setting alone. A name here is written whether or not `overwrite`
+#'   is set: `overwrite` guards the files setup scaffolds and a student then
+#'   edits, and `author` is itself the instruction to change this one.
 #' @param overwrite Replace files that already exist. The folders themselves are
 #'   never removed.
 #' @return The named list from [mariner_dirs()], invisibly.
@@ -275,14 +294,18 @@ mariner_dirs <- function(root = NULL) {
 #' @examples
 #' \dontrun{
 #' # In an RStudio project or Quarto project directory:
-#' mariner_setup_project()
+#' mariner_setup_project(author = "Alice Smith")
 #'
 #' # Or somewhere explicit:
-#' mariner_setup_project(root = "~/classes/stat3010")
+#' mariner_setup_project(root = "~/classes/stat3010", author = "Alice Smith")
+#'
+#' # Change the author later. This touches nothing else:
+#' mariner_setup_project(author = "A. Smith", template = NULL)
 #' }
 mariner_setup_project <- function(root = NULL,
                                   theme = mariner_themes,
                                   template = "report",
+                                  author = NULL,
                                   overwrite = FALSE) {
   theme <- check_theme(theme)
   dirs <- mariner_dirs(root)
@@ -295,6 +318,19 @@ mariner_setup_project <- function(root = NULL,
   # at step 3 would leave three folders and a 1.3 MB extension behind, and the
   # student would have to know that re-running is safe in order to recover.
   starter_src <- if (is.null(template)) NULL else setup_template_path(template)
+
+  # Validated here for the same reason the template is: before anything is
+  # written, so a bad value cannot leave three folders and a 1.3 MB extension
+  # behind. A length-2 vector is the likely slip -- c("A. Smith", "B. Jones")
+  # from someone expecting a co-author list, which the front matter would take
+  # as a YAML sequence and the template's `params$author` would print as one.
+  if (!is.null(author)) {
+    if (!is.character(author) || length(author) != 1L || is.na(author) ||
+        !nzchar(trimws(author))) {
+      cli::cli_abort("{.arg author} must be a single non-empty string.")
+    }
+    author <- trimws(author)
+  }
 
   # Every step records what it did, so the closing summary reports what actually
   # happened rather than what was attempted. On a second run this is what makes
@@ -344,6 +380,18 @@ mariner_setup_project <- function(root = NULL,
     )
   }
 
+  # --- 3b. Project settings ---------------------------------------------------
+  #
+  # Only written when a name was actually given. Running setup again for the
+  # folders must not clear an author set on a previous run, and writing a file
+  # holding nothing but a comment header would make `_mariner.yml` exist
+  # without meaning anything -- which is worse than absent, because the next
+  # reader has to open it to find that out.
+  if (!is.null(author)) {
+    write_project_config(root_dir, list(author = author))
+    note(TRUE, MARINER_CONFIG_FILE)
+  }
+
   # --- 4. .gitignore ----------------------------------------------------------
   ignored <- append_gitignore(root_dir, c(
     paste0(MARINER_DIR_NAMES[["zips"]], "/"),
@@ -357,6 +405,22 @@ mariner_setup_project <- function(root = NULL,
   if (length(kept)) {
     cli::cli_alert_info(
       "Already present, left alone: {.file {kept}}"
+    )
+  }
+
+  # --- 5b. Say so when there is no author ---------------------------------------
+  #
+  # Not gated on interactive(), unlike the font notice below. A missing font
+  # degrades a deliverable; a missing author makes it wrong -- every PDF in the
+  # batch carries the template's placeholder on its title page, and the render
+  # succeeds, so nothing else in the pipeline will ever mention it.
+  if (is.null(read_project_config(root_dir)$author)) {
+    cli::cli_alert_warning(
+      "No author is set for this project. Reports will carry the template's \\
+       placeholder name."
+    )
+    cli::cli_alert_info(
+      'Set it with {.run mariner_setup_project(author = "Your Name")}.'
     )
   }
 

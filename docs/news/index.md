@@ -34,12 +34,14 @@
   and the brand tokens. A report renders in Atkinson Hyperlegible Next,
   Lora and JetBrains Mono with the LaTeX geometry to match, and there is
   nothing to install separately.
+
 - **Document markup.** The spans `[x]{.defn}`, `[x]{.term}`,
   `[x]{.termref}` and `[x]{.emph}`, and the blocks `::: {.def}` and
   `::: {.thm}`, mark defined terms and set off definitions and theorems
   in the brand colours. A `.defn` with an identifier —
   `[support]{.defn #support}` — also plants a cross-reference target.
   Quarto’s callouts work alongside them.
+
 - **ggplot2 theming and scales.**
   [`theme_mariner()`](https://thomasqmd.github.io/mariner/reference/theme_mariner.md),
   [`mariner_set_theme()`](https://thomasqmd.github.io/mariner/reference/mariner_set_theme.md),
@@ -48,12 +50,33 @@
   [`mariner_pal()`](https://thomasqmd.github.io/mariner/reference/mariner_pal.md),
   plus `colour` and `fill` scales in five families:
   `scale_*_mariner_d()`, `_c()`, `_o()`, `_div()` and `_b()`.
+
 - **Project scaffolding.**
   [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
   creates `assets/`, `reports/` and `zip_files/`, assembles the theme
   into `assets/`, copies it beside the documents in `reports/`, drops in
   a starter report, and gitignores the build outputs. Run it twice and
   nothing changes.
+
+- **Project settings in `_mariner.yml`.**
+  `mariner_setup_project(author = )` writes the project’s author to a
+  `_mariner.yml` at the root, and
+  [`generate_reports()`](https://thomasqmd.github.io/mariner/reference/generate_reports.md)
+  fills any template parameter of the same name from it. Precedence runs
+  template default, then `_mariner.yml`, then the `params_df` column, so
+  a batch whose author does vary can still say so.
+
+  The author was a constant column of `params_df` before this, and it
+  had to be retyped on every call. A call that omitted it produced a
+  batch of PDFs that carried the template’s placeholder on every title
+  page, from a render that succeeded.
+  [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
+  now says so when no author is set.
+
+  The file is not a `mariner:` key inside `_quarto.yml`: a `_quarto.yml`
+  at the root turns the directory into a Quarto project, which changes
+  where Quarto resolves the extension from and breaks font lookup.
+
 - **The folders are also created on attach.**
   [`library(mariner)`](https://thomasqmd.github.io/mariner/) creates the
   three directories in an interactive session whose working directory
@@ -61,6 +84,7 @@
   [`mariner_looks_like_project()`](https://thomasqmd.github.io/mariner/reference/mariner_looks_like_project.md).
   It does not assemble the theme. Turn it off with
   `options(mariner.auto_setup = FALSE)`.
+
 - **New
   [`mariner_check_setup()`](https://thomasqmd.github.io/mariner/reference/mariner_check_setup.md)**
   answers “will a report render on this machine?” in one call: Quarto
@@ -69,20 +93,24 @@
   folders, whether the theme beside the documents is complete, and the
   packages the template loads. Each line carries a fix to paste. Nothing
   is installed or changed.
+
 - **New `report` template**, replacing `simple_report`, with
   [`mariner_templates()`](https://thomasqmd.github.io/mariner/reference/mariner_templates.md)
   and
   [`mariner_template_path()`](https://thomasqmd.github.io/mariner/reference/mariner_template_path.md)
   to find it.
+
 - **New `include` argument** on
   [`process_file()`](https://thomasqmd.github.io/mariner/reference/process_file.md)
   and
   [`process_files()`](https://thomasqmd.github.io/mariner/reference/process_files.md)
   selects which of `"source"`, `"script"`, `"output"` and
   `"intermediates"` reach the archive. All four by default.
+
 - **New `assets_dir` argument** points at the extension
   [`mariner_setup_project()`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)
   built, so a batch of fifty reports stages the theme from one place.
+
 - New
   [`mariner_dirs()`](https://thomasqmd.github.io/mariner/reference/mariner_dirs.md)
   returns the three project paths and is the single source every default

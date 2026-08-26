@@ -68,15 +68,27 @@ A column of `params_df` with no counterpart in the template's `params`
 block is not substituted, and warns. That case is a typo or a template
 mismatch, and the old behaviour dropped it in silence.
 
+## Project settings
+
+A `_mariner.yml` at the project root fills any parameter of the same
+name that the template declares. It holds what does not vary between
+reports. `author` is the case it exists for: one person runs a batch,
+and it is their name on every report in it.
+
+Precedence, lowest to highest: the template's own default,
+`_mariner.yml`, then the `params_df` column. Write the file with
+`mariner_setup_project(author = "Your Name")`.
+
 ## Examples
 
 ``` r
 temp_dir <- tempfile("mariner-example-")
 
+# One row per report. Only what VARIES between them belongs here; the author
+# is a project setting -- see mariner_setup_project(author = ).
 report_params <- data.frame(
   chapter = 1,
-  problem_numbers = 1:2,
-  author = "Firstname Lastname"
+  problem_numbers = 1:2
 )
 
 qmd_files <- generate_reports(
@@ -85,7 +97,7 @@ qmd_files <- generate_reports(
   output_dir = temp_dir
 )
 #> ℹ Generating 2 qmd files...
-#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//RtmpFWzR5s/mariner-example-15dd611bc2
+#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//RtmpARTKnv/mariner-example-8a3b69fb7c83
 
 basename(qmd_files)
 #> [1] "Report-1_1.qmd" "Report-1_2.qmd"
@@ -97,7 +109,7 @@ generate_reports(
   file_name = "ch{chapter}-prob{problem_numbers}"
 ) |> basename()
 #> ℹ Generating 2 qmd files...
-#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//RtmpFWzR5s/mariner-example-15dd611bc2
+#> ✔ Wrote 2 files to /var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T//RtmpARTKnv/mariner-example-8a3b69fb7c83
 #> [1] "ch1-prob1.qmd" "ch1-prob2.qmd"
 
 unlink(temp_dir, recursive = TRUE)

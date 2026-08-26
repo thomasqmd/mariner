@@ -44,9 +44,9 @@ device’s default typeface while the page text does not. Fix it with:
 
 ## 2. Project Scaffolding
 
-Create the folders and install the Quarto theme:
+Create the folders, install the Quarto theme, and set your name:
 
-[`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)`(``)`
+[`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)`(``author ``=`` ``"Alice Smith"``)`
 
 You get three directories:
 
@@ -55,15 +55,35 @@ You get three directories:
   `report.qmd`.
 - `zip_files/`: the bundles you hand out.
 
+and a `_mariner.yml`, which holds the settings that apply to the whole
+project:
+
+``` yaml
+# mariner project settings. Edit by hand or with mariner_setup_project().
+#
+# Values here fill any parameter of the same name that a template
+# declares. A column in generate_reports()'s params_df beats them.
+author: Alice Smith
+```
+
+Run setup without an `author` and it says so. The alternative is a batch
+of PDFs that carry the template’s placeholder name, from a render that
+succeeded. To change the name later, make the same call again — this
+touches nothing else:
+
+[`mariner_setup_project`](https://thomasqmd.github.io/mariner/reference/mariner_setup_project.md)`(``author ``=`` ``"A. Smith"``, template ``=`` ``NULL``)`
+
 ## 3. Define Parameters
 
-One row per report:
+One row per report. Only what differs between them belongs here:
 
-[`library`](https://rdrr.io/r/base/library.html)`(`[`tidyr`](https://tidyr.tidyverse.org)`)`` `` ``report_params`` ``<-`` `[`expand_grid`](https://tidyr.tidyverse.org/reference/expand_grid.html)`(`` `` chapter ``=`` ``1``,`` `` problem_numbers ``=`` ``1``:``2``,`` `` author ``=`` ``"Alice Smith"`` ``)`` ``report_params`
+[`library`](https://rdrr.io/r/base/library.html)`(`[`tidyr`](https://tidyr.tidyverse.org)`)`` `` ``report_params`` ``<-`` `[`expand_grid`](https://tidyr.tidyverse.org/reference/expand_grid.html)`(`` `` chapter ``=`` ``1``,`` `` problem_numbers ``=`` ``1``:``2`` ``)`` ``report_params`
 
-`author` is constant. One person runs the batch, and it is their name on
-every report. It is a parameter rather than a hard-coded string so the
-template can print it.
+There is no `author` column. One person runs the batch, and it is their
+name on every report, so it belongs in `_mariner.yml` and not in a data
+frame column that repeats one value. `_mariner.yml` fills any template
+parameter of the same name; a `params_df` column beats it, for the case
+where the author does vary.
 
 ## 4. Generate Report Sources
 
@@ -80,8 +100,7 @@ The names come from `file_name`, a [glue](https://glue.tidyverse.org)
 template over the columns of `params_df`. It defaults to
 `"Report-{chapter}_{problem_numbers}"`. **Every column that varies has
 to appear in it.** Otherwise two rows resolve to one name and the second
-overwrites the first. That is why the grid above holds `author`
-constant: it does not tell one report from another.
+overwrites the first.
 
 ## 5. Render and Bundle Reports
 

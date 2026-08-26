@@ -44,14 +44,13 @@ your-project/
 ```r
 library(mariner)
 
-# 1. Create the folders and install the Quarto theme
-mariner_setup_project()
+# 1. Create the folders, install the Quarto theme, set the author
+mariner_setup_project(author = "Alice Smith")
 
-# 2. One row per report
+# 2. One row per report; only what varies between them belongs here
 report_params <- expand.grid(
   chapter = 1,
   problem_numbers = 1:2,
-  author = "Alice Smith",
   stringsAsFactors = FALSE
 )
 
@@ -63,6 +62,8 @@ zip_files <- process_files(qmd_files)
 ```
 
 Every column that varies has to appear in the file name template, which defaults to `"Report-{chapter}_{problem_numbers}"`. Otherwise two rows resolve to one name and the second overwrites the first.
+
+The author is not a column. The setup call above writes it to `_mariner.yml`, and from there it fills the template's `author` parameter for every report in the project: one person runs the batch, and it is their name on all of it. A `params_df` column of the same name still wins, for the batch whose author does vary.
 
 ## Theming
 

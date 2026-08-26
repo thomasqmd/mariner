@@ -1,14 +1,6 @@
 # YAML parsing, front matter extraction, and parameter splicing.
 
-front_matter <- function(path) {
-  lines <- readLines(path, warn = FALSE)
-  fences <- which(grepl("^(---|\\.\\.\\.)\\s*$", lines))
-  yaml::yaml.load(paste(lines[(fences[1] + 1):(fences[2] - 1)], collapse = "\n"))
-}
-
-local_dir <- function(env = parent.frame()) {
-  withr::local_tempdir(.local_envir = env)
-}
+# front_matter() and local_dir() come from helper-front-matter.R.
 
 test_that("whole numbers do not emit as 3.0", {
   dir <- local_dir()
